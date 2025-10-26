@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Modern Dark Theme inspired by n8n.io */
+    --background: 265 85% 5%;
+    --foreground: 265 15% 95%;
+    --card: 265 60% 8%;
+    --card-foreground: 265 15% 95%;
+    --popover: 265 70% 6%;
+    --popover-foreground: 265 15% 95%;
+    --primary: 346 83% 61%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 30% 18%;
+    --secondary-foreground: 265 15% 95%;
+    --muted: 265 40% 15%;
+    --muted-foreground: 265 15% 75%;
+    --accent: 270 60% 70%;
+    --accent-foreground: 265 85% 5%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 265 40% 20%;
+    --input: 265 40% 15%;
+    --ring: 346 83% 61%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 265 85% 5%;
+    --foreground: 265 15% 95%;
+    --card: 265 60% 8%;
+    --card-foreground: 265 15% 95%;
+    --popover: 265 70% 6%;
+    --popover-foreground: 265 15% 95%;
+    --primary: 346 83% 61%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 262 30% 18%;
+    --secondary-foreground: 265 15% 95%;
+    --muted: 265 40% 15%;
+    --muted-foreground: 265 15% 75%;
+    --accent: 270 60% 70%;
+    --accent-foreground: 265 85% 5%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 265 40% 20%;
+    --input: 265 40% 15%;
+    --ring: 346 83% 61%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  /* Fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInFromLeft 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInFromRight 0.6s ease-out forwards;
+  }
+
+  /* Glassmorphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card {
+    background: rgba(26, 20, 37, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #ea4b71 0%, #9b87f5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animated gradient background */
+  .gradient-bg {
+    background: linear-gradient(135deg, #0a0612 0%, #1a1425 50%, #0a0612 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* Hover glow effect */
+  .hover-glow {
+    transition: all 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 30px rgba(234, 75, 113, 0.4);
+    transform: translateY(-2px);
+  }
+}
