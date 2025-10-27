@@ -5,19 +5,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Download, Share2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { MarketStructureCard } from '@/components/smc/market-structure-card';
 import { OrderBlockCard } from '@/components/smc/order-block-card';
 import { FVGCard } from '@/components/smc/fvg-card';
 import { LiquidityCard } from '@/components/smc/liquidity-card';
 import { PremiumDiscountCard } from '@/components/smc/premium-discount-card';
 import { TradeSetupCard } from '@/components/smc/trade-setup-card';
+import { ShareButton } from '@/components/analysis/share-button';
 
 export default async function AnalysisDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  // Await params as required by Next.js 15
+  const { id } = await params;
+
   const supabase = await createClient();
 
   const {
@@ -32,7 +36,7 @@ export default async function AnalysisDetailPage({
   const { data: analysis, error } = await supabase
     .from('analyses')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', user.id)
     .single();
 
@@ -62,16 +66,7 @@ export default async function AnalysisDetailPage({
             </p>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </div>
+          <ShareButton analysisId={id} />
         </div>
       </div>
 

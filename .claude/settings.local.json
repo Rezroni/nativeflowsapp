@@ -26,7 +26,8 @@
       "mcp__playwright__browser_snapshot",
       "mcp__chrome-devtools__evaluate_script",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

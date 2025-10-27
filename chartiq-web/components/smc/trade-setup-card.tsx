@@ -15,21 +15,31 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
   const isNeutral = setup.bias === 'neutral';
 
   const validityColors = {
-    high: 'bg-green-100 text-green-800 border-green-300',
-    medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    low: 'bg-red-100 text-red-800 border-red-300',
+    high: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    medium: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    low: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
   };
 
   return (
-    <Card className="transition-all hover:shadow-md border-2">
+    <Card className={cn(
+      'transition-all hover:shadow-xl border-2',
+      isBullish ? 'smc-bullish-bg hover:border-emerald-500/60' : isNeutral ? 'smc-neutral-bg hover:border-slate-500/60' : 'smc-bearish-bg hover:border-rose-500/60'
+    )}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Target className="h-4 w-4 text-blue-500" />
-            <span>Trade Setup</span>
+            <Target className="h-5 w-5 text-blue-400" />
+            <span className="font-semibold">Trade Setup</span>
           </CardTitle>
           <Badge
-            variant={isBullish ? 'default' : isNeutral ? 'secondary' : 'destructive'}
+            className={cn(
+              'border',
+              isBullish
+                ? 'bg-emerald-600/80 border-emerald-500'
+                : isNeutral
+                  ? 'bg-slate-600/80 border-slate-500'
+                  : 'bg-rose-600/80 border-rose-500'
+            )}
           >
             {setup.bias.toUpperCase()}
           </Badge>
@@ -39,50 +49,69 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
         {/* Validity */}
         <div
           className={cn(
-            'p-3 rounded-lg border text-center',
+            'p-4 rounded-lg border-2 text-center',
             validityColors[setup.validity]
           )}
         >
-          <p className="text-xs font-medium mb-1">Setup Validity</p>
-          <p className="text-lg font-bold uppercase">{setup.validity}</p>
+          <p className="text-xs font-medium mb-2">Setup Validity</p>
+          <p className="text-2xl font-bold uppercase">{setup.validity}</p>
         </div>
 
         {/* Entry Details */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-muted">
+          <div className={cn(
+            'p-3 rounded-lg border-2',
+            isBullish ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-rose-500/5 border-rose-500/20'
+          )}>
             <p className="text-xs text-muted-foreground mb-1">Entry Type</p>
-            <p className="text-sm font-semibold uppercase">{setup.entryType}</p>
+            <p className={cn(
+              'text-sm font-bold uppercase',
+              isBullish ? 'text-emerald-300' : 'text-rose-300'
+            )}>
+              {setup.entryType}
+            </p>
           </div>
-          <div className="p-3 rounded-lg bg-muted">
+          <div className={cn(
+            'p-3 rounded-lg border-2',
+            isBullish ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-rose-500/5 border-rose-500/20'
+          )}>
             <p className="text-xs text-muted-foreground mb-1">Entry Price</p>
-            <p className="text-sm font-semibold">{setup.entry.toFixed(2)}</p>
+            <p className={cn(
+              'text-sm font-bold',
+              isBullish ? 'text-emerald-300' : 'text-rose-300'
+            )}>
+              {setup.entry.toFixed(2)}
+            </p>
           </div>
         </div>
 
         {/* Stop Loss */}
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-          <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <p className="text-xs font-medium text-red-700">Stop Loss</p>
+        <div className="p-4 rounded-lg bg-rose-500/10 border-2 border-rose-500/30">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-5 w-5 text-rose-400" />
+            <p className="text-xs font-semibold text-rose-400">Stop Loss</p>
           </div>
-          <p className="text-sm font-bold text-red-700">
+          <p className="text-xl font-bold text-rose-300">
             {setup.stopLoss.toFixed(2)}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-2">
             Risk: {Math.abs(setup.entry - setup.stopLoss).toFixed(2)} pts
           </p>
         </div>
 
         {/* Take Profit Targets */}
-        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-          <p className="text-xs font-medium text-green-700 mb-2">
-            Take Profit Targets
-          </p>
-          <div className="space-y-1">
+        <div className="p-4 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/30">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="h-5 w-5 text-emerald-400" />
+            <p className="text-xs font-semibold text-emerald-400">
+              Take Profit Targets
+            </p>
+          </div>
+          <div className="space-y-2">
             {setup.takeProfit.map((tp, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">TP{index + 1}:</span>
-                <span className="text-sm font-semibold text-green-700">
+              <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-emerald-500/5">
+                <span className="text-xs text-muted-foreground font-medium">TP{index + 1}:</span>
+                <span className="text-sm font-bold text-emerald-300">
                   {tp.toFixed(2)}
                 </span>
               </div>
@@ -91,32 +120,32 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
         </div>
 
         {/* Risk-Reward */}
-        <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-xs text-muted-foreground mb-1">Risk-Reward Ratio</p>
-          <p className="text-2xl font-bold text-blue-700">
+        <div className="p-4 rounded-lg bg-blue-500/10 border-2 border-blue-500/30 text-center">
+          <p className="text-xs text-muted-foreground mb-2">Risk-Reward Ratio</p>
+          <p className="text-3xl font-bold text-blue-400">
             1:{setup.riskReward.toFixed(2)}
           </p>
         </div>
 
         {/* Position Size */}
-        <div className="p-3 rounded-lg bg-muted">
+        <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/50">
           <p className="text-xs text-muted-foreground mb-1">
             Suggested Position Size
           </p>
-          <p className="text-sm font-semibold uppercase">{setup.positionSize}</p>
+          <p className="text-sm font-bold uppercase">{setup.positionSize}</p>
         </div>
 
         {/* Confluences */}
         <div>
-          <p className="text-xs font-medium mb-2">Confluences</p>
-          <div className="space-y-1">
+          <p className="text-xs font-semibold mb-3 text-blue-400">Confluences</p>
+          <div className="space-y-2">
             {setup.confluences.map((confluence, index) => (
               <div
                 key={index}
-                className="flex items-start gap-2 text-xs p-2 rounded bg-muted"
+                className="flex items-start gap-3 text-xs p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20"
               >
-                <span className="text-green-600">✓</span>
-                <span>{confluence}</span>
+                <span className="text-emerald-400 font-bold text-base">✓</span>
+                <span className="text-foreground/90">{confluence}</span>
               </div>
             ))}
           </div>
@@ -124,9 +153,9 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
 
         {/* Warning for low validity */}
         {setup.validity === 'low' && (
-          <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-xs">
-            <p className="font-medium text-yellow-800 mb-1">⚠️ Caution</p>
-            <p className="text-yellow-700">
+          <div className="p-4 rounded-lg smc-warning-bg border-2 border-amber-500/30 text-sm">
+            <p className="font-bold smc-warning-text mb-2">⚠️ Caution</p>
+            <p className="text-xs text-muted-foreground">
               This setup has low validity. Consider waiting for better
               confirmation or reducing position size.
             </p>

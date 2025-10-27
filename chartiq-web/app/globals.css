@@ -63,6 +63,51 @@
 }
 
 @layer utilities {
+  /* SMC Analysis Color Classes */
+  .smc-bullish-bg {
+    @apply bg-emerald-500/10 border-emerald-500/30;
+  }
+
+  .smc-bullish-text {
+    @apply text-emerald-400;
+  }
+
+  .smc-bullish-border {
+    @apply border-emerald-500/30;
+  }
+
+  .smc-bearish-bg {
+    @apply bg-rose-500/10 border-rose-500/30;
+  }
+
+  .smc-bearish-text {
+    @apply text-rose-400;
+  }
+
+  .smc-bearish-border {
+    @apply border-rose-500/30;
+  }
+
+  .smc-neutral-bg {
+    @apply bg-slate-500/10 border-slate-500/30;
+  }
+
+  .smc-info-bg {
+    @apply bg-blue-500/10 border-blue-500/30;
+  }
+
+  .smc-info-text {
+    @apply text-blue-400;
+  }
+
+  .smc-warning-bg {
+    @apply bg-amber-500/10 border-amber-500/30;
+  }
+
+  .smc-warning-text {
+    @apply text-amber-400;
+  }
+
   /* Fade in animation */
   @keyframes fadeIn {
     from {
