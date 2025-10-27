@@ -191,14 +191,14 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+          <div className="grid gap-8 md:grid-cols-2 max-w-5xl mx-auto">
             <div className="pricing-card">
               <PricingCard
                 name="Free Trial"
                 price="$0"
-                period="7 days"
+                period="3 days"
                 features={[
-                  "10 chart analyses",
+                  "5 chart analyses",
                   "Basic Smart Money Concepts",
                   "Email support",
                   "Educational resources"
@@ -210,7 +210,7 @@ export default function HomePage() {
             <div className="pricing-card">
               <PricingCard
                 name="Pro"
-                price="$29"
+                price="$59"
                 period="per month"
                 features={[
                   "Unlimited chart analyses",
@@ -218,28 +218,13 @@ export default function HomePage() {
                   "Priority support",
                   "Advanced indicators",
                   "Trade journal",
-                  "Market alerts"
+                  "Market alerts",
+                  "API access",
+                  "Custom training"
                 ]}
                 cta="Get Started"
                 href="/signup"
                 featured
-              />
-            </div>
-            <div className="pricing-card">
-              <PricingCard
-                name="Enterprise"
-                price="Custom"
-                period="contact us"
-                features={[
-                  "Everything in Pro",
-                  "Custom indicators",
-                  "API access",
-                  "Dedicated support",
-                  "Team collaboration",
-                  "Custom training"
-                ]}
-                cta="Contact Sales"
-                href="/contact"
               />
             </div>
           </div>

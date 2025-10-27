@@ -1,331 +1,278 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Check, Zap, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { getStripe } from '@/lib/stripe/client';
-import { toast } from 'sonner';
+import { useState } from 'react'
+import { Check, Zap, TrendingUp, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const plans = [
   {
     id: 'free',
     name: 'Free Trial',
     description: 'Perfect for testing the waters',
-    price: { monthly: 0, annual: 0 },
-    priceIds: { monthly: null, annual: null },
+    price: 0,
     features: [
-      '5 chart analyses per month',
-      'Basic SMC analysis',
-      'Order blocks & FVGs',
-      'Market structure insights',
+      '5 chart analyses',
+      'Basic Smart Money Concepts',
       'Email support',
-      'Analysis history',
+      'Educational resources',
     ],
-    limits: '5 analyses/month',
+    limits: '5 analyses total',
+    duration: '3-day trial',
     cta: 'Current Plan',
     popular: false,
     icon: Zap,
   },
   {
-    id: 'pro_monthly',
+    id: 'pro',
     name: 'Pro',
     description: 'For serious traders',
-    price: { monthly: 29, annual: 290 },
-    priceIds: {
-      monthly: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID,
-      annual: process.env.NEXT_PUBLIC_STRIPE_PRO_ANNUAL_PRICE_ID,
-    },
+    price: 59,
     features: [
-      '100 chart analyses per month',
-      'Advanced SMC analysis',
-      'All technical indicators',
-      'Trade setup recommendations',
-      'Premium & discount zones',
-      'Liquidity analysis',
+      'Unlimited chart analyses',
+      'Advanced Smart Money Concepts',
       'Priority support',
-      'Export analysis as PDF',
-      'Compare with AI feature',
+      'Advanced indicators',
+      'Trade journal',
+      'Market alerts',
+      'API access',
+      'Custom training',
     ],
-    limits: '100 analyses/month',
+    limits: 'Unlimited analyses',
+    duration: 'per month',
     cta: 'Upgrade to Pro',
     popular: true,
     icon: TrendingUp,
   },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    description: 'For professional teams',
-    price: { monthly: 999, annual: 9990 },
-    priceIds: {
-      monthly: process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_PRICE_ID,
-      annual: process.env.NEXT_PUBLIC_STRIPE_ENTERPRISE_PRICE_ID,
-    },
-    features: [
-      'Unlimited chart analyses',
-      'Everything in Pro',
-      'API access',
-      'White-label options',
-      'Custom integrations',
-      'Dedicated account manager',
-      'SLA guarantee',
-      'Team collaboration tools',
-      'Advanced analytics',
-      'Custom training sessions',
-    ],
-    limits: 'Unlimited',
-    cta: 'Contact Sales',
-    popular: false,
-    icon: Sparkles,
-  },
-];
+]
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [selectedCrypto, setSelectedCrypto] = useState<string>('usdttrc20')
+  const router = useRouter()
 
-  const handleSubscribe = async (planId: string, priceId: string | null | undefined) => {
-    if (!priceId) {
-      toast.error('This plan is not available for purchase yet');
-      return;
+  const handleSubscribe = async (planId: string) => {
+    if (planId === 'free') {
+      toast.info('You are currently on the free trial plan')
+      return
     }
 
-    if (planId === 'enterprise') {
-      toast.info('Please contact sales for Enterprise pricing');
-      return;
-    }
-
-    setLoadingPlan(planId);
+    setLoadingPlan(planId)
 
     try {
-      const response = await fetch('/api/checkout', {
+      // Create payment with NOWPayments
+      const response = await fetch('/api/payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId,
           planId,
+          payCurrency: selectedCrypto,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.error || 'Failed to create payment')
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = await getStripe();
-      if (!stripe) {
-        throw new Error('Failed to load Stripe');
-      }
-
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: data.sessionId,
-      });
-
-      if (error) {
-        throw error;
+      // Redirect to payment URL
+      if (data.payment.payment_url) {
+        window.location.href = data.payment.payment_url
+      } else {
+        toast.success('Payment created! Redirecting...')
+        router.push(`/checkout/payment?id=${data.payment.payment_id}`)
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to start checkout');
+      console.error('Subscription error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to start subscription')
     } finally {
-      setLoadingPlan(null);
+      setLoadingPlan(null)
     }
-  };
+  }
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-7xl">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Choose Your Plan
-        </h1>
-        <p className="text-xl text-muted-foreground mb-8">
-          Start analyzing charts with AI-powered Smart Money Concepts
-        </p>
-
-        {/* Billing Toggle */}
-        <div className="inline-flex items-center gap-3 p-1 bg-muted rounded-lg">
-          <button
-            onClick={() => setBillingCycle('monthly')}
-            className={cn(
-              'px-6 py-2 rounded-md font-medium transition-all',
-              billingCycle === 'monthly'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingCycle('annual')}
-            className={cn(
-              'px-6 py-2 rounded-md font-medium transition-all',
-              billingCycle === 'annual'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Annual
-            <Badge variant="secondary" className="ml-2">
-              Save 17%
-            </Badge>
-          </button>
+    <div className="min-h-screen gradient-bg">
+      <div className="container py-24">
+        {/* Header */}
+        <div className="mx-auto max-w-3xl text-center mb-16">
+          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl">
+            Simple, <span className="gradient-text">Transparent Pricing</span>
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Choose the plan that works best for you. Pay with cryptocurrency.
+          </p>
         </div>
-      </div>
 
-      {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-        {plans.map((plan) => {
-          const Icon = plan.icon;
-          const price = billingCycle === 'annual' ? plan.price.annual : plan.price.monthly;
-          const priceId = billingCycle === 'annual' ? plan.priceIds.annual : plan.priceIds.monthly;
-          const isLoading = loadingPlan === plan.id;
-
-          return (
-            <Card
-              key={plan.id}
-              className={cn(
-                'relative transition-all hover:shadow-lg',
-                plan.popular && 'border-primary border-2 shadow-md'
-              )}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="px-4 py-1">Most Popular</Badge>
-                </div>
-              )}
-
-              <CardHeader className="text-center pb-8 pt-8">
-                <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="mt-6">
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-5xl font-bold">${price}</span>
-                    {plan.id !== 'free' && (
-                      <span className="text-muted-foreground">
-                        /{billingCycle === 'annual' ? 'year' : 'month'}
-                      </span>
-                    )}
-                  </div>
-                  {billingCycle === 'annual' && plan.id !== 'free' && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      ${(price / 12).toFixed(2)}/month billed annually
-                    </p>
+        {/* Cryptocurrency Selector */}
+        <div className="mx-auto max-w-2xl mb-12">
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">Pay with Cryptocurrency</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { value: 'btc', label: 'BTC' },
+                { value: 'eth', label: 'ETH' },
+                { value: 'usdttrc20', label: 'USDT' },
+                { value: 'ltc', label: 'LTC' }
+              ].map((crypto) => (
+                <button
+                  key={crypto.value}
+                  onClick={() => setSelectedCrypto(crypto.value)}
+                  className={cn(
+                    'px-4 py-3 rounded-xl font-medium transition-all text-center uppercase',
+                    selectedCrypto === crypto.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-background/50 hover:bg-background/80'
                   )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="pb-8">
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-
-              <CardFooter>
-                <Button
-                  onClick={() => handleSubscribe(plan.id, priceId)}
-                  disabled={plan.id === 'free' || isLoading}
-                  className="w-full"
-                  size="lg"
-                  variant={plan.popular ? 'default' : 'outline'}
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    plan.cta
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* FAQ Section */}
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Frequently Asked Questions
-        </h2>
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Can I cancel anytime?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Yes! You can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>What happens when I reach my limit?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Once you reach your monthly analysis limit, you'll need to upgrade your plan or wait until the next billing cycle. Your limit resets on your renewal date.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Do you offer refunds?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                We offer a 14-day money-back guarantee. If you're not satisfied with ChartIQ AI, contact us within 14 days of purchase for a full refund.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Can I upgrade or downgrade my plan?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Yes! You can upgrade or downgrade at any time. When upgrading, you'll be charged the prorated amount immediately. When downgrading, the change takes effect at your next billing cycle.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="mt-16 text-center">
-        <Card className="max-w-2xl mx-auto bg-primary text-primary-foreground">
-          <CardContent className="pt-8 pb-8">
-            <h3 className="text-2xl font-bold mb-4">
-              Still have questions?
-            </h3>
-            <p className="mb-6 opacity-90">
-              Our team is here to help you choose the right plan for your trading needs.
+                  {crypto.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              {selectedCrypto === 'usdttrc20' && 'USDT on Tron Network (TRC20)'}
+              {selectedCrypto === 'btc' && 'Bitcoin'}
+              {selectedCrypto === 'eth' && 'Ethereum'}
+              {selectedCrypto === 'ltc' && 'Litecoin'}
             </p>
-            <Button variant="secondary" size="lg">
-              Contact Sales
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
+          {plans.map((plan) => {
+            const Icon = plan.icon
+            const isLoading = loadingPlan === plan.id
+
+            return (
+              <Card
+                key={plan.id}
+                className={cn(
+                  'relative flex flex-col glass-card border-2 transition-all hover:-translate-y-2',
+                  plan.popular ? 'border-primary hover-glow' : 'border-border'
+                )}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                      Most Popular
+                    </Badge>
+                  </div>
+                )}
+
+                <CardHeader className="pb-8">
+                  <div className="mb-4 inline-flex rounded-xl bg-primary/20 p-3 text-primary w-fit">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-3xl">{plan.name}</CardTitle>
+                  <CardDescription className="text-base">{plan.description}</CardDescription>
+                </CardHeader>
+
+                <CardContent className="flex-1 pb-8">
+                  <div className="mb-8">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-5xl font-bold gradient-text">
+                        ${plan.price}
+                      </span>
+                      <span className="text-muted-foreground">/{plan.duration}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{plan.limits}</p>
+                  </div>
+
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+
+                <CardFooter>
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={isLoading || plan.id === 'free'}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      plan.cta
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mx-auto max-w-3xl mt-20">
+          <h2 className="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="glass-card rounded-2xl p-8 space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">What cryptocurrencies do you accept?</h3>
+              <p className="text-muted-foreground">
+                We accept Bitcoin (BTC), Ethereum (ETH), USDT (TRC20), Litecoin (LTC), and 150+ other
+                cryptocurrencies through our payment provider NOWPayments. Select your preferred crypto above.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">How long is the free trial?</h3>
+              <p className="text-muted-foreground">
+                The free trial lasts for 3 days and includes 5 chart analyses to help you get started
+                with our platform.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Can I cancel anytime?</h3>
+              <p className="text-muted-foreground">
+                Yes! Your Pro subscription is month-to-month. Simply cancel before your next billing
+                cycle to avoid being charged.
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">What happens after payment?</h3>
+              <p className="text-muted-foreground">
+                After successful payment confirmation, your account will be upgraded to Pro immediately
+                and you'll have unlimited access to all features.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="mx-auto max-w-3xl mt-16 text-center glass-card rounded-2xl p-12">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Trade <span className="gradient-text">Smarter?</span>
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Start your journey with our Pro plan and unlock unlimited chart analyses
+          </p>
+          <Button size="lg" onClick={() => handleSubscribe('pro')} disabled={loadingPlan === 'pro'}>
+            {loadingPlan === 'pro' ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              'Get Started Now'
+            )}
+          </Button>
+        </div>
       </div>
     </div>
-  );
+  )
 }

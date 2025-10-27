@@ -229,42 +229,43 @@ chartiq-web/
 
 ---
 
-## ✅ Phase 4: Monetization - COMPLETED
+## ✅ Phase 4: Monetization - COMPLETED (NOWPayments Integration)
 
 ### ✅ What We've Built
 
-#### 1. Stripe Integration ✓
-- ✅ Client-side Stripe setup (`lib/stripe/client.ts`)
-- ✅ Server-side Stripe configuration (`lib/stripe/server.ts`)
-- ✅ Product definitions and pricing (Free, Pro Monthly, Pro Annual, Enterprise)
+#### 1. NOWPayments Integration ✓
+- ✅ Client library setup (`lib/nowpayments/client.ts`)
+- ✅ Pricing configuration (`lib/nowpayments/pricing.ts`)
+- ✅ Product definitions and pricing (Free Trial: 3 days, Pro: $59/month)
 - ✅ Plan limits configuration
-- ✅ Checkout session API (`app/api/checkout/route.ts`)
-  - Creates Stripe customers automatically
-  - Handles subscription creation
-  - Prorated billing support
-  - Promotion codes enabled
-- ✅ Webhook handler (`app/api/webhooks/stripe/route.ts`)
-  - Checkout completion
-  - Subscription updates
-  - Subscription cancellation
-  - Payment success/failure
+  - Free Trial: 5 analyses total, 3-day duration
+  - Pro: Unlimited analyses
+- ✅ Payment creation API (`app/api/payment/create/route.ts`)
+  - Creates cryptocurrency payments
+  - Supports multiple cryptocurrencies (BTC, ETH, USDT, LTC, etc.)
+  - Handles payment creation
   - Database synchronization
-- ✅ Customer portal API (`app/api/customer-portal/route.ts`)
-  - Billing management
-  - Subscription changes
-  - Payment method updates
-  - Invoice history
+- ✅ IPN webhook handler (`app/api/payment/ipn/route.ts`)
+  - Payment status updates
+  - Subscription activation
+  - Subscription cancellation
+  - Signature verification for security
+  - Database synchronization
+- ✅ Payment status API (`app/api/payment/status/[paymentId]/route.ts`)
+  - Real-time payment status checking
+  - User verification
 
 #### 2. Pricing & Checkout ✓
 - ✅ **Pricing Page** (`app/(app)/pricing/page.tsx`)
-  - 3 pricing tiers with feature lists
-  - Monthly/Annual billing toggle
-  - Save 17% annual discount badge
+  - 2 pricing tiers (Free Trial & Pro)
+  - Cryptocurrency payment selection
+  - Supports BTC, ETH, USDT, LTC
+  - Pro plan at $59/month
+  - Free trial: 3 days, 5 analyses
   - Popular plan highlighting
   - Interactive upgrade buttons
   - Loading states during checkout
-  - FAQ section
-  - CTA for enterprise sales
+  - FAQ section about crypto payments
 
 - ✅ **Checkout Success Page** (`app/(app)/checkout/success/page.tsx`)
   - Success confirmation
@@ -293,7 +294,10 @@ chartiq-web/
 
 #### 4. Server Actions ✓
 - ✅ Subscription management action (`actions/subscription.ts`)
-- ✅ Customer portal session creation
+  - Cancel subscription
+  - Get subscription status
+  - Check active subscription
+  - Get plan limits
 - ✅ Integration with Settings page
 
 ---
@@ -322,7 +326,7 @@ chartiq-web/
 - [ ] Vercel deployment
 - [ ] Environment variables
 - [ ] Domain setup
-- [ ] Stripe production mode
+- [ ] NOWPayments production IPN endpoint setup
 - [ ] Monitoring setup
 
 ---
@@ -341,11 +345,11 @@ Before continuing development, you need to set up:
    - Get API key
    - Enable GPT-4 Vision access
 
-3. **Stripe** (https://stripe.com)
+3. **NOWPayments** (https://nowpayments.io)
    - Create account
-   - Get publishable and secret keys
-   - Create products (monthly/annual)
-   - Set up webhook endpoint
+   - Get API key
+   - Get IPN secret key
+   - Configure IPN callback URL in dashboard
 
 4. **Create `.env.local`**
    ```bash
@@ -388,27 +392,28 @@ To continue development:
 
 ## 🎯 What's New in Phase 4
 
-### Monetization Features
-- 💳 **Stripe Integration**: Complete payment processing with webhooks
-- 💰 **Pricing Page**: 3-tier pricing with monthly/annual toggle
-- ✅ **Checkout Flow**: Seamless upgrade experience with success page
+### Monetization Features (NOWPayments)
+- 💎 **NOWPayments Integration**: Complete cryptocurrency payment processing with IPN webhooks
+- 💰 **Pricing Page**: 2-tier pricing (Free Trial & Pro at $59/month)
+- 🪙 **Crypto Support**: Accepts BTC, ETH, USDT, LTC, and 150+ cryptocurrencies
+- ✅ **Checkout Flow**: Seamless crypto payment experience
 - 📊 **Usage Tracking**: Real-time monitoring with limits enforcement
-- 🎟️ **Subscription Management**: Customer portal for plan changes
+- 🎟️ **Subscription Management**: Automated activation via IPN callbacks
 - 🔔 **Upgrade Prompts**: Smart banners and trial countdown
 
-### Key Files Added
+### Key Files Added/Modified
 ```
-lib/stripe/
-├── client.ts          # Client-side Stripe
-└── server.ts          # Server-side Stripe
+lib/nowpayments/
+├── client.ts          # NOWPayments API client
+└── pricing.ts         # Pricing configuration
 
-app/api/
-├── checkout/route.ts          # Checkout sessions
-├── customer-portal/route.ts   # Billing portal
-└── webhooks/stripe/route.ts   # Webhook handler
+app/api/payment/
+├── create/route.ts              # Payment creation
+├── ipn/route.ts                 # IPN webhook handler
+└── status/[paymentId]/route.ts  # Payment status check
 
 app/(app)/
-├── pricing/page.tsx
+├── pricing/page.tsx     # Updated for crypto payments
 └── checkout/
     └── success/page.tsx
 
@@ -418,7 +423,10 @@ components/subscription/
 └── trial-countdown.tsx
 
 actions/
-└── subscription.ts    # Subscription actions
+└── subscription.ts      # Updated subscription actions
+
+supabase/migrations/
+└── 20250127_nowpayments_migration.sql  # Database schema updates
 ```
 
 ---
@@ -432,16 +440,15 @@ actions/
 
 ### Required Environment Variables for Phase 4
 ```env
-# Stripe (required for payments)
-STRIPE_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRO_MONTHLY_PRICE_ID=price_...
-STRIPE_PRO_ANNUAL_PRICE_ID=price_...
-STRIPE_ENTERPRISE_PRICE_ID=price_...
+# NOWPayments (required for payments)
+NOWPAYMENTS_API_KEY=your_api_key
+NOWPAYMENTS_IPN_SECRET=your_ipn_secret_key
 
 # Supabase (required for webhooks)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3005
 ```
 
 ---
@@ -479,12 +486,12 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - Settings page
 
 **Phase 4: Monetization** ✓
-- Complete Stripe integration
-- 3-tier pricing page
-- Checkout flow with webhooks
-- Customer portal
+- Complete NOWPayments integration
+- 2-tier pricing page (Free Trial & Pro $59/month)
+- Cryptocurrency payment support (BTC, ETH, USDT, LTC, 150+)
+- IPN webhook integration
 - Subscription management
-- Usage tracking & limits
+- Usage tracking & limits (Free: 5 analyses/3 days, Pro: Unlimited)
 - Upgrade prompts & banners
 
 ### 🚀 Next: Phase 5 - Polish & Deploy (10% remaining)
