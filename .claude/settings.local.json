@@ -25,7 +25,8 @@
       "mcp__chrome-devtools__resize_page",
       "mcp__playwright__browser_snapshot",
       "mcp__chrome-devtools__evaluate_script",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []

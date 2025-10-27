@@ -231,7 +231,7 @@ export default function HomePage() {
 
           <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
             <TestimonialCard
-              quote="ChartIQ AI has completely transformed how I analyze charts. The Smart Money Concepts explanations are invaluable."
+              quote="Nativeflows has completely transformed how I analyze charts. The Smart Money Concepts explanations are invaluable."
               author="Sarah Johnson"
               role="Day Trader"
               rating={5}

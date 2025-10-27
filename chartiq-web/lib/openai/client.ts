@@ -8,5 +8,5 @@ export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const VISION_MODEL = 'gpt-4-vision-preview';
-export const GPT_MODEL = 'gpt-4-turbo-preview';
+export const VISION_MODEL = 'gpt-4o'; // Latest GPT-4 with vision
+export const GPT_MODEL = 'gpt-4o'; // Latest GPT-4 model

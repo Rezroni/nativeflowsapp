@@ -68,7 +68,7 @@ export default async function DashboardPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="text-3xl font-bold mb-2 gradient-text">
           Welcome back, {profile?.full_name || user.email?.split('@')[0]}!
         </h1>
         <p className="text-muted-foreground">
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Analyses */}
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Total Analyses
@@ -95,7 +95,7 @@ export default async function DashboardPage() {
         </Card>
 
         {/* This Month */}
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">This Month</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Current Plan */}
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Current Plan</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
@@ -125,7 +125,7 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Last Analysis */}
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Last Analysis</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
@@ -146,7 +146,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Usage Progress */}
-      <Card className="mb-8">
+      <Card className="mb-8 glass-card">
         <CardHeader>
           <CardTitle>Monthly Usage</CardTitle>
         </CardHeader>
@@ -181,7 +181,7 @@ export default async function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card className="border-2 border-primary">
+        <Card className="border-2 border-primary glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader>
             <CardTitle>Analyze New Chart</CardTitle>
           </CardHeader>
@@ -191,14 +191,14 @@ export default async function DashboardPage() {
               insights
             </p>
             <Link href="/analyze">
-              <Button className="w-full">
+              <Button className="w-full hover-glow">
                 Start Analysis <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader>
             <CardTitle>View History</CardTitle>
           </CardHeader>
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Analyses */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Recent Analyses</CardTitle>

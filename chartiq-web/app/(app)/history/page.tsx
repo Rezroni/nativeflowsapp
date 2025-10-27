@@ -27,7 +27,7 @@ export default async function HistoryPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Analysis History</h1>
+        <h1 className="text-3xl font-bold mb-2 gradient-text">Analysis History</h1>
         <p className="text-muted-foreground">
           View and manage your past chart analyses
         </p>
@@ -35,7 +35,7 @@ export default async function HistoryPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">
@@ -46,7 +46,7 @@ export default async function HistoryPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">This Month</p>
@@ -66,7 +66,7 @@ export default async function HistoryPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">This Week</p>
@@ -89,7 +89,7 @@ export default async function HistoryPage() {
       {analyses && analyses.length > 0 ? (
         <div className="space-y-4">
           {analyses.map((analysis) => (
-            <Card key={analysis.id} className="hover:shadow-md transition-shadow">
+            <Card key={analysis.id} className="glass-card hover-glow transition-all hover:-translate-y-1">
               <CardContent className="p-6">
                 <div className="flex items-center gap-6">
                   {/* Thumbnail */}
@@ -145,7 +145,7 @@ export default async function HistoryPage() {
 
                       {/* Action Button */}
                       <Link href={`/analysis/${analysis.id}`}>
-                        <Button>
+                        <Button className="hover-glow">
                           View Details <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </Link>
@@ -157,7 +157,7 @@ export default async function HistoryPage() {
           ))}
         </div>
       ) : (
-        <Card>
+        <Card className="glass-card">
           <CardContent className="py-16">
             <div className="text-center">
               <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

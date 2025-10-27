@@ -1,4 +1,4 @@
-# ChartIQ AI - AI Trading Chart Analysis Web App
+# Nativeflows - AI Trading Chart Analysis Web App
 
 An AI-powered trading chart analysis web application using GPT-4 Vision and Smart Money Concepts (SMC) methodology.
 
