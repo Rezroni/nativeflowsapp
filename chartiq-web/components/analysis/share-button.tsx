@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Share2, Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,8 +16,14 @@ interface ShareButtonProps {
 
 export function ShareButton({ analysisId }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
 
-  const shareUrl = `${window.location.origin}/analysis/${analysisId}`;
+  // Set share URL on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(`${window.location.origin}/analysis/${analysisId}`);
+    }
+  }, [analysisId]);
 
   const handleCopyLink = async () => {
     try {
@@ -31,7 +37,7 @@ export function ShareButton({ analysisId }: ShareButtonProps) {
   };
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: 'Chart Analysis',

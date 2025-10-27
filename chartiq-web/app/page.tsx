@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Disclaimer } from '@/components/common/disclaimer'
+import { SocialProof } from '@/components/common/social-proof'
+import { HomeAnimations } from '@/components/common/home-animations'
 import {
   TrendingUp,
   Brain,
@@ -20,32 +22,33 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col gradient-bg">
       <Header />
+      <HomeAnimations>
 
       {/* Hero Section */}
       <section className="relative pt-24 pb-20 md:pt-40 md:pb-32 overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="parallax-blob-1 absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl" />
+          <div className="parallax-blob-2 absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
         </div>
 
         <div className="container relative z-10">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm animate-fade-in">
+            <div className="hero-badge mb-8 inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm">
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
               <span className="gradient-text font-semibold">AI-Powered Trading Analysis</span>
             </div>
 
-            <h1 className="mb-8 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl animate-fade-in-up">
+            <h1 className="hero-title mb-8 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl">
               Master Trading with{' '}
               <span className="gradient-text">Nativeflows AI</span>
             </h1>
 
-            <p className="mb-12 text-xl text-muted-foreground md:text-2xl max-w-3xl mx-auto leading-relaxed animate-fade-in">
-              Analyze charts with GPT-4 Vision and Smart Money Concepts. Learn institutional trading strategies and make informed decisions.
+            <p className="hero-description mb-12 text-xl text-muted-foreground md:text-2xl max-w-3xl mx-auto leading-relaxed">
+              Analyze charts with AI Vision and Smart Money Concepts. Learn institutional trading strategies and make informed decisions.
             </p>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center mb-12 animate-fade-in">
+            <div className="hero-buttons flex flex-col gap-4 sm:flex-row sm:justify-center mb-12">
               <Button size="lg" className="group hover-glow text-lg px-8 py-6" asChild>
                 <Link href="/signup">
                   Start Free Trial
@@ -57,7 +60,7 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground animate-fade-in">
+            <div className="hero-features flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
                 <span>No credit card required</span>
@@ -71,13 +74,16 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Social Proof Section */}
+      <SocialProof />
+
       {/* Disclaimer Banner */}
       <Disclaimer variant="banner" />
 
       {/* Features Section */}
       <section id="features" className="py-20 md:py-32 scroll-mt-20">
         <div className="container">
-          <div className="mx-auto max-w-3xl text-center mb-20">
+          <div className="section-heading mx-auto max-w-3xl text-center mb-20">
             <h2 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
               Powerful Features for{' '}
               <span className="gradient-text">Serious Traders</span>
@@ -88,36 +94,48 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <FeatureCard
-              icon={<Brain className="h-7 w-7" />}
-              title="AI Chart Analysis"
-              description="Upload any chart and get instant AI-powered analysis using GPT-4 Vision technology."
-            />
-            <FeatureCard
-              icon={<LineChart className="h-7 w-7" />}
-              title="Smart Money Concepts"
-              description="Learn and apply institutional trading strategies like order blocks, liquidity zones, and market structure."
-            />
-            <FeatureCard
-              icon={<Zap className="h-7 w-7" />}
-              title="Real-Time Insights"
-              description="Get instant feedback on chart patterns, trends, and potential trade setups."
-            />
-            <FeatureCard
-              icon={<Shield className="h-7 w-7" />}
-              title="Risk Management"
-              description="Built-in tools to calculate position sizing, stop losses, and risk-reward ratios."
-            />
-            <FeatureCard
-              icon={<Award className="h-7 w-7" />}
-              title="Educational Focus"
-              description="Learn as you trade with detailed explanations and educational resources."
-            />
-            <FeatureCard
-              icon={<TrendingUp className="h-7 w-7" />}
-              title="Multi-Market Support"
-              description="Analyze stocks, forex, crypto, and commodities with the same powerful tools."
-            />
+            <div className="feature-card">
+              <FeatureCard
+                icon={<Brain className="h-7 w-7" />}
+                title="AI Chart Analysis"
+                description="Upload any chart and get instant AI-powered analysis using GPT-4 Vision technology."
+              />
+            </div>
+            <div className="feature-card">
+              <FeatureCard
+                icon={<LineChart className="h-7 w-7" />}
+                title="Smart Money Concepts"
+                description="Learn and apply institutional trading strategies like order blocks, liquidity zones, and market structure."
+              />
+            </div>
+            <div className="feature-card">
+              <FeatureCard
+                icon={<Zap className="h-7 w-7" />}
+                title="Real-Time Insights"
+                description="Get instant feedback on chart patterns, trends, and potential trade setups."
+              />
+            </div>
+            <div className="feature-card">
+              <FeatureCard
+                icon={<Shield className="h-7 w-7" />}
+                title="Risk Management"
+                description="Built-in tools to calculate position sizing, stop losses, and risk-reward ratios."
+              />
+            </div>
+            <div className="feature-card">
+              <FeatureCard
+                icon={<Award className="h-7 w-7" />}
+                title="Educational Focus"
+                description="Learn as you trade with detailed explanations and educational resources."
+              />
+            </div>
+            <div className="feature-card">
+              <FeatureCard
+                icon={<TrendingUp className="h-7 w-7" />}
+                title="Multi-Market Support"
+                description="Analyze stocks, forex, crypto, and commodities with the same powerful tools."
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -126,7 +144,7 @@ export default function HomePage() {
       <section id="how-it-works" className="py-20 md:py-32 scroll-mt-20 relative">
         <div className="absolute inset-0 bg-secondary/20" />
         <div className="container relative z-10">
-          <div className="mx-auto max-w-3xl text-center mb-20">
+          <div className="section-heading mx-auto max-w-3xl text-center mb-20">
             <h2 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
               How It Works
             </h2>
@@ -136,21 +154,27 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-            <StepCard
-              number="1"
-              title="Upload Your Chart"
-              description="Take a screenshot or upload any trading chart image from your platform."
-            />
-            <StepCard
-              number="2"
-              title="AI Analysis"
-              description="Our AI analyzes the chart using Smart Money Concepts and technical analysis."
-            />
-            <StepCard
-              number="3"
-              title="Get Insights"
-              description="Receive detailed analysis, trade ideas, and educational explanations."
-            />
+            <div className="step-card">
+              <StepCard
+                number="1"
+                title="Upload Your Chart"
+                description="Take a screenshot or upload any trading chart image from your platform."
+              />
+            </div>
+            <div className="step-card">
+              <StepCard
+                number="2"
+                title="AI Analysis"
+                description="Our AI analyzes the chart using Smart Money Concepts and technical analysis."
+              />
+            </div>
+            <div className="step-card">
+              <StepCard
+                number="3"
+                title="Get Insights"
+                description="Receive detailed analysis, trade ideas, and educational explanations."
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -158,7 +182,7 @@ export default function HomePage() {
       {/* Pricing Section */}
       <section id="pricing" className="py-20 md:py-32 scroll-mt-20">
         <div className="container">
-          <div className="mx-auto max-w-3xl text-center mb-20">
+          <div className="section-heading mx-auto max-w-3xl text-center mb-20">
             <h2 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
               Simple, <span className="gradient-text">Transparent Pricing</span>
             </h2>
@@ -168,50 +192,56 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-            <PricingCard
-              name="Free Trial"
-              price="$0"
-              period="7 days"
-              features={[
-                "10 chart analyses",
-                "Basic Smart Money Concepts",
-                "Email support",
-                "Educational resources"
-              ]}
-              cta="Start Free Trial"
-              href="/signup"
-            />
-            <PricingCard
-              name="Pro"
-              price="$29"
-              period="per month"
-              features={[
-                "Unlimited chart analyses",
-                "Advanced Smart Money Concepts",
-                "Priority support",
-                "Advanced indicators",
-                "Trade journal",
-                "Market alerts"
-              ]}
-              cta="Get Started"
-              href="/signup"
-              featured
-            />
-            <PricingCard
-              name="Enterprise"
-              price="Custom"
-              period="contact us"
-              features={[
-                "Everything in Pro",
-                "Custom indicators",
-                "API access",
-                "Dedicated support",
-                "Team collaboration",
-                "Custom training"
-              ]}
-              cta="Contact Sales"
-              href="/contact"
-            />
+            <div className="pricing-card">
+              <PricingCard
+                name="Free Trial"
+                price="$0"
+                period="7 days"
+                features={[
+                  "10 chart analyses",
+                  "Basic Smart Money Concepts",
+                  "Email support",
+                  "Educational resources"
+                ]}
+                cta="Start Free Trial"
+                href="/signup"
+              />
+            </div>
+            <div className="pricing-card">
+              <PricingCard
+                name="Pro"
+                price="$29"
+                period="per month"
+                features={[
+                  "Unlimited chart analyses",
+                  "Advanced Smart Money Concepts",
+                  "Priority support",
+                  "Advanced indicators",
+                  "Trade journal",
+                  "Market alerts"
+                ]}
+                cta="Get Started"
+                href="/signup"
+                featured
+              />
+            </div>
+            <div className="pricing-card">
+              <PricingCard
+                name="Enterprise"
+                price="Custom"
+                period="contact us"
+                features={[
+                  "Everything in Pro",
+                  "Custom indicators",
+                  "API access",
+                  "Dedicated support",
+                  "Team collaboration",
+                  "Custom training"
+                ]}
+                cta="Contact Sales"
+                href="/contact"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -220,7 +250,7 @@ export default function HomePage() {
       <section className="py-20 md:py-32 relative">
         <div className="absolute inset-0 bg-secondary/20" />
         <div className="container relative z-10">
-          <div className="mx-auto max-w-3xl text-center mb-20">
+          <div className="section-heading mx-auto max-w-3xl text-center mb-20">
             <h2 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
               Loved by Traders <span className="gradient-text">Worldwide</span>
             </h2>
@@ -230,24 +260,30 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
-            <TestimonialCard
-              quote="Nativeflows has completely transformed how I analyze charts. The Smart Money Concepts explanations are invaluable."
-              author="Sarah Johnson"
-              role="Day Trader"
-              rating={5}
-            />
-            <TestimonialCard
-              quote="The AI insights are incredibly accurate. It's like having a professional trader analyzing every chart with you."
-              author="Michael Chen"
-              role="Forex Trader"
-              rating={5}
-            />
-            <TestimonialCard
-              quote="Best educational tool I've found for learning institutional trading strategies. Highly recommend!"
-              author="David Martinez"
-              role="Crypto Trader"
-              rating={5}
-            />
+            <div className="testimonial-card">
+              <TestimonialCard
+                quote="Nativeflows has completely transformed how I analyze charts. The Smart Money Concepts explanations are invaluable."
+                author="Sarah Johnson"
+                role="Day Trader"
+                rating={5}
+              />
+            </div>
+            <div className="testimonial-card">
+              <TestimonialCard
+                quote="The AI insights are incredibly accurate. It's like having a professional trader analyzing every chart with you."
+                author="Michael Chen"
+                role="Forex Trader"
+                rating={5}
+              />
+            </div>
+            <div className="testimonial-card">
+              <TestimonialCard
+                quote="Best educational tool I've found for learning institutional trading strategies. Highly recommend!"
+                author="David Martinez"
+                role="Crypto Trader"
+                rating={5}
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -255,14 +291,14 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="py-20 md:py-32">
         <div className="container">
-          <div className="mx-auto max-w-4xl text-center rounded-3xl glass-card p-16 hover-glow">
+          <div className="cta-card mx-auto max-w-4xl text-center rounded-3xl glass-card p-16 hover-glow">
             <h2 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
               Ready to Trade <span className="gradient-text">Smarter?</span>
             </h2>
             <p className="mb-10 text-xl text-muted-foreground max-w-2xl mx-auto">
               Join thousands of traders using AI to improve their trading decisions
             </p>
-            <Button size="lg" className="text-lg px-10 py-7 group animate-glow" asChild>
+            <Button size="lg" className="text-lg px-10 py-7 group" asChild>
               <Link href="/signup">
                 Start Your Free Trial
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -272,6 +308,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      </HomeAnimations>
       <Footer />
     </div>
   )
@@ -287,12 +324,12 @@ function FeatureCard({
   description: string
 }) {
   return (
-    <div className="group rounded-2xl glass-card p-8 transition-all hover:-translate-y-2 hover-glow">
-      <div className="mb-6 inline-flex rounded-xl bg-primary/20 p-4 text-primary group-hover:bg-primary/30 transition-colors">
+    <div className="group rounded-2xl glass-card p-8 transition-all hover:-translate-y-2 hover-glow h-full flex flex-col">
+      <div className="mb-6 inline-flex rounded-xl bg-primary/20 p-4 text-primary group-hover:bg-primary/30 transition-colors w-fit">
         {icon}
       </div>
       <h3 className="mb-4 text-2xl font-bold">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed">{description}</p>
+      <p className="text-muted-foreground leading-relaxed flex-grow">{description}</p>
     </div>
   )
 }
@@ -307,12 +344,12 @@ function StepCard({
   description: string
 }) {
   return (
-    <div className="relative rounded-2xl glass-card p-8 hover-glow transition-all hover:-translate-y-2">
+    <div className="relative rounded-2xl glass-card p-8 hover-glow transition-all hover:-translate-y-2 h-full flex flex-col">
       <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground text-2xl font-bold">
         {number}
       </div>
       <h3 className="mb-4 text-2xl font-bold">{title}</h3>
-      <p className="text-muted-foreground leading-relaxed">{description}</p>
+      <p className="text-muted-foreground leading-relaxed flex-grow">{description}</p>
     </div>
   )
 }
@@ -335,7 +372,7 @@ function PricingCard({
   featured?: boolean
 }) {
   return (
-    <div className={`relative rounded-2xl glass-card p-8 transition-all hover:-translate-y-2 flex flex-col ${featured ? 'border-2 border-primary hover-glow' : 'hover-glow'}`}>
+    <div className={`relative rounded-2xl glass-card p-8 transition-all hover:-translate-y-2 flex flex-col h-full ${featured ? 'border-2 border-primary hover-glow' : 'hover-glow'}`}>
       {featured && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <div className="rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
@@ -362,7 +399,7 @@ function PricingCard({
       </ul>
 
       <Button
-        className={`w-full ${featured ? 'animate-glow' : ''}`}
+        className="w-full"
         variant={featured ? 'default' : 'outline'}
         size="lg"
         asChild
@@ -385,13 +422,13 @@ function TestimonialCard({
   rating: number
 }) {
   return (
-    <div className="rounded-2xl glass-card p-8 hover-glow transition-all hover:-translate-y-2">
+    <div className="rounded-2xl glass-card p-8 hover-glow transition-all hover:-translate-y-2 h-full flex flex-col">
       <div className="mb-6 flex gap-1">
         {Array.from({ length: rating }).map((_, i) => (
           <Star key={i} className="h-5 w-5 fill-primary text-primary" />
         ))}
       </div>
-      <blockquote className="mb-6 text-lg leading-relaxed">
+      <blockquote className="mb-6 text-lg leading-relaxed flex-grow">
         "{quote}"
       </blockquote>
       <div>

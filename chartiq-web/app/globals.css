@@ -202,4 +202,39 @@
     box-shadow: 0 0 30px rgba(234, 75, 113, 0.4);
     transform: translateY(-2px);
   }
+
+  /* Social proof stats animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .social-proof-stat {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .animate-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  /* Fade in from bottom with delay */
+  .animate-fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
+  }
 }

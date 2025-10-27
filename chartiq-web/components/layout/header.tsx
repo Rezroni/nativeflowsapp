@@ -32,10 +32,10 @@ export function Header() {
             Pricing
           </Link>
           <Link
-            href="/#how-it-works"
+            href="/blog"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            How It Works
+            Blog
           </Link>
           <Link
             href="/login"
