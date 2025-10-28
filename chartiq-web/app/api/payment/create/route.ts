@@ -2,9 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createPayment } from '@/lib/nowpayments/client'
 import { getPlanById } from '@/lib/nowpayments/pricing'
+import { rateLimit, RateLimits, createRateLimitHeaders } from '@/lib/rate-limit'
+import { createPaymentSchema, validateRequest } from '@/lib/validation/payment'
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await rateLimit(request, RateLimits.payment)
+    const headers = createRateLimitHeaders(rateLimitResult)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers }
+      )
+    }
+
     const supabase = await createClient()
 
     // Get authenticated user
@@ -14,16 +27,18 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json()
-    const { planId, payCurrency } = body
+    const validation = await validateRequest(createPaymentSchema, body)
 
-    if (!planId) {
-      return NextResponse.json({ error: 'Plan ID is required' }, { status: 400 })
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400, headers })
     }
+
+    const { planId, payCurrency } = validation.data
 
     // Get plan details
     const plan = getPlanById(planId)
@@ -91,9 +106,10 @@ export async function POST(request: NextRequest) {
         payment_url: payment.invoice_url,
         order_id: orderId,
       },
-    })
+    }, { headers })
   } catch (error) {
     console.error('Payment creation error:', error)
+    // Rate limit headers not available in catch, but that's OK for errors
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create payment' },
       { status: 500 }

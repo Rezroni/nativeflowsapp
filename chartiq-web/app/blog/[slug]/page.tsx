@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
@@ -71,11 +72,14 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           </Button>
 
           {post.featured_image_url && (
-            <div className="aspect-video w-full overflow-hidden rounded-2xl mb-8">
-              <img
+            <div className="aspect-video w-full overflow-hidden rounded-2xl mb-8 relative">
+              <Image
                 src={post.featured_image_url}
                 alt={post.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 1024px) 100vw, 1024px"
               />
             </div>
           )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Check, Zap, TrendingUp, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Analytics } from '@/lib/analytics/mixpanel'
 
 const plans = [
   {
@@ -55,6 +56,11 @@ export default function PricingPage() {
   const [selectedCrypto, setSelectedCrypto] = useState<string>('usdttrc20')
   const router = useRouter()
 
+  // Track pricing page view
+  useEffect(() => {
+    Analytics.pricingPageViewed()
+  }, [])
+
   const handleSubscribe = async (planId: string) => {
     if (planId === 'free') {
       toast.info('You are currently on the free trial plan')
@@ -62,6 +68,9 @@ export default function PricingPage() {
     }
 
     setLoadingPlan(planId)
+
+    // Track checkout started
+    Analytics.checkoutStarted(planId, selectedCrypto)
 
     try {
       // Create payment with NOWPayments

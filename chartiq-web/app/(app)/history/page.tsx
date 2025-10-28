@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, BarChart3, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -101,10 +102,12 @@ export default async function HistoryPage() {
                   {/* Thumbnail */}
                   <div className="w-32 h-32 rounded-lg bg-muted relative overflow-hidden flex-shrink-0">
                     {analysis.image_url && (
-                      <img
+                      <Image
                         src={analysis.image_url}
                         alt="Chart"
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="128px"
                       />
                     )}
                   </div>

@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getPaymentStatus } from '@/lib/nowpayments/client'
+import { rateLimit, RateLimits, createRateLimitHeaders } from '@/lib/rate-limit'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { paymentId: string } }
 ) {
   try {
+    // Apply rate limiting
+    const rateLimitResult = await rateLimit(request, RateLimits.api)
+    const headers = createRateLimitHeaders(rateLimitResult)
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers }
+      )
+    }
+
     const supabase = await createClient()
 
     // Get authenticated user
@@ -16,7 +28,7 @@ export async function GET(
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
     }
 
     const { paymentId } = params
@@ -39,7 +51,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       payment: paymentStatus,
-    })
+    }, { headers })
   } catch (error) {
     console.error('Payment status check error:', error)
     return NextResponse.json(

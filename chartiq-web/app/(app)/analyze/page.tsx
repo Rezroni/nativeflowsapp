@@ -10,6 +10,7 @@ import { analyzeChart, uploadChartImage, getUserAnalysisUsage } from '@/actions/
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { Analytics } from '@/lib/analytics/mixpanel';
 
 export default function AnalyzePage() {
   const router = useRouter();
@@ -36,6 +37,8 @@ export default function AnalyzePage() {
   const handleImageSelect = (url: string, file?: File) => {
     setImageUrl(url);
     setImageFile(file || null);
+    // Track chart upload
+    Analytics.chartUploaded(file ? 'file' : 'url');
   };
 
   const handleRemove = () => {
@@ -50,6 +53,10 @@ export default function AnalyzePage() {
     }
 
     setIsAnalyzing(true);
+    const startTime = Date.now();
+
+    // Track analysis started
+    Analytics.analysisStarted();
 
     try {
       let finalImageUrl = imageUrl;
@@ -64,6 +71,7 @@ export default function AnalyzePage() {
 
         if (uploadResult.error) {
           toast.error(uploadResult.error);
+          Analytics.analysisFailed(uploadResult.error);
           setIsAnalyzing(false);
           setIsUploading(false);
           return;
@@ -84,6 +92,7 @@ export default function AnalyzePage() {
 
       if (result.error) {
         toast.error(result.error);
+        Analytics.analysisFailed(result.error);
         // Reload usage to check if limit was reached
         const usageResult = await getUserAnalysisUsage();
         if (usageResult.success) {
@@ -91,6 +100,11 @@ export default function AnalyzePage() {
         }
       } else if (result.success) {
         toast.success('Analysis complete!');
+
+        // Track analysis completed
+        const duration = (Date.now() - startTime) / 1000; // in seconds
+        Analytics.analysisCompleted(duration);
+
         // Reload usage after successful analysis
         const usageResult = await getUserAnalysisUsage();
         if (usageResult.success) {
@@ -101,6 +115,7 @@ export default function AnalyzePage() {
     } catch (error) {
       console.error('Error:', error);
       toast.error('An unexpected error occurred');
+      Analytics.analysisFailed('Unexpected error');
     } finally {
       setIsAnalyzing(false);
       setIsUploading(false);

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
@@ -47,11 +48,13 @@ export default async function BlogPage() {
                 <Link key={post.id} href={`/blog/${post.slug}`}>
                   <Card className="h-full glass-card hover-glow transition-all hover:-translate-y-2 cursor-pointer">
                     {post.featured_image_url && (
-                      <div className="aspect-video w-full overflow-hidden rounded-t-lg">
-                        <img
+                      <div className="aspect-video w-full overflow-hidden rounded-t-lg relative">
+                        <Image
                           src={post.featured_image_url}
                           alt={post.title}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                       </div>
                     )}

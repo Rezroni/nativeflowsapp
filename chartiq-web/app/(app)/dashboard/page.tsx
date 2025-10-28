@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -245,10 +246,12 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded bg-muted relative overflow-hidden">
                       {analysis.image_url && (
-                        <img
+                        <Image
                           src={analysis.image_url}
                           alt="Chart"
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="64px"
                         />
                       )}
                     </div>
