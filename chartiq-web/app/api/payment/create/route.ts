@@ -48,21 +48,23 @@ export async function POST(request: NextRequest) {
     // Create payment with NOWPayments
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3005'
 
-    // Build payment params - only include pay_currency if it's a valid crypto (not usdt when price is USD)
+    // Determine the pay currency and network
+    const payCurrencyLower = payCurrency?.toLowerCase() || 'usdttrc20'
+    const isUSDT = payCurrencyLower.includes('usdt') || payCurrencyLower.includes('bsc')
+
+    // Build payment params
     const paymentParams: any = {
       price_amount: plan.price,
-      price_currency: 'usd',
+      // For USDT payments, both price_currency and pay_currency should be the same to avoid conversion
+      // For other coins, price_currency is usdttrc20 and pay_currency is the target coin
+      price_currency: isUSDT ? payCurrencyLower : 'usdttrc20',
+      pay_currency: payCurrencyLower, // Always specify pay_currency
       order_id: orderId,
       order_description: `${plan.name} - Monthly Subscription`,
       ipn_callback_url: `${baseUrl}/api/payment/ipn`,
       success_url: `${baseUrl}/checkout/success?order_id=${orderId}`,
       cancel_url: `${baseUrl}/pricing`,
       customer_email: profile?.email || user.email,
-    }
-
-    // Only add pay_currency if it's different from price_currency
-    if (payCurrency && payCurrency.toLowerCase() !== 'usd' && payCurrency.toLowerCase() !== 'usdt') {
-      paymentParams.pay_currency = payCurrency.toLowerCase()
     }
 
     const payment = await createPayment(paymentParams)

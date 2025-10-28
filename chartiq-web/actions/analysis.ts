@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { analyzeChartImage } from '@/lib/openai/analyze';
+import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
+import { generateImageContentHash } from '@/lib/utils/image-hash';
 import { redirect } from 'next/navigation';
 
 export async function analyzeChart(formData: FormData) {
@@ -23,12 +25,28 @@ export async function analyzeChart(formData: FormData) {
   }
 
   try {
-    // Check subscription and usage limits
+    // Get user's subscription tier from profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', user.id)
+      .single();
+
+    const tier = (profile?.subscription_tier as 'free' | 'pro') || 'free';
+
+    // Get subscription for trial check
     const { data: subscription } = await supabase
       .from('subscriptions')
-      .select('*')
+      .select('status, trial_end')
       .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
+
+    // Check if user is in trial
+    const inTrial = subscription?.status === 'trialing' &&
+      subscription?.trial_end &&
+      new Date(subscription.trial_end) > new Date();
 
     // Calculate current month's usage
     const startOfMonth = new Date();
@@ -41,32 +59,102 @@ export async function analyzeChart(formData: FormData) {
       .eq('user_id', user.id)
       .gte('created_at', startOfMonth.toISOString());
 
-    const planLimits = {
-      free: 5,
-      pro_monthly: 100,
-      pro_annual: 100,
-      enterprise: 999999,
-    };
+    const FREE_LIMIT = 5;
+    const monthlyCount = count || 0;
 
-    const currentPlan = subscription?.plan_id || 'free';
-    const limit = planLimits[currentPlan as keyof typeof planLimits] || 5;
-
-    if (count && count >= limit) {
+    // Check usage limits for free tier
+    if (tier === 'free' && monthlyCount >= FREE_LIMIT) {
       return {
-        error: `You've reached your monthly limit of ${limit} analyses. Please upgrade your plan.`,
+        error: `Monthly analysis limit reached (${FREE_LIMIT} analyses). Please upgrade to Pro for unlimited analyses.`,
       };
     }
 
-    // Perform analysis
-    const analysisResult = await analyzeChartImage(imageUrl, additionalContext);
+    // Generate image hash for duplicate detection
+    console.log('Generating image hash for duplicate detection...');
+    const imageHash = await generateImageContentHash(imageUrl);
+    console.log(`Image hash generated: ${imageHash.slice(0, 16)}...`);
 
-    // Save to database
+    // Check if we have a cached analysis for this exact image
+    const { data: cachedAnalyses } = await supabase
+      .from('analyses')
+      .select('*')
+      .eq('chart_image_hash', imageHash)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (cachedAnalyses && cachedAnalyses.length > 0) {
+      const cachedAnalysis = cachedAnalyses[0];
+      console.log(`✓ Cache hit! Returning existing analysis from ${new Date(cachedAnalysis.created_at).toLocaleString()}`);
+
+      // Return the cached analysis without counting against the limit
+      // But still save a new record for this user to track their request
+      const { data: savedAnalysis, error: saveError } = await supabase
+        .from('analyses')
+        .insert({
+          user_id: user.id,
+          image_url: imageUrl,
+          chart_image_hash: imageHash,
+          analysis_data: cachedAnalysis.analysis_data,
+          cache_hit: true,
+          metadata: {
+            ...cachedAnalysis.metadata,
+            cacheHit: true,
+            originalAnalysisId: cachedAnalysis.id,
+            originalAnalysisDate: cachedAnalysis.created_at,
+          },
+        })
+        .select()
+        .single();
+
+      if (saveError) {
+        console.error('Error saving cached analysis reference:', saveError);
+      }
+
+      return {
+        success: true,
+        analysisId: savedAnalysis?.id || cachedAnalysis.id,
+        cached: true,
+        message: 'This chart was analyzed before. Returning cached results for consistency.',
+      };
+    }
+
+    console.log('✗ Cache miss - performing new analysis');
+
+    // Route to appropriate AI provider based on tier
+    let analysisResult;
+    if (tier === 'free') {
+      // Use OpenRouter for free tier users, with fallback to premium models
+      console.log(`Routing free tier user to OpenRouter. Usage: ${monthlyCount}/${FREE_LIMIT}`);
+      try {
+        analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext);
+      } catch (openRouterError) {
+        console.error('OpenRouter failed for free user, falling back to premium models:', openRouterError);
+        console.log('Using premium model as fallback for free user due to OpenRouter unavailability');
+        // Fallback to premium models if OpenRouter completely fails
+        analysisResult = await analyzeChartImage(imageUrl, additionalContext);
+        // Add note in metadata that this was a fallback
+        analysisResult.metadata = {
+          ...analysisResult.metadata,
+          fallbackUsed: true,
+          fallbackReason: 'openrouter_unavailable',
+        };
+      }
+    } else {
+      // Use premium OpenAI/Claude for pro tier users
+      console.log(`Routing pro tier user to OpenAI/Claude`);
+      analysisResult = await analyzeChartImage(imageUrl, additionalContext);
+    }
+
+    // Save to database with image hash
     const { data: savedAnalysis, error: saveError } = await supabase
       .from('analyses')
       .insert({
         user_id: user.id,
         image_url: imageUrl,
+        chart_image_hash: imageHash,
         analysis_data: analysisResult.analysisData,
+        cache_hit: false,
+        metadata: analysisResult.metadata,
       })
       .select()
       .single();

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, BarChart3 } from 'lucide-react';
+import { ArrowRight, BarChart3, ArrowLeft } from 'lucide-react';
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -27,6 +27,12 @@ export default async function HistoryPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
+        <Link href="/dashboard">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
         <h1 className="text-3xl font-bold mb-2 gradient-text">Analysis History</h1>
         <p className="text-muted-foreground">
           View and manage your past chart analyses

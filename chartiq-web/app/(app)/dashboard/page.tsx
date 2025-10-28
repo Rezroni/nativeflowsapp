@@ -118,9 +118,16 @@ export default async function DashboardPage() {
             <div className="text-2xl font-bold capitalize">
               {currentPlan.replace('_', ' ')}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mb-3">
               {limit === 999999 ? 'Unlimited' : `${limit} analyses/month`}
             </p>
+            {currentPlan === 'free' && (
+              <Link href="/pricing">
+                <Button size="sm" className="w-full text-xs">
+                  Upgrade to Pro
+                </Button>
+              </Link>
+            )}
           </CardContent>
         </Card>
 

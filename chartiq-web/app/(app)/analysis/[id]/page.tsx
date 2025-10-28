@@ -59,10 +59,22 @@ export default async function AnalysisDetailPage({
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Chart Analysis</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold">Chart Analysis</h1>
+              {analysis.cache_hit && (
+                <span className="px-3 py-1 text-xs font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full">
+                  Cached Result
+                </span>
+              )}
+            </div>
             <p className="text-muted-foreground">
               Analyzed on {new Date(analysis.created_at).toLocaleDateString()}{' '}
               at {new Date(analysis.created_at).toLocaleTimeString()}
+              {analysis.cache_hit && analysis.metadata?.originalAnalysisDate && (
+                <span className="ml-2 text-xs">
+                  (Original: {new Date(analysis.metadata.originalAnalysisDate).toLocaleDateString()})
+                </span>
+              )}
             </p>
           </div>
 

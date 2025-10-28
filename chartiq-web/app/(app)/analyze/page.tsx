@@ -70,7 +70,14 @@ export default function AnalyzePage() {
       if (result.error) {
         toast.error(result.error);
       } else if (result.success) {
-        toast.success('Analysis complete!');
+        if (result.cached) {
+          toast.success('Analysis retrieved from cache - consistent results guaranteed!', {
+            description: 'This chart was analyzed before. Showing the same analysis for consistency.',
+            duration: 4000,
+          });
+        } else {
+          toast.success('Analysis complete!');
+        }
         router.push(`/analysis/${result.analysisId}`);
       }
     } catch (error) {

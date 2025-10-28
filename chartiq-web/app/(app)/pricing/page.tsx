@@ -82,13 +82,9 @@ export default function PricingPage() {
         throw new Error(data.error || 'Failed to create payment')
       }
 
-      // Redirect to payment URL
-      if (data.payment.payment_url) {
-        window.location.href = data.payment.payment_url
-      } else {
-        toast.success('Payment created! Redirecting...')
-        router.push(`/checkout/payment?id=${data.payment.payment_id}`)
-      }
+      // Always redirect to our payment page which will show payment details
+      toast.success('Payment created! Redirecting...')
+      router.push(`/checkout/payment?id=${data.payment.payment_id}`)
     } catch (error) {
       console.error('Subscription error:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to start subscription')
@@ -118,14 +114,14 @@ export default function PricingPage() {
               {[
                 { value: 'btc', label: 'BTC' },
                 { value: 'eth', label: 'ETH' },
-                { value: 'usdttrc20', label: 'USDT' },
-                { value: 'ltc', label: 'LTC' }
+                { value: 'usdttrc20', label: 'USDT (TRC20)' },
+                { value: 'usdtbsc', label: 'USDT (BSC)' }
               ].map((crypto) => (
                 <button
                   key={crypto.value}
                   onClick={() => setSelectedCrypto(crypto.value)}
                   className={cn(
-                    'px-4 py-3 rounded-xl font-medium transition-all text-center uppercase',
+                    'px-4 py-3 rounded-xl font-medium transition-all text-center',
                     selectedCrypto === crypto.value
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-background/50 hover:bg-background/80'
@@ -137,9 +133,9 @@ export default function PricingPage() {
             </div>
             <p className="text-xs text-muted-foreground text-center mt-3">
               {selectedCrypto === 'usdttrc20' && 'USDT on Tron Network (TRC20)'}
+              {selectedCrypto === 'usdtbsc' && 'USDT on Binance Smart Chain (BEP20)'}
               {selectedCrypto === 'btc' && 'Bitcoin'}
               {selectedCrypto === 'eth' && 'Ethereum'}
-              {selectedCrypto === 'ltc' && 'Litecoin'}
             </p>
           </div>
         </div>
@@ -178,7 +174,7 @@ export default function PricingPage() {
                   <div className="mb-8">
                     <div className="flex items-baseline gap-2 mb-2">
                       <span className="text-5xl font-bold gradient-text">
-                        ${plan.price}
+                        {plan.price === 0 ? 'Free' : `${plan.price} USDT`}
                       </span>
                       <span className="text-muted-foreground">/{plan.duration}</span>
                     </div>
@@ -225,8 +221,8 @@ export default function PricingPage() {
             <div>
               <h3 className="text-lg font-semibold mb-2">What cryptocurrencies do you accept?</h3>
               <p className="text-muted-foreground">
-                We accept Bitcoin (BTC), Ethereum (ETH), USDT (TRC20), Litecoin (LTC), and 150+ other
-                cryptocurrencies through our payment provider NOWPayments. Select your preferred crypto above.
+                We accept Bitcoin (BTC), Ethereum (ETH), USDT on Tron Network (TRC20), and USDT on Binance Smart Chain (BSC).
+                All payments are processed securely through NOWPayments.
               </p>
             </div>
             <div>
