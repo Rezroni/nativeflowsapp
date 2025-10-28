@@ -237,3 +237,57 @@ export async function uploadChartImage(formData: FormData) {
     };
   }
 }
+
+/**
+ * Get user's current analysis usage and subscription info
+ */
+export async function getUserAnalysisUsage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  try {
+    // Get user's subscription tier from profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', user.id)
+      .single();
+
+    const tier = (profile?.subscription_tier as 'free' | 'pro') || 'free';
+
+    // Calculate current month's usage
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count } = await supabase
+      .from('analyses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', startOfMonth.toISOString());
+
+    const FREE_LIMIT = 5;
+    const monthlyCount = count || 0;
+
+    return {
+      success: true,
+      tier,
+      monthlyCount,
+      limit: tier === 'free' ? FREE_LIMIT : -1,
+      remaining: tier === 'free' ? Math.max(0, FREE_LIMIT - monthlyCount) : -1,
+      hasReachedLimit: tier === 'free' && monthlyCount >= FREE_LIMIT,
+    };
+  } catch (error) {
+    console.error('Error getting user analysis usage:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Failed to get usage info',
+    };
+  }
+}

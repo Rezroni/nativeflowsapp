@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChartUploader } from '@/components/analysis/chart-uploader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Sparkles } from 'lucide-react';
-import { analyzeChart, uploadChartImage } from '@/actions/analysis';
+import { Loader2, Sparkles, Crown } from 'lucide-react';
+import { analyzeChart, uploadChartImage, getUserAnalysisUsage } from '@/actions/analysis';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function AnalyzePage() {
   const router = useRouter();
@@ -17,6 +18,20 @@ export default function AnalyzePage() {
   const [context, setContext] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [usageInfo, setUsageInfo] = useState<any>(null);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(true);
+
+  useEffect(() => {
+    // Load user usage info
+    const loadUsage = async () => {
+      const result = await getUserAnalysisUsage();
+      if (result.success) {
+        setUsageInfo(result);
+      }
+      setIsLoadingUsage(false);
+    };
+    loadUsage();
+  }, []);
 
   const handleImageSelect = (url: string, file?: File) => {
     setImageUrl(url);
@@ -69,14 +84,17 @@ export default function AnalyzePage() {
 
       if (result.error) {
         toast.error(result.error);
+        // Reload usage to check if limit was reached
+        const usageResult = await getUserAnalysisUsage();
+        if (usageResult.success) {
+          setUsageInfo(usageResult);
+        }
       } else if (result.success) {
-        if (result.cached) {
-          toast.success('Analysis retrieved from cache - consistent results guaranteed!', {
-            description: 'This chart was analyzed before. Showing the same analysis for consistency.',
-            duration: 4000,
-          });
-        } else {
-          toast.success('Analysis complete!');
+        toast.success('Analysis complete!');
+        // Reload usage after successful analysis
+        const usageResult = await getUserAnalysisUsage();
+        if (usageResult.success) {
+          setUsageInfo(usageResult);
         }
         router.push(`/analysis/${result.analysisId}`);
       }
@@ -129,37 +147,60 @@ export default function AnalyzePage() {
           </Card>
         )}
 
-        {/* Analyze Button */}
+        {/* Analyze Button or Upgrade Button */}
         {imageUrl && (
           <Card className="border-2 border-primary">
             <CardContent className="pt-6">
-              <Button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || isUploading}
-                size="lg"
-                className="w-full"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Uploading...
-                  </>
-                ) : isAnalyzing ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Analyzing Chart...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Analyze with AI
-                  </>
-                )}
-              </Button>
+              {!isLoadingUsage && usageInfo?.hasReachedLimit ? (
+                <>
+                  <Link href="/pricing">
+                    <Button
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                    >
+                      <Crown className="mr-2 h-5 w-5" />
+                      Upgrade to Pro for Unlimited Analyses
+                    </Button>
+                  </Link>
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    You've reached your monthly limit of {usageInfo.limit} analyses
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing || isUploading || isLoadingUsage}
+                    size="lg"
+                    className="w-full"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Analyzing Chart...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Analyze with AI
+                      </>
+                    )}
+                  </Button>
 
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                Analysis typically takes 10-30 seconds
-              </p>
+                  <p className="text-xs text-center text-muted-foreground mt-4">
+                    {usageInfo && usageInfo.tier === 'free' && !usageInfo.hasReachedLimit ? (
+                      `${usageInfo.remaining} of ${usageInfo.limit} analyses remaining this month`
+                    ) : (
+                      'Analysis typically takes 10-30 seconds'
+                    )}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         )}

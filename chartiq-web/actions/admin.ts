@@ -1,0 +1,169 @@
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
+
+/**
+ * Check if current user is an admin
+ */
+export async function isAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  return profile?.role === 'admin';
+}
+
+/**
+ * Update user subscription tier (admin only)
+ */
+export async function updateUserSubscriptionTier(
+  userId: string,
+  newTier: 'free' | 'pro'
+) {
+  const supabase = await createClient();
+
+  // Check if current user is admin
+  const adminCheck = await isAdmin();
+  if (!adminCheck) {
+    return { error: 'Unauthorized. Admin access required.' };
+  }
+
+  try {
+    // Update profile subscription_tier
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        subscription_tier: newTier,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Update or create subscription record
+    const { data: existingSubscription } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existingSubscription) {
+      // Update existing subscription
+      const newStatus = newTier === 'pro' ? 'active' : 'canceled';
+      const { error: subError } = await supabase
+        .from('subscriptions')
+        .update({
+          status: newStatus,
+          plan_type: newTier,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingSubscription.id);
+
+      if (subError) {
+        throw subError;
+      }
+    } else {
+      // Create new subscription record
+      const status = newTier === 'pro' ? 'active' : 'trialing';
+      const trialEnd = newTier === 'free' ? new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() : null;
+
+      const { error: createError } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id: userId,
+          status: status,
+          plan_type: newTier,
+          trial_end: trialEnd,
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        });
+
+      if (createError) {
+        throw createError;
+      }
+    }
+
+    revalidatePath('/admin/users');
+    revalidatePath('/admin/subscriptions');
+
+    return {
+      success: true,
+      message: `User subscription updated to ${newTier} tier successfully`,
+    };
+  } catch (error) {
+    console.error('Error updating user subscription:', error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to update user subscription',
+    };
+  }
+}
+
+/**
+ * Get user details with subscription info (admin only)
+ */
+export async function getUserDetails(userId: string) {
+  const supabase = await createClient();
+
+  // Check if current user is admin
+  const adminCheck = await isAdmin();
+  if (!adminCheck) {
+    return { error: 'Unauthorized. Admin access required.' };
+  }
+
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) throw profileError;
+
+    const { data: subscription, error: subError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Get analysis count
+    const { count: analysisCount } = await supabase
+      .from('analyses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    return {
+      success: true,
+      user: {
+        ...profile,
+        subscription: subscription || null,
+        analysisCount: analysisCount || 0,
+      },
+    };
+  } catch (error) {
+    console.error('Error getting user details:', error);
+    return {
+      error:
+        error instanceof Error ? error.message : 'Failed to get user details',
+    };
+  }
+}

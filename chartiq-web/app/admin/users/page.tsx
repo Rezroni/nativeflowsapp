@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, UserCheck, UserX, Mail } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { UserSubscriptionManager } from '@/components/admin/user-subscription-manager'
 
 export const metadata = {
   title: 'Users | Admin',
@@ -92,16 +93,19 @@ export default async function UsersPage() {
                   </div>
 
                   <div className="flex items-center gap-4 text-sm">
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {profile.subscriptions?.find((s: any) => s.status === 'active')
-                          ? 'Active Subscriber'
-                          : 'Free User'}
+                    <div className="text-right mr-4">
+                      <div className="font-medium capitalize">
+                        {profile.subscription_tier || 'free'} tier
                       </div>
                       <div className="text-muted-foreground">
                         Joined {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
                       </div>
                     </div>
+                    <UserSubscriptionManager
+                      userId={profile.id}
+                      userEmail={profile.email}
+                      currentTier={profile.subscription_tier || 'free'}
+                    />
                   </div>
                 </div>
               ))}

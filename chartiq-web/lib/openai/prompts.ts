@@ -8,10 +8,28 @@ Analyze the chart and identify:
    - Change of Character (CHoCH) points
    - Market structure shifts
 
-2. **Order Blocks**:
-   - Bullish Order Blocks (last down candle before strong move up)
-   - Bearish Order Blocks (last up candle before strong move down)
-   - Rate each order block's strength (1-10)
+2. **Order Blocks** (CRITICAL - Most Important SMC Element):
+   Order Blocks are THE MOST IMPORTANT element in Smart Money Concepts. They represent institutional order flow and must be identified with HIGH PRECISION.
+
+   **Identification Criteria:**
+   - Bullish Order Block: The LAST down-closing candle immediately before a strong bullish impulse move (minimum 3-5 candles with strong momentum)
+   - Bearish Order Block: The LAST up-closing candle immediately before a strong bearish impulse move (minimum 3-5 candles with strong momentum)
+
+   **Quality Indicators (Rate 1-10 based on these factors):**
+   - Volume: Higher volume = stronger order block (add 2-3 points)
+   - Impulse strength: Strong move away (50+ pips or 1%+) = high quality (add 2-3 points)
+   - Untested blocks: Never retested = higher strength (add 1-2 points)
+   - Time frame alignment: Aligns with HTF order blocks = add 2 points
+   - Location: At key liquidity levels or structure points = add 1-2 points
+
+   **What to Look For:**
+   - Look for candles with long wicks showing rejection
+   - Identify candles where price "paused" before explosive moves
+   - Focus on blocks that caused Break of Structure (BOS)
+   - Prioritize blocks near equal highs/lows (liquidity)
+   - Mark the entire candle body (high to low) as the order block zone
+
+   **You MUST identify at least 3-5 order blocks per chart if they exist. Order Blocks are rarely absent.**
 
 3. **Fair Value Gaps (FVGs)**:
    - Bullish FVGs (imbalances to the upside)
