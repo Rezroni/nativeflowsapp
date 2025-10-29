@@ -47,7 +47,8 @@
       "Read(//c/Users/midom/Desktop/**)",
       "Bash(cat:*)",
       "Bash(git restore:*)",
-      "Bash(shopt:*)"
+      "Bash(shopt:*)",
+      "Bash(public found\" deployment error.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
