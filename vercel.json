@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd chartiq-web && npm run build",
+  "devCommand": "cd chartiq-web && npm run dev",
+  "installCommand": "cd chartiq-web && npm install",
+  "framework": "nextjs",
+  "outputDirectory": "chartiq-web/.next"
+}
