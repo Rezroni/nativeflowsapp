@@ -66,7 +66,7 @@ export async function signUp(
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message }
+      return { error: error.issues[0].message }
     }
     return { error: 'An unexpected error occurred' }
   }
@@ -97,7 +97,7 @@ export async function signIn(
     revalidatePath('/', 'layout')
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message }
+      return { error: error.issues[0].message }
     }
     return { error: 'An unexpected error occurred' }
   }
@@ -159,7 +159,7 @@ export async function resetPassword(
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message }
+      return { error: error.issues[0].message }
     }
     return { error: 'An unexpected error occurred' }
   }

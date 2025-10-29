@@ -98,7 +98,7 @@ export function ShareButton({ analysisId }: ShareButtonProps) {
             </Button>
           </div>
 
-          {typeof navigator !== 'undefined' && navigator.share && (
+          {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
             <Button onClick={handleNativeShare} className="w-full">
               <Share2 className="mr-2 h-4 w-4" />
               Share via...

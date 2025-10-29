@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button'
 import { formatDistanceToNow, format } from 'date-fns'
 import { Clock, Eye, ArrowLeft, Tag } from 'lucide-react'
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const supabase = await createClient()
 
   const { data: post } = await supabase
     .from('blog_posts')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .single()
 
@@ -38,13 +39,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const supabase = await createClient()
 
   const { data: post } = await supabase
     .from('blog_posts')
     .select('*, profiles(email, full_name)')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .single()
 

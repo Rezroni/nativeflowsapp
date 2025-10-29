@@ -71,18 +71,18 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
         <div>
           <h4 className="text-sm font-semibold mb-3">Break of Structure (BOS)</h4>
           <div className="space-y-2">
-            {structure.bos.map((bos, index) => (
+            {structure.bos_levels.map((bos, index) => (
               <div
                 key={index}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border-2 transition-all',
-                  bos.direction === 'bullish'
+                  bos.type === 'bullish'
                     ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50'
                     : 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50'
                 )}
               >
                 <div className="flex items-center gap-3">
-                  {bos.direction === 'bullish' ? (
+                  {bos.type === 'bullish' ? (
                     <TrendingUp className="h-5 w-5 text-emerald-400" />
                   ) : (
                     <TrendingDown className="h-5 w-5 text-rose-400" />
@@ -90,28 +90,28 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
                   <div>
                     <p className={cn(
                       'text-sm font-bold',
-                      bos.direction === 'bullish' ? 'text-emerald-300' : 'text-rose-300'
+                      bos.type === 'bullish' ? 'text-emerald-300' : 'text-rose-300'
                     )}>
                       {bos.price.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {bos.timestamp}
+                      {bos.date}
                     </p>
                   </div>
                 </div>
                 <Badge
                   className={cn(
                     'border',
-                    bos.direction === 'bullish'
+                    bos.type === 'bullish'
                       ? 'bg-emerald-600/80 border-emerald-500'
                       : 'bg-rose-600/80 border-rose-500'
                   )}
                 >
-                  {bos.direction}
+                  {bos.type}
                 </Badge>
               </div>
             ))}
-            {structure.bos.length === 0 && (
+            {structure.bos_levels.length === 0 && (
               <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
                 No BOS identified in current timeframe
               </p>
@@ -125,18 +125,18 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
             Change of Character (CHoCH)
           </h4>
           <div className="space-y-2">
-            {structure.choch.map((choch, index) => (
+            {structure.choch_levels.map((choch, index) => (
               <div
                 key={index}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border-2 transition-all',
-                  choch.direction === 'bullish'
+                  choch.type === 'bullish'
                     ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50'
                     : 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50'
                 )}
               >
                 <div className="flex items-center gap-3">
-                  {choch.direction === 'bullish' ? (
+                  {choch.type === 'bullish' ? (
                     <TrendingUp className="h-5 w-5 text-emerald-400" />
                   ) : (
                     <TrendingDown className="h-5 w-5 text-rose-400" />
@@ -144,28 +144,28 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
                   <div>
                     <p className={cn(
                       'text-sm font-bold',
-                      choch.direction === 'bullish' ? 'text-emerald-300' : 'text-rose-300'
+                      choch.type === 'bullish' ? 'text-emerald-300' : 'text-rose-300'
                     )}>
                       {choch.price.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {choch.timestamp}
+                      {choch.date}
                     </p>
                   </div>
                 </div>
                 <Badge
                   className={cn(
                     'border',
-                    choch.direction === 'bullish'
+                    choch.type === 'bullish'
                       ? 'bg-emerald-600/80 border-emerald-500'
                       : 'bg-rose-600/80 border-rose-500'
                   )}
                 >
-                  {choch.direction}
+                  {choch.type}
                 </Badge>
               </div>
             ))}
-            {structure.choch.length === 0 && (
+            {structure.choch_levels.length === 0 && (
               <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
                 No CHoCH identified in current timeframe
               </p>

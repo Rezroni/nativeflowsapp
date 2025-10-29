@@ -5,7 +5,9 @@ import { z } from 'zod';
  */
 
 export const createPaymentSchema = z.object({
-  planId: z.string().min(1, 'Plan ID is required'),
+  planId: z.enum(['free', 'pro'], {
+    message: 'Invalid plan ID',
+  }),
   payCurrency: z.string().min(1, 'Payment currency is required').optional().default('usdttrc20'),
 });
 
@@ -25,7 +27,7 @@ export async function validateRequest<T>(
     return { success: true, data: validated };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const firstError = error.errors[0];
+      const firstError = error.issues[0];
       return {
         success: false,
         error: firstError.message || 'Validation failed',

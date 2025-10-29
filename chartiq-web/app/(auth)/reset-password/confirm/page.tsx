@@ -16,6 +16,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 function SubmitButton() {
   const { pending } = useFormStatus()
 

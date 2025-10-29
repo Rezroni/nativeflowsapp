@@ -7,13 +7,14 @@ export const metadata = {
   description: 'Edit an existing blog post'
 }
 
-export default async function EditBlogPostPage({ params }: { params: { id: string } }) {
+export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
 
   const { data: post } = await supabase
     .from('blog_posts')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!post) {

@@ -132,12 +132,6 @@ export async function analyzeChart(formData: FormData) {
         console.log('Using premium model as fallback for free user due to OpenRouter unavailability');
         // Fallback to premium models if OpenRouter completely fails
         analysisResult = await analyzeChartImage(imageUrl, additionalContext);
-        // Add note in metadata that this was a fallback
-        analysisResult.metadata = {
-          ...analysisResult.metadata,
-          fallbackUsed: true,
-          fallbackReason: 'openrouter_unavailable',
-        };
       }
     } else {
       // Use premium OpenAI/Claude for pro tier users
@@ -154,7 +148,6 @@ export async function analyzeChart(formData: FormData) {
         chart_image_hash: imageHash,
         analysis_data: analysisResult.analysisData,
         cache_hit: false,
-        metadata: analysisResult.metadata,
       })
       .select()
       .single();

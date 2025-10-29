@@ -5,7 +5,7 @@ import { rateLimit, RateLimits, createRateLimitHeaders } from '@/lib/rate-limit'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
     // Apply rate limiting
@@ -31,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
     }
 
-    const { paymentId } = params
+    const { paymentId } = await params
 
     // Verify the payment belongs to the user
     const { data: subscription } = await supabase

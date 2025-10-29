@@ -2,128 +2,85 @@
 
 import { Droplet, ArrowUp, ArrowDown, CheckCircle2, Circle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Liquidity } from '@/types/analysis';
+import type { LiquidityZone } from '@/types/analysis';
 import { cn } from '@/lib/utils';
 
 interface LiquidityCardProps {
-  liquidity: Liquidity;
+  liquidity: LiquidityZone;
 }
 
 export function LiquidityCard({ liquidity }: LiquidityCardProps) {
+  const typeIcon = liquidity.type === 'equal_highs' ? ArrowUp : ArrowDown;
+  const TypeIcon = typeIcon;
+  const color = liquidity.type === 'equal_lows' ? 'emerald' : liquidity.type === 'equal_highs' ? 'rose' : 'blue';
+
   return (
     <Card className="transition-all hover:shadow-xl border-2 smc-info-bg hover:border-blue-500/60">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Droplet className="h-5 w-5 text-blue-400" />
-          <span className="font-semibold smc-info-text">Liquidity Zones</span>
+          <span className="font-semibold smc-info-text">
+            Liquidity Zone - {liquidity.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Buy-Side Liquidity */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <ArrowUp className="h-5 w-5 text-emerald-400" />
-            <h4 className="text-sm font-semibold text-emerald-400">
-              Buy-Side Liquidity
+            <TypeIcon className={`h-5 w-5 text-${color}-400`} />
+            <h4 className={`text-sm font-semibold text-${color}-400`}>
+              Price Levels
             </h4>
           </div>
           <div className="space-y-2">
-            {liquidity.buySide.map((level, index) => (
+            {liquidity.levels.map((level, index) => (
               <div
                 key={index}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border-2 transition-all',
-                  level.swept
+                  liquidity.swept
                     ? 'bg-slate-800/30 border-slate-700/50'
-                    : 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50'
+                    : `bg-${color}-500/10 border-${color}-500/30 hover:border-${color}-500/50`
                 )}
               >
                 <div className="flex items-center gap-3">
-                  {level.swept ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600/50" />
+                  {liquidity.swept ? (
+                    <CheckCircle2 className={`h-5 w-5 text-${color}-600/50`} />
                   ) : (
-                    <Circle className="h-5 w-5 text-emerald-400" />
+                    <Circle className={`h-5 w-5 text-${color}-400`} />
                   )}
                   <div>
                     <p className={cn(
                       'text-sm font-bold',
-                      level.swept ? 'text-muted-foreground' : 'text-emerald-300'
+                      liquidity.swept ? 'text-muted-foreground' : `text-${color}-300`
                     )}>
-                      {level.price.toFixed(2)}
+                      {typeof level === 'number' ? level.toFixed(2) : level}
                     </p>
-                    <p className="text-xs text-muted-foreground capitalize">{level.type}</p>
                   </div>
                 </div>
                 <div className={cn(
                   'text-xs font-semibold px-2 py-1 rounded',
-                  level.swept
+                  liquidity.swept
                     ? 'bg-slate-700/50 text-slate-400'
-                    : 'bg-emerald-600/20 text-emerald-300'
+                    : `bg-${color}-600/20 text-${color}-300`
                 )}>
-                  {level.swept ? 'Swept' : 'Active'}
+                  {liquidity.swept ? 'Swept' : 'Active'}
                 </div>
               </div>
             ))}
-            {liquidity.buySide.length === 0 && (
+            {liquidity.levels.length === 0 && (
               <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
-                No buy-side liquidity identified
+                No liquidity levels identified
               </p>
             )}
           </div>
         </div>
 
-        {/* Sell-Side Liquidity */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <ArrowDown className="h-5 w-5 text-rose-400" />
-            <h4 className="text-sm font-semibold text-rose-400">
-              Sell-Side Liquidity
-            </h4>
+        {liquidity.description && (
+          <div className="pt-2 border-t border-slate-700/50">
+            <p className="text-xs text-muted-foreground">{liquidity.description}</p>
           </div>
-          <div className="space-y-2">
-            {liquidity.sellSide.map((level, index) => (
-              <div
-                key={index}
-                className={cn(
-                  'flex items-center justify-between p-3 rounded-lg border-2 transition-all',
-                  level.swept
-                    ? 'bg-slate-800/30 border-slate-700/50'
-                    : 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50'
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  {level.swept ? (
-                    <CheckCircle2 className="h-5 w-5 text-rose-600/50" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-rose-400" />
-                  )}
-                  <div>
-                    <p className={cn(
-                      'text-sm font-bold',
-                      level.swept ? 'text-muted-foreground' : 'text-rose-300'
-                    )}>
-                      {level.price.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">{level.type}</p>
-                  </div>
-                </div>
-                <div className={cn(
-                  'text-xs font-semibold px-2 py-1 rounded',
-                  level.swept
-                    ? 'bg-slate-700/50 text-slate-400'
-                    : 'bg-rose-600/20 text-rose-300'
-                )}>
-                  {level.swept ? 'Swept' : 'Active'}
-                </div>
-              </div>
-            ))}
-            {liquidity.sellSide.length === 0 && (
-              <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
-                No sell-side liquidity identified
-              </p>
-            )}
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

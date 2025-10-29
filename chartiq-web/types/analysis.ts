@@ -99,17 +99,40 @@ export interface EducationalInsights {
 }
 
 export interface AnalysisResult {
-  disclaimer: string
-  market_structure: MarketStructure
-  order_blocks: OrderBlock[]
-  fair_value_gaps: FairValueGap[]
-  liquidity_zones: LiquidityZone[]
-  premium_discount: PremiumDiscount
-  trade_setups: TradeSetup[]
-  educational_insights: EducationalInsights
-  summary: string
-  confidence: ConfidenceLevel
-  next_steps: string
+  id?: string
+  userId?: string
+  imageUrl?: string
+  analysisData?: {
+    disclaimer: string
+    market_structure: MarketStructure
+    order_blocks: OrderBlock[]
+    fair_value_gaps: FairValueGap[]
+    liquidity_zones: LiquidityZone[]
+    premium_discount: PremiumDiscount
+    trade_setups: TradeSetup[]
+    educational_insights: EducationalInsights
+    summary: string
+    confidence: ConfidenceLevel
+    next_steps: string
+  }
+  createdAt?: string
+  metadata?: {
+    model?: string
+    tokensUsed?: number
+    provider?: string
+  }
+  // Legacy fields for backward compatibility
+  disclaimer?: string
+  market_structure?: MarketStructure
+  order_blocks?: OrderBlock[]
+  fair_value_gaps?: FairValueGap[]
+  liquidity_zones?: LiquidityZone[]
+  premium_discount?: PremiumDiscount
+  trade_setups?: TradeSetup[]
+  educational_insights?: EducationalInsights
+  summary?: string
+  confidence?: ConfidenceLevel
+  next_steps?: string
   imageHash?: string
   analysisDuration?: number
   cacheHit?: boolean

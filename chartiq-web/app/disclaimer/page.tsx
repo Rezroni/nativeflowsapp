@@ -2,6 +2,9 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { AlertTriangle } from 'lucide-react'
 
+// Force dynamic rendering to avoid Sentry instrumentation issues
+export const dynamic = 'force-dynamic'
+
 export default function DisclaimerPage() {
   return (
     <div className="flex min-h-screen flex-col gradient-bg">

@@ -7,6 +7,10 @@ import { AnalyticsProvider } from "@/components/common/analytics-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
+// Force dynamic rendering for all routes to avoid prerender issues
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
 export const metadata: Metadata = {
   title: {
     template: "%s | Nativeflows",

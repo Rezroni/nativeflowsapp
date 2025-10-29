@@ -102,6 +102,10 @@ export async function compareWithUserAnalysis(
   overallGrade: string;
   feedback: string;
 }> {
+  if (!openai) {
+    throw new Error('OpenAI is not configured. Please set OPENAI_API_KEY.');
+  }
+
   try {
     const prompt = COMPARE_ANALYSIS_PROMPT(userAnalysis);
 

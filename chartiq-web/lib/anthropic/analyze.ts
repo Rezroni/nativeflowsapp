@@ -15,7 +15,7 @@ export async function analyzeChartImageWithClaude(
   try {
     // Fetch the image and convert to base64
     let imageData: string;
-    let mediaType: string = 'image/jpeg';
+    let mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' = 'image/jpeg';
 
     if (imageUrl.startsWith('http')) {
       // Fetch from URL
@@ -32,7 +32,12 @@ export async function analyzeChartImageWithClaude(
       // If it's a data URL, extract the base64 part
       const matches = imageUrl.match(/^data:([^;]+);base64,(.+)$/);
       if (matches) {
-        mediaType = matches[1] as any;
+        const extractedType = matches[1];
+        // Validate and cast to proper type
+        if (extractedType === 'image/png' || extractedType === 'image/jpeg' ||
+            extractedType === 'image/webp' || extractedType === 'image/gif') {
+          mediaType = extractedType;
+        }
         imageData = matches[2];
       } else {
         throw new Error('Invalid image URL format');

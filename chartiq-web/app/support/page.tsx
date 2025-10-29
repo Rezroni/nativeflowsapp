@@ -4,6 +4,9 @@ import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Mail, BookOpen, HelpCircle, Search, Clock } from 'lucide-react'
 
+// Force dynamic rendering to avoid Sentry instrumentation issues
+export const dynamic = 'force-dynamic'
+
 export default function SupportPage() {
   return (
     <div className="flex min-h-screen flex-col gradient-bg">

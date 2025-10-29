@@ -23,7 +23,7 @@ export function startSpan<T>(
     name: string;
     attributes?: Record<string, any>;
   },
-  callback: (span: ReturnType<typeof Sentry.startSpan>) => T
+  callback: (span: Sentry.Span) => T
 ): T {
   return Sentry.startSpan(
     {
@@ -31,7 +31,7 @@ export function startSpan<T>(
       name: options.name,
       attributes: options.attributes,
     },
-    callback
+    callback as any
   );
 }
 

@@ -1,22 +1,22 @@
 'use client';
 
-import { Gap, TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { FVG } from '@/types/analysis';
+import type { FairValueGap } from '@/types/analysis';
 import { cn } from '@/lib/utils';
 
 interface FVGCardProps {
-  fvg: FVG;
+  fvg: FairValueGap;
 }
 
 export function FVGCard({ fvg }: FVGCardProps) {
   const isBullish = fvg.type === 'bullish';
 
   // Safe access with fallback values
-  const high = fvg.zone?.high ?? fvg.high ?? 0;
-  const low = fvg.zone?.low ?? fvg.low ?? 0;
-  const mitigated = fvg.mitigated ?? fvg.filled ?? false;
+  const high = fvg.high ?? 0;
+  const low = fvg.low ?? 0;
+  const mitigated = fvg.filled ?? false;
   const significance = fvg.significance ?? 'medium';
 
   return (

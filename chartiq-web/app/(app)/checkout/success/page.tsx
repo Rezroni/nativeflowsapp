@@ -8,8 +8,9 @@ import Link from 'next/link';
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: { session_id?: string };
+  searchParams: Promise<{ session_id?: string }>;
 }) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
