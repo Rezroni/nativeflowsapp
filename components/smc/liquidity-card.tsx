@@ -14,6 +14,9 @@ export function LiquidityCard({ liquidity }: LiquidityCardProps) {
   const TypeIcon = typeIcon;
   const color = liquidity.type === 'equal_lows' ? 'emerald' : liquidity.type === 'equal_highs' ? 'rose' : 'blue';
 
+  // Ensure levels is always an array
+  const levels = Array.isArray(liquidity.levels) ? liquidity.levels : [];
+
   return (
     <Card className="transition-all hover:shadow-xl border-2 smc-info-bg hover:border-blue-500/60">
       <CardHeader className="pb-3">
@@ -33,7 +36,7 @@ export function LiquidityCard({ liquidity }: LiquidityCardProps) {
             </h4>
           </div>
           <div className="space-y-2">
-            {liquidity.levels.map((level, index) => (
+            {levels.map((level, index) => (
               <div
                 key={index}
                 className={cn(
@@ -68,7 +71,7 @@ export function LiquidityCard({ liquidity }: LiquidityCardProps) {
                 </div>
               </div>
             ))}
-            {liquidity.levels.length === 0 && (
+            {levels.length === 0 && (
               <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
                 No liquidity levels identified
               </p>
