@@ -67,7 +67,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                <span>7-day free trial</span>
+                <span>3-day free trial</span>
               </div>
             </div>
           </div>

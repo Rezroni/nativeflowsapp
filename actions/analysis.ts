@@ -123,19 +123,12 @@ export async function analyzeChart(formData: FormData) {
     // Route to appropriate AI provider based on tier
     let analysisResult;
     if (tier === 'free') {
-      // Use OpenRouter for free tier users, with fallback to premium models
-      console.log(`Routing free tier user to OpenRouter. Usage: ${monthlyCount}/${FREE_LIMIT}`);
-      try {
-        analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext);
-      } catch (openRouterError) {
-        console.error('OpenRouter failed for free user, falling back to premium models:', openRouterError);
-        console.log('Using premium model as fallback for free user due to OpenRouter unavailability');
-        // Fallback to premium models if OpenRouter completely fails
-        analysisResult = await analyzeChartImage(imageUrl, additionalContext);
-      }
+      // Use ONLY OpenRouter for free tier users (no fallback to premium models)
+      console.log(`Routing free tier user to OpenRouter (OPENROUTER_API_KEY). Usage: ${monthlyCount}/${FREE_LIMIT}`);
+      analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext);
     } else {
       // Use premium OpenAI/Claude for pro tier users
-      console.log(`Routing pro tier user to OpenAI/Claude`);
+      console.log(`Routing pro tier user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
       analysisResult = await analyzeChartImage(imageUrl, additionalContext);
     }
 

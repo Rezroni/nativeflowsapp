@@ -37,7 +37,7 @@ export default function DocsPage() {
                   <div>
                     <h3 className="text-xl font-semibold mb-2">Create Your Account</h3>
                     <p className="text-muted-foreground">
-                      Sign up for a free trial account to get started. No credit card required for the 7-day trial.
+                      Sign up for a free trial account to get started. No credit card required for the 3-day trial.
                     </p>
                   </div>
                 </div>
