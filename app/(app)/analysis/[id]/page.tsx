@@ -75,6 +75,7 @@ export default async function AnalysisDetailPage({
       : null);
   const educationalInsights = analysisData.educational_insights || null;
   const summary = analysisData.summary || null;
+  const disclaimer = analysisData.disclaimer || null;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -99,6 +100,25 @@ export default async function AnalysisDetailPage({
           <ShareButton analysisId={id} />
         </div>
       </div>
+
+      {/* Disclaimer */}
+      {disclaimer && (
+        <Card className="mb-8 border-yellow-200 bg-yellow-50/50 dark:border-yellow-900 dark:bg-yellow-950/20">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div className="flex-1">
+                <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                  Educational Disclaimer
+                </h3>
+                <p className="text-sm text-yellow-800 dark:text-yellow-200 leading-relaxed">
+                  {disclaimer}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Chart Image */}
       <Card className="mb-8">
