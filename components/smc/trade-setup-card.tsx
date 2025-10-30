@@ -13,6 +13,9 @@ interface TradeSetupCardProps {
 export function TradeSetupCard({ setup }: TradeSetupCardProps) {
   const isBullish = setup.type === 'long';
 
+  // Ensure take_profit is always an array
+  const takeProfits = Array.isArray(setup.take_profit) ? setup.take_profit : [];
+
   const validityColors = {
     high: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
     medium: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
@@ -105,7 +108,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
             </p>
           </div>
           <div className="space-y-2">
-            {setup.take_profit.map((tp, index) => (
+            {takeProfits.map((tp, index) => (
               <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-emerald-500/5">
                 <span className="text-xs text-muted-foreground font-medium">{tp.target.toUpperCase()}:</span>
                 <div className="text-right">

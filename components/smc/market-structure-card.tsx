@@ -11,6 +11,10 @@ interface MarketStructureCardProps {
 }
 
 export function MarketStructureCard({ structure }: MarketStructureCardProps) {
+  // Ensure arrays are always defined
+  const bosLevels = Array.isArray(structure.bos_levels) ? structure.bos_levels : [];
+  const chochLevels = Array.isArray(structure.choch_levels) ? structure.choch_levels : [];
+
   const trendConfig = {
     bullish: {
       icon: TrendingUp,
@@ -71,7 +75,7 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
         <div>
           <h4 className="text-sm font-semibold mb-3">Break of Structure (BOS)</h4>
           <div className="space-y-2">
-            {structure.bos_levels.map((bos, index) => (
+            {bosLevels.map((bos, index) => (
               <div
                 key={index}
                 className={cn(
@@ -125,7 +129,7 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
             Change of Character (CHoCH)
           </h4>
           <div className="space-y-2">
-            {structure.choch_levels.map((choch, index) => (
+            {chochLevels.map((choch, index) => (
               <div
                 key={index}
                 className={cn(
