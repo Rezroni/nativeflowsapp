@@ -44,7 +44,17 @@ export default async function AnalysisDetailPage({
     notFound();
   }
 
-  const analysisData = analysis.analysis_data;
+  const analysisData = analysis.analysis_data || {};
+
+  // Handle both camelCase and snake_case property names for backward compatibility
+  const marketStructure = analysisData.marketStructure || analysisData.market_structure;
+  const orderBlocks = analysisData.orderBlocks || analysisData.order_blocks || [];
+  const fvgs = analysisData.fvgs || analysisData.fair_value_gaps || [];
+  const liquidity = analysisData.liquidity || analysisData.liquidity_zones;
+  const premiumDiscount = analysisData.premiumDiscount || analysisData.premium_discount;
+  const tradeSetup = analysisData.tradeSetup || (analysisData.trade_setups && analysisData.trade_setups[0]);
+  const educationalInsights = analysisData.educational_insights;
+  const summary = analysisData.summary;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -86,34 +96,46 @@ export default async function AnalysisDetailPage({
         </CardContent>
       </Card>
 
+      {/* Summary */}
+      {summary && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Analysis Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">{summary}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Analysis Results */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Market Structure */}
-        {analysisData.marketStructure && (
-          <MarketStructureCard structure={analysisData.marketStructure} />
+        {marketStructure && (
+          <MarketStructureCard structure={marketStructure} />
         )}
 
         {/* Trade Setup */}
-        {analysisData.tradeSetup && (
-          <TradeSetupCard setup={analysisData.tradeSetup} />
+        {tradeSetup && (
+          <TradeSetupCard setup={tradeSetup} />
         )}
       </div>
 
       {/* Premium/Discount Zones */}
-      {analysisData.premiumDiscount && (
+      {premiumDiscount && (
         <div className="mb-8">
           <PremiumDiscountCard
-            premiumDiscount={analysisData.premiumDiscount}
+            premiumDiscount={premiumDiscount}
           />
         </div>
       )}
 
       {/* Order Blocks */}
-      {analysisData.orderBlocks && analysisData.orderBlocks.length > 0 && (
+      {orderBlocks && orderBlocks.length > 0 && (
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Order Blocks</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {analysisData.orderBlocks.map((ob: any, index: number) => (
+            {orderBlocks.map((ob: any, index: number) => (
               <OrderBlockCard key={index} orderBlock={ob} />
             ))}
           </div>
@@ -121,11 +143,11 @@ export default async function AnalysisDetailPage({
       )}
 
       {/* Fair Value Gaps */}
-      {analysisData.fvgs && analysisData.fvgs.length > 0 && (
+      {fvgs && fvgs.length > 0 && (
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Fair Value Gaps</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {analysisData.fvgs.map((fvg: any, index: number) => (
+            {fvgs.map((fvg: any, index: number) => (
               <FVGCard key={index} fvg={fvg} />
             ))}
           </div>
@@ -133,98 +155,73 @@ export default async function AnalysisDetailPage({
       )}
 
       {/* Liquidity */}
-      {analysisData.liquidity && (
+      {liquidity && (
         <div className="mb-8">
-          <LiquidityCard liquidity={analysisData.liquidity} />
+          <LiquidityCard liquidity={liquidity} />
         </div>
       )}
 
-      {/* Key Insights */}
-      {analysisData.insights && (
-        <Card>
+      {/* Educational Insights */}
+      {educationalInsights && (
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Key Insights</CardTitle>
+            <CardTitle>Educational Insights</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Market Narrative */}
-            <div>
-              <h3 className="font-semibold mb-2">Market Narrative</h3>
-              <p className="text-sm text-muted-foreground">
-                {analysisData.insights.narrative}
-              </p>
-            </div>
-
-            {/* Smart Money Behavior */}
-            <div>
-              <h3 className="font-semibold mb-2">Smart Money Behavior</h3>
-              <p className="text-sm text-muted-foreground">
-                {analysisData.insights.smartMoneyBehavior}
-              </p>
-            </div>
-
-            {/* Key Levels */}
-            <div>
-              <h3 className="font-semibold mb-2">Key Levels to Watch</h3>
-              <div className="flex flex-wrap gap-2">
-                {analysisData.insights.keyLevels.map(
-                  (level: number, index: number) => (
+            {/* Key Concepts */}
+            {educationalInsights.key_concepts && educationalInsights.key_concepts.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Key Concepts</h3>
+                <div className="flex flex-wrap gap-2">
+                  {educationalInsights.key_concepts.map((concept: string, index: number) => (
                     <div
                       key={index}
                       className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
                     >
-                      {level.toFixed(2)}
+                      {concept}
                     </div>
-                  )
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Scenarios */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                <h4 className="font-semibold text-green-700 mb-2">
-                  Bullish Scenario
-                </h4>
-                <p className="text-sm text-green-600">
-                  {analysisData.insights.scenarios.bullish}
+            {/* Smart Money Perspective */}
+            {educationalInsights.smart_money_perspective && (
+              <div>
+                <h3 className="font-semibold mb-2">Smart Money Perspective</h3>
+                <p className="text-sm text-muted-foreground">
+                  {educationalInsights.smart_money_perspective}
                 </p>
               </div>
-              <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-                <h4 className="font-semibold text-red-700 mb-2">
-                  Bearish Scenario
-                </h4>
-                <p className="text-sm text-red-600">
-                  {analysisData.insights.scenarios.bearish}
+            )}
+
+            {/* Common Mistakes */}
+            {educationalInsights.common_mistakes && (
+              <div>
+                <h3 className="font-semibold mb-2">Common Mistakes to Avoid</h3>
+                <p className="text-sm text-muted-foreground">
+                  {educationalInsights.common_mistakes}
                 </p>
               </div>
-            </div>
+            )}
+
+            {/* Learning Points */}
+            {educationalInsights.learning_points && educationalInsights.learning_points.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Learning Points</h3>
+                <ul className="space-y-2">
+                  {educationalInsights.learning_points.map((point: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2 text-sm">
+                      <span className="text-blue-600 mt-0.5">📚</span>
+                      <span className="text-muted-foreground">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
-
-      {/* Educational Notes */}
-      {analysisData.educationalNotes &&
-        analysisData.educationalNotes.length > 0 && (
-          <Card className="mt-8 border-2 border-blue-200 bg-blue-50/50">
-            <CardHeader>
-              <CardTitle className="text-blue-700">
-                Educational Notes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {analysisData.educationalNotes.map(
-                  (note: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <span className="text-blue-600 mt-0.5">📚</span>
-                      <span>{note}</span>
-                    </li>
-                  )
-                )}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
     </div>
   );
 }

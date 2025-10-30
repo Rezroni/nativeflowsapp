@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,6 +42,7 @@ export function BlogPostForm({ initialData }: BlogPostFormProps) {
   const supabase = createClient()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     slug: initialData?.slug || '',
@@ -68,6 +70,72 @@ export function BlogPostForm({ initialData }: BlogPostFormProps) {
       slug: formData.slug || generateSlug(title),
       meta_title: formData.meta_title || title
     })
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Error',
+        description: 'Please select an image file',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Error',
+        description: 'Image size must be less than 5MB',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsUploadingImage(true)
+
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `blog/${crypto.randomUUID()}.${fileExt}`
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('chart-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (error) {
+        throw error
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('chart-images')
+        .getPublicUrl(fileName)
+
+      setFormData({ ...formData, featured_image_url: publicUrl })
+
+      toast({
+        title: 'Success!',
+        description: 'Image uploaded successfully',
+      })
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to upload image. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsUploadingImage(false)
+    }
   }
 
   const handleSubmit = async (status: 'draft' | 'published') => {
@@ -220,13 +288,45 @@ export function BlogPostForm({ initialData }: BlogPostFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="featured_image">Featured Image URL</Label>
-            <Input
-              id="featured_image"
-              value={formData.featured_image_url}
-              onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
-              placeholder="https://example.com/image.jpg"
-            />
+            <Label htmlFor="featured_image">Featured Image</Label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Input
+                  id="featured_image"
+                  value={formData.featured_image_url}
+                  onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
+                  placeholder="https://example.com/image.jpg or upload below"
+                />
+              </div>
+              <div className="relative">
+                <input
+                  type="file"
+                  id="image-upload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={isUploadingImage}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  disabled={isUploadingImage}
+                >
+                  {isUploadingImage ? 'Uploading...' : 'Upload'}
+                </Button>
+              </div>
+            </div>
+            {formData.featured_image_url && (
+              <div className="mt-2 relative aspect-video w-full max-w-md overflow-hidden rounded-lg border">
+                <Image
+                  src={formData.featured_image_url}
+                  alt="Featured image preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
