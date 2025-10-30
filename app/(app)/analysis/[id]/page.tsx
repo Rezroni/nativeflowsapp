@@ -44,17 +44,37 @@ export default async function AnalysisDetailPage({
     notFound();
   }
 
-  const analysisData = analysis.analysis_data || {};
+  // Safely parse analysis_data
+  let analysisData: any = {};
+  try {
+    analysisData = typeof analysis.analysis_data === 'string'
+      ? JSON.parse(analysis.analysis_data)
+      : (analysis.analysis_data || {});
+  } catch (e) {
+    console.error('Failed to parse analysis_data:', e);
+    analysisData = {};
+  }
 
   // Handle both camelCase and snake_case property names for backward compatibility
-  const marketStructure = analysisData.marketStructure || analysisData.market_structure;
-  const orderBlocks = analysisData.orderBlocks || analysisData.order_blocks || [];
-  const fvgs = analysisData.fvgs || analysisData.fair_value_gaps || [];
-  const liquidity = analysisData.liquidity || analysisData.liquidity_zones;
-  const premiumDiscount = analysisData.premiumDiscount || analysisData.premium_discount;
-  const tradeSetup = analysisData.tradeSetup || (analysisData.trade_setups && analysisData.trade_setups[0]);
-  const educationalInsights = analysisData.educational_insights;
-  const summary = analysisData.summary;
+  const marketStructure = analysisData.marketStructure || analysisData.market_structure || null;
+  const orderBlocks = Array.isArray(analysisData.orderBlocks)
+    ? analysisData.orderBlocks
+    : Array.isArray(analysisData.order_blocks)
+    ? analysisData.order_blocks
+    : [];
+  const fvgs = Array.isArray(analysisData.fvgs)
+    ? analysisData.fvgs
+    : Array.isArray(analysisData.fair_value_gaps)
+    ? analysisData.fair_value_gaps
+    : [];
+  const liquidity = analysisData.liquidity || analysisData.liquidity_zones || null;
+  const premiumDiscount = analysisData.premiumDiscount || analysisData.premium_discount || null;
+  const tradeSetup = analysisData.tradeSetup ||
+    (Array.isArray(analysisData.trade_setups) && analysisData.trade_setups.length > 0
+      ? analysisData.trade_setups[0]
+      : null);
+  const educationalInsights = analysisData.educational_insights || null;
+  const summary = analysisData.summary || null;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -155,7 +175,7 @@ export default async function AnalysisDetailPage({
       )}
 
       {/* Liquidity */}
-      {liquidity && (
+      {liquidity && liquidity.type && (
         <div className="mb-8">
           <LiquidityCard liquidity={liquidity} />
         </div>
