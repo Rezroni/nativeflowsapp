@@ -210,7 +210,7 @@ export default function HomePage() {
             <div className="pricing-card">
               <PricingCard
                 name="Pro"
-                price="$59"
+                price="$39"
                 period="per month"
                 features={[
                   "Unlimited chart analyses",

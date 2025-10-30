@@ -37,7 +37,7 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    price: 59,
+    price: 39,
     currency: 'USD',
     interval: 'month',
     features: [

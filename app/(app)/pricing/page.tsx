@@ -32,7 +32,7 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     description: 'For serious traders',
-    price: 59,
+    price: 39,
     features: [
       'Unlimited chart analyses',
       'Advanced Smart Money Concepts',
