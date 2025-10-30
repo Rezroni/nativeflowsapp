@@ -12,6 +12,13 @@ interface PremiumDiscountCardProps {
 export function PremiumDiscountCard({
   premiumDiscount,
 }: PremiumDiscountCardProps) {
+  // Safe access with fallback values
+  const currentPosition = premiumDiscount.current_position ?? 'equilibrium';
+  const rangePercentage = premiumDiscount.range_percentage ?? 50;
+  const premiumHigh = premiumDiscount.premium_high ?? 0;
+  const equilibrium = premiumDiscount.equilibrium ?? 0;
+  const discountLow = premiumDiscount.discount_low ?? 0;
+
   const positionColor = {
     premium: 'text-rose-400',
     equilibrium: 'text-purple-400',
@@ -30,19 +37,19 @@ export function PremiumDiscountCard({
         {/* Current Position */}
         <div className={cn(
           'p-4 rounded-lg border-2',
-          premiumDiscount.current_position === 'premium' && 'bg-rose-500/10 border-rose-500/30',
-          premiumDiscount.current_position === 'equilibrium' && 'bg-purple-500/10 border-purple-500/30',
-          premiumDiscount.current_position === 'discount' && 'bg-emerald-500/10 border-emerald-500/30'
+          currentPosition === 'premium' && 'bg-rose-500/10 border-rose-500/30',
+          currentPosition === 'equilibrium' && 'bg-purple-500/10 border-purple-500/30',
+          currentPosition === 'discount' && 'bg-emerald-500/10 border-emerald-500/30'
         )}>
           <p className="text-xs text-muted-foreground mb-2">Current Position</p>
           <p className={cn(
             'text-2xl font-bold capitalize',
-            positionColor[premiumDiscount.current_position]
+            positionColor[currentPosition]
           )}>
-            {premiumDiscount.current_position}
+            {currentPosition}
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            {premiumDiscount.range_percentage.toFixed(1)}% of price range
+            {rangePercentage.toFixed(1)}% of price range
           </p>
         </div>
 
@@ -60,7 +67,7 @@ export function PremiumDiscountCard({
           <div className="p-3 rounded-lg bg-rose-500/10 border-2 border-rose-500/30">
             <div className="flex justify-between items-center">
               <span className="text-sm font-bold text-rose-300">
-                {premiumDiscount.premium_high.toFixed(2)}
+                {premiumHigh.toFixed(2)}
               </span>
               <span className="text-xs text-rose-400 bg-rose-600/20 px-2 py-1 rounded">
                 High
@@ -73,7 +80,7 @@ export function PremiumDiscountCard({
         <div className="p-3 rounded-lg bg-purple-500/10 border-2 border-purple-500/30">
           <p className="text-xs text-muted-foreground mb-1">Equilibrium (50%)</p>
           <p className="text-xl font-bold text-purple-400">
-            {premiumDiscount.equilibrium.toFixed(2)}
+            {equilibrium.toFixed(2)}
           </p>
           <p className="text-xs text-purple-300 mt-1">
             Fair value - optimal entry/exit reference
@@ -96,7 +103,7 @@ export function PremiumDiscountCard({
           <div className="p-3 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/30">
             <div className="flex justify-between items-center">
               <span className="text-sm font-bold text-emerald-300">
-                {premiumDiscount.discount_low.toFixed(2)}
+                {discountLow.toFixed(2)}
               </span>
               <span className="text-xs text-emerald-400 bg-emerald-600/20 px-2 py-1 rounded">
                 Low

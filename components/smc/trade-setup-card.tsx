@@ -11,10 +11,20 @@ interface TradeSetupCardProps {
 }
 
 export function TradeSetupCard({ setup }: TradeSetupCardProps) {
-  const isBullish = setup.type === 'long';
+  // Safe access with fallback values
+  const setupType = setup.type ?? 'long';
+  const isBullish = setupType === 'long';
 
   // Ensure take_profit is always an array
   const takeProfits = Array.isArray(setup.take_profit) ? setup.take_profit : [];
+
+  // Safe access for nested properties
+  const entryType = setup.entry?.entry_type ?? 'market';
+  const entryPrice = setup.entry?.price ?? 0;
+  const stopLossPrice = setup.stop_loss?.price ?? 0;
+  const confluenceRating = setup.confluence_rating ?? 'medium';
+  const riskReward = setup.risk_reward ?? '0:0';
+  const probability = setup.probability ?? 0;
 
   const validityColors = {
     high: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
@@ -41,7 +51,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
                 : 'bg-rose-600/80 border-rose-500'
             )}
           >
-            {setup.type.toUpperCase()}
+            {setupType.toUpperCase()}
           </Badge>
         </div>
       </CardHeader>
@@ -50,11 +60,11 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
         <div
           className={cn(
             'p-4 rounded-lg border-2 text-center',
-            validityColors[setup.confluence_rating]
+            validityColors[confluenceRating]
           )}
         >
           <p className="text-xs font-medium mb-2">Confluence Rating</p>
-          <p className="text-2xl font-bold uppercase">{setup.confluence_rating}</p>
+          <p className="text-2xl font-bold uppercase">{confluenceRating}</p>
         </div>
 
         {/* Entry Details */}
@@ -68,7 +78,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
               'text-sm font-bold uppercase',
               isBullish ? 'text-emerald-300' : 'text-rose-300'
             )}>
-              {setup.entry.entry_type}
+              {entryType}
             </p>
           </div>
           <div className={cn(
@@ -80,7 +90,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
               'text-sm font-bold',
               isBullish ? 'text-emerald-300' : 'text-rose-300'
             )}>
-              {setup.entry.price.toFixed(2)}
+              {entryPrice.toFixed(2)}
             </p>
           </div>
         </div>
@@ -92,10 +102,10 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
             <p className="text-xs font-semibold text-rose-400">Stop Loss</p>
           </div>
           <p className="text-xl font-bold text-rose-300">
-            {setup.stop_loss.price.toFixed(2)}
+            {stopLossPrice.toFixed(2)}
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            Risk: {Math.abs(setup.entry.price - setup.stop_loss.price).toFixed(2)} pts
+            Risk: {Math.abs(entryPrice - stopLossPrice).toFixed(2)} pts
           </p>
         </div>
 
@@ -110,13 +120,13 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
           <div className="space-y-2">
             {takeProfits.map((tp, index) => (
               <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-emerald-500/5">
-                <span className="text-xs text-muted-foreground font-medium">{tp.target.toUpperCase()}:</span>
+                <span className="text-xs text-muted-foreground font-medium">{(tp.target ?? 'TP' + (index + 1)).toUpperCase()}:</span>
                 <div className="text-right">
                   <span className="text-sm font-bold text-emerald-300">
-                    {tp.price.toFixed(2)}
+                    {(tp.price ?? 0).toFixed(2)}
                   </span>
                   <span className="text-xs text-muted-foreground ml-2">
-                    ({tp.percentage})
+                    ({tp.percentage ?? '0%'})
                   </span>
                 </div>
               </div>
@@ -128,7 +138,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
         <div className="p-4 rounded-lg bg-blue-500/10 border-2 border-blue-500/30 text-center">
           <p className="text-xs text-muted-foreground mb-2">Risk-Reward Ratio</p>
           <p className="text-3xl font-bold text-blue-400">
-            {setup.risk_reward}
+            {riskReward}
           </p>
         </div>
 
@@ -137,7 +147,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
           <p className="text-xs text-muted-foreground mb-1">
             Success Probability
           </p>
-          <p className="text-2xl font-bold">{setup.probability}%</p>
+          <p className="text-2xl font-bold">{probability}%</p>
         </div>
 
         {/* Notes */}
@@ -149,7 +159,7 @@ export function TradeSetupCard({ setup }: TradeSetupCardProps) {
         )}
 
         {/* Warning for low confluence */}
-        {setup.confluence_rating === 'low' && (
+        {confluenceRating === 'low' && (
           <div className="p-4 rounded-lg smc-warning-bg border-2 border-amber-500/30 text-sm">
             <p className="font-bold smc-warning-text mb-2">⚠️ Caution</p>
             <p className="text-xs text-muted-foreground">

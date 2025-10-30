@@ -115,7 +115,7 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
                 </Badge>
               </div>
             ))}
-            {structure.bos_levels.length === 0 && (
+            {bosLevels.length === 0 && (
               <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
                 No BOS identified in current timeframe
               </p>
@@ -169,7 +169,7 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
                 </Badge>
               </div>
             ))}
-            {structure.choch_levels.length === 0 && (
+            {chochLevels.length === 0 && (
               <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
                 No CHoCH identified in current timeframe
               </p>
