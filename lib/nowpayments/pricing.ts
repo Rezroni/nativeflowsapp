@@ -2,42 +2,45 @@
  * Pricing Configuration for NOWPayments
  */
 
-export type PlanType = 'free' | 'pro'
+export type PlanType = 'weekly' | 'monthly' | 'annual'
 
 export interface PricingPlan {
   id: PlanType
   name: string
   price: number // in USD
   currency: string
-  interval: 'month'
+  interval: 'week' | 'month' | 'year'
   features: string[]
   limits: {
     analysesPerMonth: number
   }
   popular?: boolean
+  useOpenRouter?: boolean // Whether to use OpenRouter API (for weekly plan)
 }
 
 export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
-  free: {
-    id: 'free',
-    name: 'Free Trial',
-    price: 0,
+  weekly: {
+    id: 'weekly',
+    name: 'Weekly',
+    price: 10,
     currency: 'USD',
-    interval: 'month',
+    interval: 'week',
     features: [
-      '5 chart analyses',
-      'Basic Smart Money Concepts',
+      'Unlimited chart analyses',
+      'Smart Money Concepts',
       'Email support',
       'Educational resources',
+      'Valid for 7 days',
     ],
     limits: {
-      analysesPerMonth: 5,
+      analysesPerMonth: -1, // unlimited
     },
+    useOpenRouter: true, // Uses OpenRouter API
   },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    price: 39,
+  monthly: {
+    id: 'monthly',
+    name: 'Monthly',
+    price: 25,
     currency: 'USD',
     interval: 'month',
     features: [
@@ -47,18 +50,36 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
       'Advanced indicators',
       'Trade journal',
       'Market alerts',
-      'API access',
-      'Custom training',
+      'Premium AI models',
     ],
     limits: {
       analysesPerMonth: -1, // unlimited
     },
     popular: true,
   },
+  annual: {
+    id: 'annual',
+    name: 'Annual',
+    price: 250,
+    currency: 'USD',
+    interval: 'year',
+    features: [
+      'Unlimited chart analyses',
+      'Advanced Smart Money Concepts',
+      'Priority support',
+      'Advanced indicators',
+      'Trade journal',
+      'Market alerts',
+      'Premium AI models',
+      'API access',
+      'Custom training',
+      'Save $50 per year',
+    ],
+    limits: {
+      analysesPerMonth: -1, // unlimited
+    },
+  },
 }
-
-export const FREE_TRIAL_DURATION_DAYS = 3
-export const FREE_TRIAL_ANALYSIS_LIMIT = 5
 
 export function getPlanById(planId: PlanType): PricingPlan | undefined {
   return PRICING_PLANS[planId]

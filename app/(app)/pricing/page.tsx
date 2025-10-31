@@ -12,27 +12,28 @@ import { Analytics } from '@/lib/analytics/mixpanel'
 
 const plans = [
   {
-    id: 'free',
-    name: 'Free Trial',
-    description: 'Perfect for testing the waters',
-    price: 0,
+    id: 'weekly',
+    name: 'Weekly',
+    description: 'Perfect for short-term needs',
+    price: 10,
     features: [
-      '5 chart analyses',
-      'Basic Smart Money Concepts',
+      'Unlimited chart analyses',
+      'Smart Money Concepts',
       'Email support',
       'Educational resources',
+      'Valid for 7 days',
     ],
-    limits: '5 analyses total',
-    duration: '3-day trial',
-    cta: 'Current Plan',
+    limits: 'Unlimited analyses',
+    duration: 'per week',
+    cta: 'Get Weekly Plan',
     popular: false,
     icon: Zap,
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    description: 'For serious traders',
-    price: 39,
+    id: 'monthly',
+    name: 'Monthly',
+    description: 'Best value for active traders',
+    price: 25,
     features: [
       'Unlimited chart analyses',
       'Advanced Smart Money Concepts',
@@ -40,13 +41,35 @@ const plans = [
       'Advanced indicators',
       'Trade journal',
       'Market alerts',
-      'API access',
-      'Custom training',
+      'Premium AI models',
     ],
     limits: 'Unlimited analyses',
     duration: 'per month',
-    cta: 'Upgrade to Pro',
+    cta: 'Get Monthly Plan',
     popular: true,
+    icon: TrendingUp,
+  },
+  {
+    id: 'annual',
+    name: 'Annual',
+    description: 'Maximum savings for professionals',
+    price: 250,
+    features: [
+      'Unlimited chart analyses',
+      'Advanced Smart Money Concepts',
+      'Priority support',
+      'Advanced indicators',
+      'Trade journal',
+      'Market alerts',
+      'Premium AI models',
+      'API access',
+      'Custom training',
+      'Save $50 per year',
+    ],
+    limits: 'Unlimited analyses',
+    duration: 'per year',
+    cta: 'Get Annual Plan',
+    popular: false,
     icon: TrendingUp,
   },
 ]
@@ -62,11 +85,6 @@ export default function PricingPage() {
   }, [])
 
   const handleSubscribe = async (planId: string) => {
-    if (planId === 'free') {
-      toast.info('You are currently on the free trial plan')
-      return
-    }
-
     setLoadingPlan(planId)
 
     // Track checkout started
@@ -150,7 +168,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid gap-8 lg:grid-cols-2 max-w-5xl mx-auto">
+        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto">
           {plans.map((plan) => {
             const Icon = plan.icon
             const isLoading = loadingPlan === plan.id
@@ -206,7 +224,7 @@ export default function PricingPage() {
                     size="lg"
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => handleSubscribe(plan.id)}
-                    disabled={isLoading || plan.id === 'free'}
+                    disabled={isLoading}
                   >
                     {isLoading ? (
                       <>
@@ -235,24 +253,24 @@ export default function PricingPage() {
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">How long is the free trial?</h3>
+              <h3 className="text-lg font-semibold mb-2">Which plan should I choose?</h3>
               <p className="text-muted-foreground">
-                The free trial lasts for 3 days and includes 5 chart analyses to help you get started
-                with our platform.
+                Choose Weekly ($10) for short-term analysis, Monthly ($25) for regular trading, or Annual ($250) to save $50 per year.
+                All plans include unlimited chart analyses.
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">Can I cancel anytime?</h3>
+              <h3 className="text-lg font-semibold mb-2">What's the difference between plans?</h3>
               <p className="text-muted-foreground">
-                Yes! Your Pro subscription is month-to-month. Simply cancel before your next billing
-                cycle to avoid being charged.
+                Weekly plan uses efficient AI models, while Monthly and Annual plans include premium AI models,
+                advanced features, and priority support. Annual plan also includes API access and custom training.
               </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">What happens after payment?</h3>
               <p className="text-muted-foreground">
-                After successful payment confirmation, your account will be upgraded to Pro immediately
-                and you'll have unlimited access to all features.
+                After successful payment confirmation, your account is activated immediately with unlimited access to all plan features.
+                Your subscription will be valid for the duration you selected (7 days, 1 month, or 1 year).
               </p>
             </div>
           </div>
@@ -264,16 +282,16 @@ export default function PricingPage() {
             Ready to Trade <span className="gradient-text">Smarter?</span>
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Start your journey with our Pro plan and unlock unlimited chart analyses
+            Choose your plan and start analyzing charts with AI-powered Smart Money Concepts
           </p>
-          <Button size="lg" onClick={() => handleSubscribe('pro')} disabled={loadingPlan === 'pro'}>
-            {loadingPlan === 'pro' ? (
+          <Button size="lg" onClick={() => handleSubscribe('monthly')} disabled={loadingPlan === 'monthly'}>
+            {loadingPlan === 'monthly' ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...
               </>
             ) : (
-              'Get Started Now'
+              'Get Monthly Plan'
             )}
           </Button>
         </div>

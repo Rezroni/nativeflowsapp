@@ -25,49 +25,31 @@ export async function analyzeChart(formData: FormData) {
   }
 
   try {
-    // Get user's subscription tier from profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', user.id)
-      .single();
-
-    const tier = (profile?.subscription_tier as 'free' | 'pro') || 'free';
-
-    // Get subscription for trial check
+    // Get user's active subscription to determine plan type
     const { data: subscription } = await supabase
       .from('subscriptions')
-      .select('status, trial_end')
+      .select('plan_type, status, current_period_end')
       .eq('user_id', user.id)
+      .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
-    // Check if user is in trial
-    const inTrial = subscription?.status === 'trialing' &&
-      subscription?.trial_end &&
-      new Date(subscription.trial_end) > new Date();
-
-    // Calculate current month's usage
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    const { count } = await supabase
-      .from('analyses')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', startOfMonth.toISOString());
-
-    const FREE_LIMIT = 5;
-    const monthlyCount = count || 0;
-
-    // Check usage limits for free tier
-    if (tier === 'free' && monthlyCount >= FREE_LIMIT) {
+    // Check if user has an active subscription
+    if (!subscription) {
       return {
-        error: `Monthly analysis limit reached (${FREE_LIMIT} analyses). Please upgrade to Pro for unlimited analyses.`,
+        error: 'No active subscription found. Please subscribe to a plan to start analyzing charts.',
       };
     }
+
+    // Check if subscription is expired
+    if (subscription.current_period_end && new Date(subscription.current_period_end) < new Date()) {
+      return {
+        error: 'Your subscription has expired. Please renew your subscription to continue.',
+      };
+    }
+
+    const planType = subscription.plan_type as 'weekly' | 'monthly' | 'annual';
 
     // Generate image hash for duplicate detection
     console.log('Generating image hash for duplicate detection...');
@@ -120,15 +102,15 @@ export async function analyzeChart(formData: FormData) {
 
     console.log('✗ Cache miss - performing new analysis');
 
-    // Route to appropriate AI provider based on tier
+    // Route to appropriate AI provider based on plan type
     let analysisResult;
-    if (tier === 'free') {
-      // Use ONLY OpenRouter for free tier users (no fallback to premium models)
-      console.log(`Routing free tier user to OpenRouter (OPENROUTER_API_KEY). Usage: ${monthlyCount}/${FREE_LIMIT}`);
+    if (planType === 'weekly') {
+      // Weekly plan uses ONLY OpenRouter (efficient model)
+      console.log(`Routing weekly plan user to OpenRouter (OPENROUTER_API_KEY)`);
       analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext);
     } else {
-      // Use premium OpenAI/Claude for pro tier users
-      console.log(`Routing pro tier user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
+      // Monthly and Annual plans use premium OpenAI/Claude
+      console.log(`Routing ${planType} plan user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
       analysisResult = await analyzeChartImage(imageUrl, additionalContext);
     }
 
@@ -239,14 +221,19 @@ export async function getUserAnalysisUsage() {
   }
 
   try {
-    // Get user's subscription tier from profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', user.id)
+    // Get user's active subscription
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('plan_type, status, current_period_end')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
 
-    const tier = (profile?.subscription_tier as 'free' | 'pro') || 'free';
+    const planType = subscription?.plan_type || null;
+    const isActive = subscription?.status === 'active' &&
+                     (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
 
     // Calculate current month's usage
     const startOfMonth = new Date();
@@ -259,21 +246,27 @@ export async function getUserAnalysisUsage() {
       .eq('user_id', user.id)
       .gte('created_at', startOfMonth.toISOString());
 
-    const FREE_LIMIT = 5;
     const monthlyCount = count || 0;
 
     return {
       success: true,
-      tier,
+      tier: planType,
       monthlyCount,
-      limit: tier === 'free' ? FREE_LIMIT : -1,
-      remaining: tier === 'free' ? Math.max(0, FREE_LIMIT - monthlyCount) : -1,
-      hasReachedLimit: tier === 'free' && monthlyCount >= FREE_LIMIT,
+      limit: -1, // All plans have unlimited analyses
+      remaining: -1, // Unlimited
+      hasReachedLimit: false,
+      hasActiveSubscription: isActive,
     };
   } catch (error) {
     console.error('Error getting user analysis usage:', error);
     return {
-      error: error instanceof Error ? error.message : 'Failed to get usage info',
+      success: true,
+      tier: null,
+      monthlyCount: 0,
+      limit: 0,
+      remaining: 0,
+      hasReachedLimit: true,
+      hasActiveSubscription: false,
     };
   }
 }

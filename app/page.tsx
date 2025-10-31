@@ -50,8 +50,8 @@ export default function HomePage() {
 
             <div className="hero-buttons flex flex-col gap-4 sm:flex-row sm:justify-center mb-12">
               <Button size="lg" className="group hover-glow text-lg px-8 py-6" asChild>
-                <Link href="/signup">
-                  Start Free Trial
+                <Link href="/pricing">
+                  Get Started
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -63,11 +63,11 @@ export default function HomePage() {
             <div className="hero-features flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                <span>No credit card required</span>
+                <span>Pay with cryptocurrency</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                <span>3-day free trial</span>
+                <span>Instant access</span>
               </div>
             </div>
           </div>
@@ -191,26 +191,27 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 max-w-5xl mx-auto">
+          <div className="grid gap-8 md:grid-cols-3 max-w-7xl mx-auto">
             <div className="pricing-card">
               <PricingCard
-                name="Free Trial"
-                price="$0"
-                period="3 days"
+                name="Weekly"
+                price="$10"
+                period="per week"
                 features={[
-                  "5 chart analyses",
-                  "Basic Smart Money Concepts",
+                  "Unlimited chart analyses",
+                  "Smart Money Concepts",
                   "Email support",
-                  "Educational resources"
+                  "Educational resources",
+                  "Valid for 7 days"
                 ]}
-                cta="Start Free Trial"
-                href="/signup"
+                cta="Get Started"
+                href="/pricing"
               />
             </div>
             <div className="pricing-card">
               <PricingCard
-                name="Pro"
-                price="$39"
+                name="Monthly"
+                price="$25"
                 period="per month"
                 features={[
                   "Unlimited chart analyses",
@@ -219,12 +220,32 @@ export default function HomePage() {
                   "Advanced indicators",
                   "Trade journal",
                   "Market alerts",
-                  "API access",
-                  "Custom training"
+                  "Premium AI models"
                 ]}
                 cta="Get Started"
-                href="/signup"
+                href="/pricing"
                 featured
+              />
+            </div>
+            <div className="pricing-card">
+              <PricingCard
+                name="Annual"
+                price="$250"
+                period="per year"
+                features={[
+                  "Unlimited chart analyses",
+                  "Advanced Smart Money Concepts",
+                  "Priority support",
+                  "Advanced indicators",
+                  "Trade journal",
+                  "Market alerts",
+                  "Premium AI models",
+                  "API access",
+                  "Custom training",
+                  "Save $50 per year"
+                ]}
+                cta="Get Started"
+                href="/pricing"
               />
             </div>
           </div>

@@ -117,7 +117,7 @@ export default function SignUpPage() {
       <CardHeader className="space-y-2 pb-6">
         <CardTitle className="text-3xl font-bold gradient-text">Create Account</CardTitle>
         <CardDescription className="text-base text-muted-foreground">
-          Start your 3-day free trial to analyze trading charts with AI
+          Sign up to get started with AI-powered chart analysis
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -181,10 +181,10 @@ export default function SignUpPage() {
         <GoogleButton />
 
         <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 text-sm backdrop-blur-sm">
-          <p className="font-semibold mb-1 text-primary">3-Day Free Trial</p>
+          <p className="font-semibold mb-1 text-primary">Choose Your Plan</p>
           <p className="text-muted-foreground text-xs leading-relaxed">
-            Your trial starts immediately. Cancel anytime during the trial
-            period to avoid charges.
+            After creating your account, select a plan that fits your needs.
+            All plans include unlimited chart analyses.
           </p>
         </div>
 

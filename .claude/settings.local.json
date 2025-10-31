@@ -5,7 +5,10 @@
       "Bash(ls:*)",
       "Bash(timeout 10 bash -c 'while ! curl -s http://localhost:3005 > /dev/null 2>&1; do sleep 1; done; echo \"\"Server ready\"\"')",
       "Bash(timeout 15 bash:*)",
-      "Bash(timeout 5 bash:*)"
+      "Bash(timeout 5 bash:*)",
+      "Bash(where:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
