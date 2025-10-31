@@ -1,11 +1,14 @@
 import { z } from 'zod';
+import type { PlanType } from '@/lib/nowpayments/pricing';
 
 /**
  * Validation schemas for payment API routes
  */
 
+const planTypes: [PlanType, ...PlanType[]] = ['weekly', 'monthly', 'annual'];
+
 export const createPaymentSchema = z.object({
-  planId: z.enum(['free', 'pro'], {
+  planId: z.enum(planTypes, {
     message: 'Invalid plan ID',
   }),
   payCurrency: z.string().min(1, 'Payment currency is required').optional().default('usdttrc20'),

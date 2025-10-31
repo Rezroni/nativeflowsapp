@@ -95,7 +95,7 @@ export default async function UsersPage() {
                   <div className="flex items-center gap-4 text-sm">
                     <div className="text-right mr-4">
                       <div className="font-medium capitalize">
-                        {profile.subscription_tier || 'free'} tier
+                        {profile.subscription_tier || 'Free'}
                       </div>
                       <div className="text-muted-foreground">
                         Joined {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
@@ -104,7 +104,7 @@ export default async function UsersPage() {
                     <UserSubscriptionManager
                       userId={profile.id}
                       userEmail={profile.email}
-                      currentTier={profile.subscription_tier || 'free'}
+                      currentTier={profile.subscription_tier || null}
                     />
                   </div>
                 </div>

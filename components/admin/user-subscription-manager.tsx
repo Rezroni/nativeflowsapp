@@ -21,11 +21,12 @@ import {
 import { updateUserSubscriptionTier } from '@/actions/admin';
 import { toast } from 'sonner';
 import { Settings, Loader2 } from 'lucide-react';
+import type { PlanType } from '@/lib/nowpayments/pricing';
 
 interface UserSubscriptionManagerProps {
   userId: string;
   userEmail: string;
-  currentTier: 'free' | 'pro';
+  currentTier: PlanType | null;
 }
 
 export function UserSubscriptionManager({
@@ -34,11 +35,11 @@ export function UserSubscriptionManager({
   currentTier,
 }: UserSubscriptionManagerProps) {
   const [open, setOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<'free' | 'pro'>(currentTier);
+  const [selectedTier, setSelectedTier] = useState<PlanType | null>(currentTier);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleUpdate = async () => {
-    if (selectedTier === currentTier) {
+    if (selectedTier === currentTier || !selectedTier) {
       toast.info('No changes made');
       setOpen(false);
       return;
@@ -83,33 +84,43 @@ export function UserSubscriptionManager({
           <div className="space-y-2">
             <label className="text-sm font-medium">Current Tier</label>
             <div className="p-3 rounded-lg bg-muted">
-              <span className="font-medium capitalize">{currentTier}</span>
+              <span className="font-medium capitalize">
+                {currentTier ? currentTier : 'Free (No active subscription)'}
+              </span>
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">New Tier</label>
             <Select
-              value={selectedTier}
-              onValueChange={(value) => setSelectedTier(value as 'free' | 'pro')}
+              value={selectedTier || ''}
+              onValueChange={(value) => setSelectedTier(value as PlanType)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select tier" />
+                <SelectValue placeholder="Select plan" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="free">
+                <SelectItem value="weekly">
                   <div className="flex flex-col items-start">
-                    <span className="font-medium">Free</span>
+                    <span className="font-medium">Weekly - $10</span>
                     <span className="text-xs text-muted-foreground">
-                      5 analyses/month
+                      Unlimited analyses • 7 days • OpenRouter API
                     </span>
                   </div>
                 </SelectItem>
-                <SelectItem value="pro">
+                <SelectItem value="monthly">
                   <div className="flex flex-col items-start">
-                    <span className="font-medium">Pro</span>
+                    <span className="font-medium">Monthly - $25</span>
                     <span className="text-xs text-muted-foreground">
-                      Unlimited analyses
+                      Unlimited analyses • 30 days • Premium AI models
+                    </span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="annual">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">Annual - $250</span>
+                    <span className="text-xs text-muted-foreground">
+                      Unlimited analyses • 365 days • All features
                     </span>
                   </div>
                 </SelectItem>
@@ -117,12 +128,12 @@ export function UserSubscriptionManager({
             </Select>
           </div>
 
-          {selectedTier !== currentTier && (
+          {selectedTier !== currentTier && selectedTier && (
             <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
               <p className="text-sm text-yellow-600 dark:text-yellow-500">
-                {selectedTier === 'pro'
-                  ? '⚠️ This will grant the user unlimited analyses and premium AI models.'
-                  : '⚠️ This will limit the user to 5 analyses per month with free AI models.'}
+                ⚠️ This will grant the user unlimited analyses and{' '}
+                {selectedTier === 'weekly' ? 'OpenRouter API access' : 'premium AI models'} for{' '}
+                {selectedTier === 'weekly' ? '7 days' : selectedTier === 'monthly' ? '30 days' : '365 days'}.
               </p>
             </div>
           )}

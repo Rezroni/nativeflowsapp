@@ -57,7 +57,7 @@ export async function getAdminRole() {
  */
 export async function updateUserSubscriptionTier(
   userId: string,
-  newTier: 'free' | 'pro'
+  newTier: 'weekly' | 'monthly' | 'annual'
 ) {
   const supabase = await createClient();
 
@@ -68,18 +68,9 @@ export async function updateUserSubscriptionTier(
   }
 
   try {
-    // Update profile subscription_tier
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        subscription_tier: newTier,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
-
-    if (profileError) {
-      throw profileError;
-    }
+    // Calculate subscription period based on plan type
+    const periodDays = newTier === 'weekly' ? 7 : newTier === 'monthly' ? 30 : 365;
+    const currentPeriodEnd = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString();
 
     // Update or create subscription record
     const { data: existingSubscription } = await supabase
@@ -91,13 +82,13 @@ export async function updateUserSubscriptionTier(
       .single();
 
     if (existingSubscription) {
-      // Update existing subscription
-      const newStatus = newTier === 'pro' ? 'active' : 'canceled';
+      // Update existing subscription - all paid plans are active
       const { error: subError } = await supabase
         .from('subscriptions')
         .update({
-          status: newStatus,
+          status: 'active',
           plan_type: newTier,
+          current_period_end: currentPeriodEnd,
           updated_at: new Date().toISOString(),
         })
         .eq('id', existingSubscription.id);
@@ -106,19 +97,15 @@ export async function updateUserSubscriptionTier(
         throw subError;
       }
     } else {
-      // Create new subscription record
-      const status = newTier === 'pro' ? 'active' : 'trialing';
-      const trialEnd = newTier === 'free' ? new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString() : null;
-
+      // Create new subscription record - all paid plans are active
       const { error: createError } = await supabase
         .from('subscriptions')
         .insert({
           user_id: userId,
-          status: status,
+          status: 'active',
           plan_type: newTier,
-          trial_end: trialEnd,
           current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          current_period_end: currentPeriodEnd,
         });
 
       if (createError) {

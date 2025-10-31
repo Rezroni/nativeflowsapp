@@ -46,10 +46,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
-    if (plan.price === 0) {
-      return NextResponse.json({ error: 'Cannot create payment for free plan' }, { status: 400 })
-    }
-
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
@@ -75,7 +71,7 @@ export async function POST(request: NextRequest) {
       price_currency: isUSDT ? payCurrencyLower : 'usdttrc20',
       pay_currency: payCurrencyLower, // Always specify pay_currency
       order_id: orderId,
-      order_description: `${plan.name} - Monthly Subscription`,
+      order_description: `${plan.name} Subscription - ${plan.interval === 'week' ? '7 days' : plan.interval === 'month' ? '30 days' : '365 days'}`,
       ipn_callback_url: `${baseUrl}/api/payment/ipn`,
       success_url: `${baseUrl}/checkout/success?order_id=${orderId}`,
       cancel_url: `${baseUrl}/pricing`,
@@ -83,6 +79,10 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = await createPayment(paymentParams)
+
+    // Calculate subscription period end based on plan interval
+    const periodDays = plan.interval === 'week' ? 7 : plan.interval === 'month' ? 30 : 365
+    const currentPeriodEnd = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
 
     // Store payment info in database
     await supabase.from('subscriptions').insert({
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       order_id: orderId,
       pay_currency: payment.pay_currency,
       current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+      current_period_end: currentPeriodEnd,
     })
 
     return NextResponse.json({
