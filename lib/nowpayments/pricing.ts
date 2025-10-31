@@ -71,8 +71,6 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
       'Trade journal',
       'Market alerts',
       'Premium AI models',
-      'API access',
-      'Custom training',
       'Save $50 per year',
     ],
     limits: {

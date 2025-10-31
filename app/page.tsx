@@ -98,7 +98,7 @@ export default function HomePage() {
               <FeatureCard
                 icon={<Brain className="h-7 w-7" />}
                 title="AI Chart Analysis"
-                description="Upload any chart and get instant AI-powered analysis using GPT-4 Vision technology."
+                description="Upload any chart and get instant AI-powered analysis using our advanced AI Vision technology."
               />
             </div>
             <div className="feature-card">
@@ -240,8 +240,6 @@ export default function HomePage() {
                   "Trade journal",
                   "Market alerts",
                   "Premium AI models",
-                  "API access",
-                  "Custom training",
                   "Save $50 per year"
                 ]}
                 cta="Get Started"
@@ -305,8 +303,8 @@ export default function HomePage() {
               Join thousands of traders using AI to improve their trading decisions
             </p>
             <Button size="lg" className="text-lg px-10 py-7 group" asChild>
-              <Link href="/signup">
-                Start Your Free Trial
+              <Link href="/pricing">
+                Get Started Now
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>

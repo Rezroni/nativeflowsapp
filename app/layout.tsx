@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     default: "Nativeflows - AI Trading Chart Analysis",
   },
   description:
-    "Analyze trading charts with GPT-4 Vision and Smart Money Concepts. Learn institutional trading strategies while getting AI-powered insights.",
+    "Analyze trading charts with AI Vision and Smart Money Concepts. Learn institutional trading strategies while getting AI-powered insights.",
   keywords: [
     "trading",
     "chart analysis",
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
     url: "https://nativeflows.ai",
     title: "Nativeflows - AI Trading Chart Analysis",
     description:
-      "Analyze trading charts with GPT-4 Vision and Smart Money Concepts",
+      "Analyze trading charts with AI Vision and Smart Money Concepts",
     siteName: "Nativeflows",
   },
   twitter: {
     card: "summary_large_image",
     title: "Nativeflows - AI Trading Chart Analysis",
     description:
-      "Analyze trading charts with GPT-4 Vision and Smart Money Concepts",
+      "Analyze trading charts with AI Vision and Smart Money Concepts",
   },
   robots: {
     index: true,
@@ -57,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className={inter.className}>
         <AnalyticsProvider>
           {children}

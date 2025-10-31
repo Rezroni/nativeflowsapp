@@ -62,8 +62,6 @@ const plans = [
       'Trade journal',
       'Market alerts',
       'Premium AI models',
-      'API access',
-      'Custom training',
       'Save $50 per year',
     ],
     limits: 'Unlimited analyses',
@@ -263,7 +261,7 @@ export default function PricingPage() {
               <h3 className="text-lg font-semibold mb-2">What's the difference between plans?</h3>
               <p className="text-muted-foreground">
                 Weekly plan uses efficient AI models, while Monthly and Annual plans include premium AI models,
-                advanced features, and priority support. Annual plan also includes API access and custom training.
+                advanced features, and priority support. Annual plan offers the best value with significant savings.
               </p>
             </div>
             <div>
