@@ -1,20 +1,19 @@
--- Update plan_type constraint to include new pricing tiers
--- This migration updates the database schema to match the new pricing structure:
--- weekly, monthly, and annual plans
+-- =====================================================
+-- CRITICAL FIX: Run this SQL in your Supabase SQL Editor
+-- This fixes the "Database error saving new user" issue
+-- =====================================================
 
 -- Step 1: Drop the old constraints first
 ALTER TABLE subscriptions DROP CONSTRAINT IF EXISTS subscriptions_plan_type_check;
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_subscription_tier_check;
 
 -- Step 2: Update existing data BEFORE adding new constraints
--- Convert old 'free' and 'pro' to new pricing tiers in subscriptions table
--- 'pro' users will be converted to 'monthly' (most common plan)
+-- Convert old 'pro' to 'monthly' in subscriptions table
 UPDATE subscriptions
 SET plan_type = 'monthly'
 WHERE plan_type = 'pro';
 
 -- Delete 'free' plan subscriptions (free users don't need subscription records)
--- They will be handled by the trial system
 DELETE FROM subscriptions
 WHERE plan_type = 'free';
 
@@ -24,7 +23,7 @@ UPDATE profiles
 SET subscription_tier = 'monthly'
 WHERE subscription_tier = 'pro';
 
--- Set subscription_tier to NULL for free users (they don't have a paid plan)
+-- Set subscription_tier to NULL for free users
 UPDATE profiles
 SET subscription_tier = NULL
 WHERE subscription_tier = 'free';
@@ -39,7 +38,7 @@ ALTER TABLE profiles
 ADD CONSTRAINT profiles_subscription_tier_check
 CHECK (subscription_tier IS NULL OR subscription_tier IN ('weekly', 'monthly', 'annual'));
 
--- Update the handle_new_user function to NOT create a free subscription
+-- Step 4: Update the handle_new_user function to NOT create a free subscription
 -- Free users won't have any subscription record
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
@@ -61,6 +60,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Update comment
+-- Update comments
 COMMENT ON COLUMN profiles.subscription_tier IS 'User subscription tier (weekly, monthly, or annual). NULL for free users.';
 COMMENT ON COLUMN subscriptions.plan_type IS 'Subscription plan type (weekly, monthly, or annual)';
+
+-- =====================================================
+-- DONE! You can now sign up new users without errors
+-- =====================================================

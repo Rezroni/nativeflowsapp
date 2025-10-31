@@ -30,11 +30,15 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single();
 
+  // Get active subscription
   const { data: subscription } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
-    .single();
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   const { data: analyses, count: totalAnalyses } = await supabase
     .from('analyses')
@@ -54,16 +58,17 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .gte('created_at', startOfMonth.toISOString());
 
+  // Plan limits based on new structure
   const planLimits = {
-    free: 5,
-    pro_monthly: 100,
-    pro_annual: 100,
-    enterprise: 999999,
+    weekly: -1,   // unlimited
+    monthly: -1,  // unlimited
+    annual: -1,   // unlimited
   };
 
-  const currentPlan = subscription?.plan_id || 'free';
-  const limit = planLimits[currentPlan as keyof typeof planLimits] || 5;
-  const usagePercent = ((monthlyAnalyses || 0) / limit) * 100;
+  const currentPlan = subscription?.plan_type || null;
+  const limit = currentPlan ? planLimits[currentPlan as keyof typeof planLimits] : 0;
+  const hasActivePlan = currentPlan !== null;
+  const usagePercent = limit === -1 ? 0 : ((monthlyAnalyses || 0) / Math.max(limit, 1)) * 100;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -104,7 +109,7 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{monthlyAnalyses || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {limit - (monthlyAnalyses || 0)} remaining
+              {hasActivePlan ? 'Unlimited analyses' : 'No active plan'}
             </p>
           </CardContent>
         </Card>
@@ -117,15 +122,15 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold capitalize">
-              {currentPlan.replace('_', ' ')}
+              {currentPlan || 'No Plan'}
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              {limit === 999999 ? 'Unlimited' : `${limit} analyses/month`}
+              {hasActivePlan ? 'Unlimited analyses' : 'Subscribe to start analyzing'}
             </p>
-            {currentPlan === 'free' && (
+            {!hasActivePlan && (
               <Link href="/pricing">
                 <Button size="sm" className="w-full text-xs">
-                  Upgrade to Pro
+                  View Plans
                 </Button>
               </Link>
             )}
@@ -153,39 +158,37 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Usage Progress */}
-      <Card className="mb-8 glass-card">
-        <CardHeader>
-          <CardTitle>Monthly Usage</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>
-                {monthlyAnalyses || 0} of {limit === 999999 ? '∞' : limit}{' '}
-                analyses used
-              </span>
-              <span className="text-muted-foreground">
-                {limit === 999999 ? '0' : usagePercent.toFixed(0)}%
-              </span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{
-                  width: `${Math.min(usagePercent, 100)}%`,
-                }}
-              />
-            </div>
-            {usagePercent > 80 && limit !== 999999 && (
-              <p className="text-sm text-yellow-600">
-                You're running low on analyses this month. Consider upgrading
-                your plan.
+      {/* Usage Progress - Only show for active plans */}
+      {hasActivePlan && (
+        <Card className="mb-8 glass-card">
+          <CardHeader>
+            <CardTitle>Monthly Usage</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>
+                  {monthlyAnalyses || 0} analyses used this month
+                </span>
+                <span className="text-muted-foreground">
+                  Unlimited
+                </span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all"
+                  style={{
+                    width: '100%',
+                  }}
+                />
+              </div>
+              <p className="text-sm text-green-600">
+                You have unlimited analyses with your {currentPlan} plan
               </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -195,14 +198,23 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Upload a chart and get instant SMC analysis with AI-powered
-              insights
+              {hasActivePlan
+                ? 'Upload a chart and get instant SMC analysis with AI-powered insights'
+                : 'Subscribe to a plan to start analyzing charts with AI'}
             </p>
-            <Link href="/analyze">
-              <Button className="w-full hover-glow">
-                Start Analysis <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            {hasActivePlan ? (
+              <Link href="/analyze">
+                <Button className="w-full hover-glow">
+                  Start Analysis <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/pricing">
+                <Button className="w-full hover-glow">
+                  View Plans <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            )}
           </CardContent>
         </Card>
 
