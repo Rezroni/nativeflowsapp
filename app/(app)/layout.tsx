@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { AppNav } from '@/components/layout/app-nav'
+import { PushPermissionPrompt } from '@/components/notifications/push-permission-prompt'
 
 export default async function AppLayout({
   children,
@@ -16,5 +18,11 @@ export default async function AppLayout({
     redirect('/login')
   }
 
-  return <>{children}</>
+  return (
+    <>
+      <AppNav />
+      <main>{children}</main>
+      <PushPermissionPrompt />
+    </>
+  )
 }

@@ -1,15 +1,26 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "sonner"
 import { AnalyticsProvider } from "@/components/common/analytics-provider"
+import { PWAProvider } from "@/components/pwa/pwa-provider"
+import { InstallPrompt } from "@/components/pwa/install-prompt"
+import { NotificationPrompt } from "@/components/pwa/notification-prompt"
 
 const inter = Inter({ subsets: ["latin"] })
 
 // Force dynamic rendering for all routes to avoid prerender issues
 export const dynamic = 'force-dynamic'
 export const dynamicParams = true
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#8b5cf6",
+}
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +41,15 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Nativeflows" }],
   creator: "Nativeflows",
+  applicationName: "Nativeflows",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Nativeflows",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -49,6 +69,16 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 }
 
 export default function RootLayout({
@@ -58,12 +88,27 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#8b5cf6" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Nativeflows" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#8b5cf6" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+      </head>
       <body className={inter.className}>
-        <AnalyticsProvider>
-          {children}
-          <Toaster />
-          <Sonner />
-        </AnalyticsProvider>
+        <PWAProvider>
+          <AnalyticsProvider>
+            {children}
+            <Toaster />
+            <Sonner />
+            <InstallPrompt />
+            <NotificationPrompt />
+          </AnalyticsProvider>
+        </PWAProvider>
       </body>
     </html>
   )

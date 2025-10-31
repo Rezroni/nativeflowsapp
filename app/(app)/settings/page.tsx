@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { NotificationPreferencesCard } from '@/components/notifications/notification-preferences';
 import Link from 'next/link';
 
 export default async function SettingsPage() {
@@ -169,6 +170,9 @@ export default async function SettingsPage() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Notification Preferences */}
+        <NotificationPreferencesCard />
 
         {/* Danger Zone */}
         <Card className="border-destructive">

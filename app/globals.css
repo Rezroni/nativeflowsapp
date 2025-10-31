@@ -237,4 +237,93 @@
   .animate-fade-in-up {
     animation: fadeInUp 1s ease-out forwards;
   }
+
+  /* PWA Standalone Mode Styles */
+  @media (display-mode: standalone) {
+    body {
+      /* Prevent overscroll bounce on iOS */
+      overscroll-behavior-y: none;
+    }
+
+    /* Safe area insets for devices with notches */
+    .safe-area-inset-top {
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .safe-area-inset-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .safe-area-inset-left {
+      padding-left: env(safe-area-inset-left);
+    }
+
+    .safe-area-inset-right {
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* Improve touch targets in standalone mode */
+    button,
+    a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* iOS specific PWA fixes */
+  @supports (-webkit-touch-callout: none) {
+    /* Prevent iOS Safari bounce effect */
+    body {
+      position: fixed;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+
+    #__next {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      height: 100vh;
+    }
+  }
+
+  /* Disable text selection on long press for better app-like feel */
+  @media (display-mode: standalone) {
+    * {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Allow text selection in inputs and editable areas */
+    input,
+    textarea,
+    [contenteditable],
+    .selectable {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+  }
+
+  /* Pull-to-refresh prevention */
+  @media (display-mode: standalone) {
+    body {
+      overscroll-behavior-y: contain;
+    }
+  }
+
+  /* Loading animation for offline content */
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .offline-loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 }

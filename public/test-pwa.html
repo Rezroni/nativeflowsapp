@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Test - Service Worker Registration</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 16px;
+    }
+    .success {
+      background: #d1fae5;
+      border: 2px solid #10b981;
+      color: #065f46;
+    }
+    .error {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      color: #991b1b;
+    }
+    .info {
+      background: #dbeafe;
+      border: 2px solid #3b82f6;
+      color: #1e40af;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    pre {
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .card {
+      padding: 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+    }
+    .card h3 {
+      margin: 0 0 10px 0;
+      color: #374151;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .badge.green {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .badge.red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 PWA Service Worker Test</h1>
+
+    <div id="status"></div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Browser Support</h3>
+        <div id="browser-support"></div>
+      </div>
+
+      <div class="card">
+        <h3>Registration Status</h3>
+        <div id="registration-status"></div>
+      </div>
+
+      <div class="card">
+        <h3>Cache Status</h3>
+        <div id="cache-status"></div>
+      </div>
+    </div>
+
+    <div>
+      <button onclick="registerSW()">Register Service Worker</button>
+      <button onclick="checkSW()">Check Status</button>
+      <button onclick="checkCache()">Check Cache</button>
+      <button onclick="unregisterSW()">Unregister</button>
+      <button onclick="window.location.href='/'">Go to App</button>
+    </div>
+
+    <div id="logs">
+      <h3>Logs:</h3>
+      <pre id="log-output"></pre>
+    </div>
+  </div>
+
+  <script>
+    const log = (message, type = 'info') => {
+      const output = document.getElementById('log-output');
+      const timestamp = new Date().toLocaleTimeString();
+      output.textContent += `[${timestamp}] ${message}\n`;
+      console.log(message);
+
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = `status ${type}`;
+      statusDiv.textContent = message;
+    };
+
+    const updateBrowserSupport = () => {
+      const div = document.getElementById('browser-support');
+      if ('serviceWorker' in navigator) {
+        div.innerHTML = '<span class="badge green">✅ Supported</span>';
+      } else {
+        div.innerHTML = '<span class="badge red">❌ Not Supported</span>';
+      }
+    };
+
+    const updateRegistrationStatus = async () => {
+      const div = document.getElementById('registration-status');
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          const state = registration.active ? registration.active.state : 'installing';
+          div.innerHTML = `<span class="badge green">✅ ${state}</span>`;
+        } else {
+          div.innerHTML = '<span class="badge red">❌ Not Registered</span>';
+        }
+      } catch (err) {
+        div.innerHTML = '<span class="badge red">❌ Error</span>';
+      }
+    };
+
+    const updateCacheStatus = async () => {
+      const div = document.getElementById('cache-status');
+      try {
+        const cacheNames = await caches.keys();
+        if (cacheNames.length > 0) {
+          div.innerHTML = `<span class="badge green">✅ ${cacheNames.length} cache(s)</span>`;
+        } else {
+          div.innerHTML = '<span class="badge red">❌ No caches</span>';
+        }
+      } catch (err) {
+        div.innerHTML = '<span class="badge red">❌ Error</span>';
+      }
+    };
+
+    async function registerSW() {
+      log('Attempting to register service worker...', 'info');
+
+      if (!('serviceWorker' in navigator)) {
+        log('❌ Service Worker not supported in this browser', 'error');
+        return;
+      }
+
+      try {
+        const registration = await navigator.serviceWorker.register('/service-worker.js');
+        log('✅ Service Worker registered successfully!', 'success');
+        log(`Scope: ${registration.scope}`, 'info');
+
+        if (registration.installing) {
+          log('Service Worker is installing...', 'info');
+        } else if (registration.waiting) {
+          log('Service Worker is waiting...', 'info');
+        } else if (registration.active) {
+          log('Service Worker is active!', 'success');
+        }
+
+        // Listen for updates
+        registration.addEventListener('updatefound', () => {
+          log('Service Worker update found!', 'info');
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              log(`Service Worker state: ${newWorker.state}`, 'info');
+            });
+          }
+        });
+
+        await updateRegistrationStatus();
+        await updateCacheStatus();
+      } catch (error) {
+        log(`❌ Registration failed: ${error.message}`, 'error');
+      }
+    }
+
+    async function checkSW() {
+      log('Checking service worker status...', 'info');
+
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          log('✅ Service Worker is registered', 'success');
+          log(`Scope: ${registration.scope}`, 'info');
+          log(`Active: ${registration.active ? 'Yes' : 'No'}`, 'info');
+          log(`Waiting: ${registration.waiting ? 'Yes' : 'No'}`, 'info');
+          log(`Installing: ${registration.installing ? 'Yes' : 'No'}`, 'info');
+        } else {
+          log('❌ No service worker registered', 'error');
+        }
+
+        await updateRegistrationStatus();
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function checkCache() {
+      log('Checking cache...', 'info');
+
+      try {
+        const cacheNames = await caches.keys();
+        log(`Found ${cacheNames.length} cache(s): ${cacheNames.join(', ')}`, 'success');
+
+        for (const cacheName of cacheNames) {
+          const cache = await caches.open(cacheName);
+          const keys = await cache.keys();
+          log(`Cache "${cacheName}" contains ${keys.length} entries`, 'info');
+          keys.slice(0, 5).forEach(req => {
+            log(`  - ${req.url}`, 'info');
+          });
+          if (keys.length > 5) {
+            log(`  ... and ${keys.length - 5} more`, 'info');
+          }
+        }
+
+        await updateCacheStatus();
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function unregisterSW() {
+      log('Unregistering service worker...', 'info');
+
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          await registration.unregister();
+          log('✅ Service Worker unregistered', 'success');
+        } else {
+          log('No service worker to unregister', 'info');
+        }
+
+        // Clear caches
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        log('✅ All caches cleared', 'success');
+
+        await updateRegistrationStatus();
+        await updateCacheStatus();
+      } catch (error) {
+        log(`❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Auto-register on page load
+    window.addEventListener('load', async () => {
+      log('Page loaded, checking service worker...', 'info');
+      updateBrowserSupport();
+      await updateRegistrationStatus();
+      await updateCacheStatus();
+
+      // Auto-register if not already registered
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        log('Auto-registering service worker...', 'info');
+        await registerSW();
+      } else {
+        log('Service worker already registered', 'success');
+      }
+    });
+  </script>
+</body>
+</html>
