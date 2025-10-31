@@ -17,12 +17,18 @@ This guide explains how to grant super admin access to Mokhamedrezk@gmail.com.
    - Click on "SQL Editor" in the left sidebar
    - Click "New query"
 
-3. **Run the Migration SQL**
+3. **IMPORTANT: Fix RLS Policy First**
+   - Copy the contents of `supabase/migrations/20250131_fix_admin_roles_rls.sql`
+   - Paste it into the SQL editor
+   - Click "Run" or press Ctrl+Enter
+   - This fixes a critical RLS policy issue that prevents admin access
+
+4. **Run the Super Admin Migration SQL**
    - Copy the contents of `supabase/migrations/20250131_add_super_admin_mokhamedrezk.sql`
    - Paste it into the SQL editor
    - Click "Run" or press Ctrl+Enter
 
-4. **Verify the Admin Role**
+5. **Verify the Admin Role**
    - Run this verification query in the SQL editor:
    ```sql
    SELECT
@@ -89,6 +95,34 @@ https://your-domain.com/admin
 ```
 
 ## Troubleshooting
+
+### User Gets Redirected to Dashboard When Accessing /admin
+**Problem**: User has admin_roles entry but still gets redirected to dashboard when trying to access `/admin`
+
+**Solutions**:
+1. **Apply the RLS Fix** (Most Common Issue):
+   - Run the SQL from `supabase/migrations/20250131_fix_admin_roles_rls.sql`
+   - This fixes the Row Level Security policy that was blocking admin role checks
+   - The old policy had a chicken-and-egg problem where you needed to be an admin to check if you're an admin
+
+2. **Verify the RLS Policy**:
+   - In Supabase dashboard, go to Authentication → Policies
+   - Check that the `admin_roles` table has policy: "Users can view their own admin role"
+   - The policy should use: `USING (user_id = auth.uid())`
+
+3. **Check the admin_roles entry**:
+   ```sql
+   -- Run this in SQL Editor to verify the admin role exists
+   SELECT ar.*, p.email
+   FROM admin_roles ar
+   JOIN profiles p ON p.id = ar.user_id
+   WHERE p.email = 'Mokhamedrezk@gmail.com';
+   ```
+
+4. **Clear browser cache and cookies**:
+   - Sometimes cached authentication state causes issues
+   - Try logging out and logging back in
+   - Or use an incognito/private browser window
 
 ### User Not Found Error
 If you get an error that the user doesn't exist:

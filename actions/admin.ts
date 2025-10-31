@@ -15,13 +15,41 @@ export async function isAdmin(): Promise<boolean> {
 
   if (!user) return false;
 
-  const { data: profile } = await supabase
-    .from('profiles')
+  // Check admin_roles table instead of profiles.role
+  const { data: adminRole, error } = await supabase
+    .from('admin_roles')
     .select('role')
-    .eq('id', user.id)
-    .single();
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  return profile?.role === 'admin';
+  // Log for debugging
+  if (error) {
+    console.error('Error checking admin role:', error);
+  }
+
+  // Return true if user has any admin role (super_admin, admin, or editor)
+  return adminRole !== null && ['super_admin', 'admin', 'editor'].includes(adminRole.role);
+}
+
+/**
+ * Get current user's admin role details
+ */
+export async function getAdminRole() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data: adminRole } = await supabase
+    .from('admin_roles')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  return adminRole;
 }
 
 /**
