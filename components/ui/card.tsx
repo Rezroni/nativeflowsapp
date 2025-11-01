@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { cardHoverVariants, shouldReduceMotion } from "@/lib/animations/variants"
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps {
   /**
    * Enable hover animations (elevation and scale)
    * @default false
@@ -15,10 +15,46 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default false
    */
   clickable?: boolean
+  /**
+   * Additional CSS classes
+   */
+  className?: string
+  /**
+   * Click handler
+   */
+  onClick?: React.MouseEventHandler<HTMLDivElement>
+  /**
+   * Child elements
+   */
+  children?: React.ReactNode
+  /**
+   * ARIA label
+   */
+  'aria-label'?: string
+  /**
+   * Element ID
+   */
+  id?: string
+  /**
+   * Tab index
+   */
+  tabIndex?: number
+  /**
+   * Role attribute
+   */
+  role?: string
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, animated = false, clickable = false, ...props }, ref) => {
+  ({ className, animated = false, clickable = false, onClick, children, id, tabIndex, role, 'aria-label': ariaLabel }, ref) => {
+    const commonProps = {
+      onClick,
+      id,
+      tabIndex,
+      role,
+      'aria-label': ariaLabel,
+    }
+
     // If not animated or reduced motion is preferred, render static card
     if (!animated || shouldReduceMotion()) {
       return (
@@ -29,8 +65,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
             clickable && "cursor-pointer",
             className
           )}
-          {...props}
-        />
+          {...commonProps}
+        >
+          {children}
+        </div>
       )
     }
 
@@ -51,8 +89,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           duration: 0.15,
           ease: [0.4, 0.0, 0.2, 1],
         }}
-        {...props}
-      />
+        {...commonProps}
+      >
+        {children}
+      </motion.div>
     )
   }
 )

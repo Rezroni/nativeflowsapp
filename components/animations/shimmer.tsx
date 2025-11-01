@@ -10,11 +10,11 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { shimmerVariants, shouldReduceMotion } from '@/lib/animations/variants';
 
-interface ShimmerProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ShimmerProps {
   /**
    * Width of the shimmer element
    * @default '100%'
@@ -35,6 +35,14 @@ interface ShimmerProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default false
    */
   static?: boolean;
+  /**
+   * Additional CSS classes
+   */
+  className?: string;
+  /**
+   * Inline styles
+   */
+  style?: React.CSSProperties;
 }
 
 const roundedClasses = {
@@ -60,7 +68,6 @@ export function Shimmer({
   static: isStatic = false,
   className,
   style,
-  ...props
 }: ShimmerProps) {
   const shouldAnimate = !isStatic && !shouldReduceMotion();
 
@@ -83,7 +90,6 @@ export function Shimmer({
         variants={shimmerVariants}
         initial="initial"
         animate="animate"
-        {...props}
       />
     );
   }
@@ -97,7 +103,6 @@ export function Shimmer({
         className
       )}
       style={shimmerStyle}
-      {...props}
     />
   );
 }
@@ -115,7 +120,6 @@ export function Shimmer({
 export function ShimmerLine({
   width = '100%',
   className,
-  ...props
 }: Omit<ShimmerProps, 'height' | 'rounded'>) {
   return (
     <Shimmer
@@ -123,7 +127,6 @@ export function ShimmerLine({
       height="0.875rem"
       rounded="sm"
       className={className}
-      {...props}
     />
   );
 }
@@ -140,7 +143,6 @@ export function ShimmerLine({
 export function ShimmerCircle({
   size = '2.5rem',
   className,
-  ...props
 }: Omit<ShimmerProps, 'width' | 'height' | 'rounded'> & {
   size?: string | number;
 }) {
@@ -150,7 +152,6 @@ export function ShimmerCircle({
       height={size}
       rounded="full"
       className={className}
-      {...props}
     />
   );
 }
@@ -168,7 +169,6 @@ export function ShimmerCard({
   width = '100%',
   height = '200px',
   className,
-  ...props
 }: Omit<ShimmerProps, 'rounded'>) {
   return (
     <Shimmer
@@ -176,7 +176,6 @@ export function ShimmerCard({
       height={height}
       rounded="lg"
       className={cn('p-6', className)}
-      {...props}
     />
   );
 }
@@ -193,7 +192,6 @@ export function ShimmerCard({
 export function ShimmerButton({
   width = '120px',
   className,
-  ...props
 }: Omit<ShimmerProps, 'height' | 'rounded'>) {
   return (
     <Shimmer
@@ -201,7 +199,6 @@ export function ShimmerButton({
       height="2.5rem"
       rounded="md"
       className={className}
-      {...props}
     />
   );
 }

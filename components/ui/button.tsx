@@ -65,10 +65,42 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     iconButton = false,
     disabled,
     children,
+    onClick,
+    type,
+    form,
+    name,
+    value,
+    autoFocus,
+    tabIndex,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedby,
+    'aria-pressed': ariaPressed,
+    'aria-expanded': ariaExpanded,
+    'aria-controls': ariaControls,
+    'aria-haspopup': ariaHaspopup,
+    id,
     ...props
   }, ref) => {
     const Comp = asChild ? Slot : "button"
     const isDisabled = disabled || loading
+
+    // Common props for both animated and non-animated versions
+    const commonProps = {
+      onClick,
+      type,
+      form,
+      name,
+      value,
+      autoFocus,
+      tabIndex,
+      'aria-label': ariaLabel,
+      'aria-describedby': ariaDescribedby,
+      'aria-pressed': ariaPressed,
+      'aria-expanded': ariaExpanded,
+      'aria-controls': ariaControls,
+      'aria-haspopup': ariaHaspopup,
+      id,
+    }
 
     // If not animated or reduced motion is preferred, render without animations
     if (!animated || shouldReduceMotion() || asChild) {
@@ -77,6 +109,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className={cn(buttonVariants({ variant, size, className }))}
           ref={ref}
           disabled={isDisabled}
+          {...commonProps}
           {...props}
         >
           {loading ? (
@@ -135,7 +168,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           duration: 0.15,
           ease: [0.4, 0.0, 0.2, 1],
         }}
-        {...props}
+        {...commonProps}
       >
         {loading ? (
           <span className="flex items-center gap-2">

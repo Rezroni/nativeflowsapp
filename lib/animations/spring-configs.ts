@@ -150,7 +150,7 @@ export const createSpring = (options: {
   const { feel = 'smooth', speed = 'normal', mass: customMass } = options;
 
   // Base configurations for each feel
-  const feelConfigs: Record<string, Pick<SpringConfig, 'stiffness' | 'damping'>> = {
+  const feelConfigs: Record<string, { stiffness: number; damping: number }> = {
     smooth: { stiffness: 300, damping: 30 },
     bouncy: { stiffness: 400, damping: 20 },
     stiff: { stiffness: 500, damping: 35 },
@@ -167,8 +167,8 @@ export const createSpring = (options: {
     fast: 1.4,
   };
 
-  const baseConfig = feelConfigs[feel];
-  const speedMultiplier = speedMultipliers[speed];
+  const baseConfig = feelConfigs[feel] ?? feelConfigs.smooth;
+  const speedMultiplier = speedMultipliers[speed] ?? 1;
 
   return {
     type: 'spring',
