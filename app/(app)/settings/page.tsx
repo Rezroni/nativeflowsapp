@@ -2,11 +2,10 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { NotificationPreferencesCard } from '@/components/notifications/notification-preferences';
+import { ProfileForm } from '@/components/settings/profile-form';
 import Link from 'next/link';
 
 export default async function SettingsPage() {
@@ -27,21 +26,26 @@ export default async function SettingsPage() {
     .eq('id', user.id)
     .single();
 
-  // Fetch subscription
+  // Fetch subscription with correct ordering
   const { data: subscription } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
-    .single();
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  const planDisplayNames = {
+  const planDisplayNames: Record<string, string> = {
+    weekly: 'Weekly Plan',
+    monthly: 'Monthly Plan',
+    annual: 'Annual Plan',
     free: 'Free Trial',
-    pro_monthly: 'Pro Monthly',
-    pro_annual: 'Pro Annual',
-    enterprise: 'Enterprise',
   };
 
-  const currentPlan = subscription?.plan_id || 'free';
+  // Use plan_type instead of plan_id
+  const currentPlan = subscription?.plan_type || 'free';
+  const planName = planDisplayNames[currentPlan] || 'Free';
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -61,44 +65,12 @@ export default async function SettingsPage() {
               Update your personal information and email address
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={user.email || ''}
-                disabled
-              />
-              <p className="text-xs text-muted-foreground">
-                Email cannot be changed at this time
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                defaultValue={profile?.full_name || ''}
-                placeholder="Enter your full name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                defaultValue={profile?.username || ''}
-                placeholder="Enter your username"
-              />
-            </div>
-
-            <Button disabled>Save Changes</Button>
-            <p className="text-xs text-muted-foreground">
-              Profile updates coming soon
-            </p>
+          <CardContent>
+            <ProfileForm
+              email={user.email || ''}
+              fullName={profile?.full_name}
+              username={profile?.username}
+            />
           </CardContent>
         </Card>
 
@@ -110,17 +82,20 @@ export default async function SettingsPage() {
                 <CardTitle>Subscription</CardTitle>
                 <CardDescription>Manage your subscription plan</CardDescription>
               </div>
-              <Badge variant={subscription?.status === 'active' ? 'default' : 'secondary'}>
-                {subscription?.status || 'Free'}
+              <Badge
+                variant={subscription?.status === 'active' ? 'default' : 'secondary'}
+                className="capitalize"
+              >
+                {subscription?.status === 'active' ? planName : 'Free'}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Current Plan</p>
-                <p className="text-lg font-semibold">
-                  {planDisplayNames[currentPlan as keyof typeof planDisplayNames]}
+                <p className="text-lg font-semibold capitalize">
+                  {planName}
                 </p>
               </div>
               {subscription?.current_period_end && (
@@ -135,24 +110,24 @@ export default async function SettingsPage() {
               )}
             </div>
 
+            {subscription?.status === 'active' && (
+              <div className="p-3 rounded-lg bg-muted">
+                <p className="text-sm">
+                  <span className="font-medium">Status:</span> Active
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You have unlimited analyses with {planName}
+                </p>
+              </div>
+            )}
+
             <Separator />
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Link href="/pricing">
-                <Button variant="outline">View Plans</Button>
+                <Button variant="outline" className="w-full sm:w-auto">View Plans</Button>
               </Link>
-              {subscription && subscription.plan_id !== 'free' && (
-                <Button variant="outline" disabled>
-                  Manage Subscription
-                </Button>
-              )}
             </div>
-
-            {subscription && subscription.plan_id !== 'free' && (
-              <p className="text-xs text-muted-foreground">
-                Subscription management via Stripe coming soon
-              </p>
-            )}
           </CardContent>
         </Card>
 
