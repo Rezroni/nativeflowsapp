@@ -9,6 +9,18 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const [showReload, setShowReload] = useState(false)
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null)
 
+  const reloadPage = () => {
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: 'SKIP_WAITING' })
+      waitingWorker.addEventListener('statechange', (e) => {
+        const target = e.target as ServiceWorker
+        if (target.state === 'activated') {
+          window.location.reload()
+        }
+      })
+    }
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       registerServiceWorker({
@@ -36,19 +48,9 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
         }
       })
     }
+    // reloadPage is used in the toast action above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const reloadPage = () => {
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' })
-      waitingWorker.addEventListener('statechange', (e) => {
-        const target = e.target as ServiceWorker
-        if (target.state === 'activated') {
-          window.location.reload()
-        }
-      })
-    }
-  }
 
   return (
     <>

@@ -15,19 +15,6 @@ export default function PaymentPage() {
   const [payment, setPayment] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!paymentId) {
-      setError('No payment ID provided')
-      setLoading(false)
-      return
-    }
-
-    fetchPaymentStatus()
-    const interval = setInterval(fetchPaymentStatus, 10000) // Poll every 10 seconds
-
-    return () => clearInterval(interval)
-  }, [paymentId])
-
   const fetchPaymentStatus = async () => {
     if (!paymentId) return
 
@@ -53,6 +40,21 @@ export default function PaymentPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!paymentId) {
+      setError('No payment ID provided')
+      setLoading(false)
+      return
+    }
+
+    fetchPaymentStatus()
+    const interval = setInterval(fetchPaymentStatus, 10000) // Poll every 10 seconds
+
+    return () => clearInterval(interval)
+    // fetchPaymentStatus is called in the effect and interval
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentId])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
