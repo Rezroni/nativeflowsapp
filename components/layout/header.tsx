@@ -5,7 +5,11 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Menu, X, ChartCandlestick } from 'lucide-react'
 
-export function Header() {
+interface HeaderProps {
+  user?: any
+}
+
+export function Header({ user }: HeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -37,15 +41,23 @@ export function Header() {
           >
             Blog
           </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Sign In
-          </Link>
-          <Button asChild>
-            <Link href="/signup">Start Free Trial</Link>
-          </Button>
+          {user ? (
+            <Button asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign In
+              </Link>
+              <Button asChild>
+                <Link href="/signup">Start Free Trial</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -86,16 +98,24 @@ export function Header() {
             >
               How It Works
             </Link>
-            <Link
-              href="/login"
-              className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Sign In
-            </Link>
-            <Button asChild className="w-full">
-              <Link href="/signup">Start Free Trial</Link>
-            </Button>
+            {user ? (
+              <Button asChild className="w-full">
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Button asChild className="w-full">
+                  <Link href="/signup">Start Free Trial</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

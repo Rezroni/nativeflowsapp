@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/footer'
 import { Disclaimer } from '@/components/common/disclaimer'
 import { SocialProof } from '@/components/common/social-proof'
 import { HomeAnimations } from '@/components/common/home-animations'
+import { createClient } from '@/lib/supabase/server'
 import {
   TrendingUp,
   Brain,
@@ -18,10 +19,15 @@ import {
   ArrowRight
 } from 'lucide-react'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <div className="flex min-h-screen flex-col gradient-bg">
-      <Header />
+      <Header user={user} />
       <HomeAnimations>
 
       {/* Hero Section */}
@@ -49,15 +55,26 @@ export default function HomePage() {
             </p>
 
             <div className="hero-buttons flex flex-col gap-4 sm:flex-row sm:justify-center mb-12">
-              <Button size="lg" className="group hover-glow text-lg px-8 py-6" asChild>
-                <Link href="/pricing">
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 glass hover-glow" asChild>
-                <Link href="#features">Learn More</Link>
-              </Button>
+              {user ? (
+                <Button size="lg" className="group hover-glow text-lg px-8 py-6" asChild>
+                  <Link href="/dashboard">
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button size="lg" className="group hover-glow text-lg px-8 py-6" asChild>
+                    <Link href="/pricing">
+                      Get Started
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="text-lg px-8 py-6 glass hover-glow" asChild>
+                    <Link href="#features">Learn More</Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             <div className="hero-features flex items-center justify-center gap-8 text-sm text-muted-foreground">

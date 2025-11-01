@@ -13,11 +13,12 @@ export const openrouter = process.env.OPENROUTER_API_KEY
   : null;
 
 // Using free models from OpenRouter (in order of preference)
-export const OPENROUTER_MODEL = 'google/gemini-2.0-flash-exp:free';
+// Prioritizing models with better vision and numerical analysis capabilities
+export const OPENROUTER_MODEL = 'meta-llama/llama-3.2-90b-vision-instruct:free';
 export const OPENROUTER_FALLBACK_MODELS = [
-  'google/gemini-flash-1.5-8b:free',
-  'meta-llama/llama-3.2-90b-vision-instruct:free',
+  'google/gemini-2.0-flash-exp:free',
   'meta-llama/llama-3.2-11b-vision-instruct:free',
+  'google/gemini-flash-1.5-8b:free',
 ];
 
 // Check if OpenRouter is available

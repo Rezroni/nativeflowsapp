@@ -97,32 +97,32 @@ export default async function HistoryPage() {
         <div className="space-y-4">
           {analyses.map((analysis) => (
             <Card key={analysis.id} className="glass-card hover-glow transition-all hover:-translate-y-1">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                   {/* Thumbnail */}
-                  <div className="w-32 h-32 rounded-lg bg-muted relative overflow-hidden flex-shrink-0">
+                  <div className="w-full sm:w-32 h-48 sm:h-32 rounded-lg bg-muted relative overflow-hidden flex-shrink-0">
                     {analysis.image_url && (
                       <Image
                         src={analysis.image_url}
                         alt="Chart"
                         fill
                         className="object-cover"
-                        sizes="128px"
+                        sizes="(max-width: 640px) 100vw, 128px"
                       />
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0 w-full">
+                    <div className="flex flex-col gap-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold mb-1">
+                        <h3 className="text-lg font-semibold mb-1 truncate">
                           Analysis #{analysis.id.slice(0, 8)}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3">
                           {new Date(analysis.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
-                            month: 'long',
+                            month: 'short',
                             day: 'numeric',
                           })}{' '}
                           at{' '}
@@ -133,14 +133,14 @@ export default async function HistoryPage() {
                         </p>
 
                         {/* Quick Stats */}
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2">
                           {analysis.analysis_data?.marketStructure?.trend && (
-                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium">
+                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium capitalize">
                               Trend: {analysis.analysis_data.marketStructure.trend}
                             </div>
                           )}
                           {analysis.analysis_data?.tradeSetup?.bias && (
-                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium">
+                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium capitalize">
                               Bias: {analysis.analysis_data.tradeSetup.bias}
                             </div>
                           )}
@@ -153,8 +153,8 @@ export default async function HistoryPage() {
                       </div>
 
                       {/* Action Button */}
-                      <Link href={`/analysis/${analysis.id}`}>
-                        <Button className="hover-glow">
+                      <Link href={`/analysis/${analysis.id}`} className="w-full sm:w-auto">
+                        <Button className="hover-glow w-full sm:w-auto">
                           View Details <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </Link>

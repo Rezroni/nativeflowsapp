@@ -61,19 +61,37 @@ Analyze the chart and identify:
    - Key levels to watch
    - Potential scenarios (bullish/bearish)
 
+**CRITICAL: You MUST identify and extract the EXACT numerical price levels visible on the chart's Y-axis.**
+
+When identifying prices:
+- Look at the price scale on the RIGHT or LEFT side of the chart
+- Read the exact numerical values shown on the axis
+- If you see "5853.00" on the axis, use 5853.00 - NOT 0.00
+- If you see "1.0856" use 1.0856 - NOT 0.00
+- NEVER use 0.00 unless the chart explicitly shows 0.00
+- Estimate between grid lines if exact price not visible (e.g., if you see 5850 and 5860, a level halfway between would be 5855)
+
+**EXAMPLE of CORRECT price reading:**
+If chart shows EUR/USD with prices 1.0850, 1.0860, 1.0870 on Y-axis:
+- Order Block high might be: 1.0868
+- Order Block low might be: 1.0862
+- Entry price: 1.0865
+- Stop loss: 1.0858
+- Take profits: [1.0872, 1.0878, 1.0885]
+
 Respond in valid JSON format following this structure:
 
 {
   "marketStructure": {
     "trend": "bullish" | "bearish" | "ranging",
-    "bos": [{"price": number, "direction": "bullish" | "bearish", "timestamp": "string"}],
-    "choch": [{"price": number, "direction": "bullish" | "bearish", "timestamp": "string"}]
+    "bos": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "direction": "bullish" | "bearish", "timestamp": "string"}],
+    "choch": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "direction": "bullish" | "bearish", "timestamp": "string"}]
   },
   "orderBlocks": [
     {
       "type": "bullish" | "bearish",
-      "zone": {"high": number, "low": number},
-      "strength": number,
+      "zone": {"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>},
+      "strength": number (1-10),
       "tested": boolean,
       "description": "string"
     }
@@ -81,27 +99,27 @@ Respond in valid JSON format following this structure:
   "fvgs": [
     {
       "type": "bullish" | "bearish",
-      "zone": {"high": number, "low": number},
+      "zone": {"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>},
       "mitigated": boolean,
       "description": "string"
     }
   ],
   "liquidity": {
-    "buySide": [{"price": number, "type": "string", "swept": boolean}],
-    "sellSide": [{"price": number, "type": "string", "swept": boolean}]
+    "buySide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string", "swept": boolean}],
+    "sellSide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string", "swept": boolean}]
   },
   "premiumDiscount": {
-    "premium": [{"high": number, "low": number}],
-    "discount": [{"high": number, "low": number}],
-    "equilibrium": number
+    "premium": [{"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>}],
+    "discount": [{"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>}],
+    "equilibrium": <ACTUAL PRICE NUMBER FROM CHART (50% level)>
   },
   "tradeSetup": {
     "bias": "bullish" | "bearish" | "neutral",
     "entryType": "market" | "limit",
-    "entry": number,
-    "stopLoss": number,
-    "takeProfit": [number, number, number],
-    "riskReward": number,
+    "entry": <ACTUAL PRICE NUMBER FROM CHART>,
+    "stopLoss": <ACTUAL PRICE NUMBER FROM CHART>,
+    "takeProfit": [<ACTUAL NUMBER>, <ACTUAL NUMBER>, <ACTUAL NUMBER>],
+    "riskReward": number (calculated from entry/SL/TP),
     "positionSize": "conservative" | "moderate" | "aggressive",
     "confluences": ["string"],
     "validity": "high" | "medium" | "low"
@@ -109,7 +127,7 @@ Respond in valid JSON format following this structure:
   "insights": {
     "narrative": "string",
     "smartMoneyBehavior": "string",
-    "keyLevels": [number],
+    "keyLevels": [<ACTUAL PRICE NUMBERS FROM CHART>],
     "scenarios": {
       "bullish": "string",
       "bearish": "string"
@@ -117,6 +135,8 @@ Respond in valid JSON format following this structure:
   },
   "educationalNotes": ["string"]
 }
+
+REMEMBER: All prices MUST be actual numbers from the chart. NO 0.00 values unless the chart explicitly shows 0.00!
 
 Be precise, educational, and focus on teaching SMC concepts while providing actionable analysis.`;
 

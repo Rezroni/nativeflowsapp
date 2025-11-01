@@ -95,23 +95,28 @@ export function AppNav() {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                aria-label="User menu"
+              >
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center cursor-pointer">
+                <Link href="/settings" className="flex items-center cursor-pointer w-full">
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/pricing" className="flex items-center cursor-pointer">
+                <Link href="/pricing" className="flex items-center cursor-pointer w-full">
                   <CreditCard className="mr-2 h-4 w-4" />
-                  Pricing
+                  <span>Pricing</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -120,7 +125,7 @@ export function AppNav() {
                 className="text-destructive focus:text-destructive cursor-pointer"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
