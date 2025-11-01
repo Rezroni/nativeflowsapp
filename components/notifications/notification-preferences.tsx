@@ -29,7 +29,10 @@ export function NotificationPreferencesCard() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('profiles')
@@ -37,17 +40,34 @@ export function NotificationPreferencesCard() {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      // If column doesn't exist yet, use defaults
+      if (error && error.code === 'PGRST116') {
+        console.log('Notification preferences not configured yet, using defaults');
+        setPreferences(DEFAULT_NOTIFICATION_PREFERENCES);
+        setIsLoading(false);
+        return;
+      }
+
+      if (error) {
+        console.warn('Error loading notification preferences:', error);
+        // Use defaults if error
+        setPreferences(DEFAULT_NOTIFICATION_PREFERENCES);
+        setIsLoading(false);
+        return;
+      }
 
       if (data?.notification_preferences) {
         setPreferences({
           ...DEFAULT_NOTIFICATION_PREFERENCES,
           ...data.notification_preferences,
         });
+      } else {
+        setPreferences(DEFAULT_NOTIFICATION_PREFERENCES);
       }
     } catch (error) {
       console.error('Error loading notification preferences:', error);
-      toast.error('Failed to load notification preferences');
+      // Don't show error toast, just use defaults
+      setPreferences(DEFAULT_NOTIFICATION_PREFERENCES);
     } finally {
       setIsLoading(false);
     }

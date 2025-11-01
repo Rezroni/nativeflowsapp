@@ -64,11 +64,16 @@ export function PushPermissionPrompt({
         setShow(false);
         onDismiss?.();
       } else {
-        alert('Failed to enable push notifications. Please check your browser settings.');
+        setShow(false);
+        onDismiss?.();
+        alert('Push notifications require configuration. Please contact support or try again later.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error enabling push notifications:', error);
-      alert('An error occurred while enabling push notifications.');
+      setShow(false);
+      onDismiss?.();
+      const errorMessage = error?.message || 'An error occurred';
+      alert(`Push notifications are not available: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

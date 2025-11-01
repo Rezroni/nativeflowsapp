@@ -103,15 +103,15 @@ export default async function AnalysisDetailPage({
 
       {/* Disclaimer */}
       {disclaimer && (
-        <Card className="mb-8 border-yellow-200 bg-yellow-50/50 dark:border-yellow-900 dark:bg-yellow-950/20">
+        <Card className="mb-8 border-orange-500/30 bg-orange-950/30 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <span className="text-2xl">⚠️</span>
               <div className="flex-1">
-                <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                <h3 className="font-semibold text-orange-400 mb-1">
                   Educational Disclaimer
                 </h3>
-                <p className="text-sm text-yellow-800 dark:text-yellow-200 leading-relaxed">
+                <p className="text-sm text-orange-200/90 leading-relaxed">
                   {disclaimer}
                 </p>
               </div>

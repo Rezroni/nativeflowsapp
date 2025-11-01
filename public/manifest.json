@@ -4,8 +4,8 @@
   "description": "Analyze trading charts with AI Vision and Smart Money Concepts. Learn institutional trading strategies while getting AI-powered insights.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#8b5cf6",
-  "theme_color": "#8b5cf6",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
