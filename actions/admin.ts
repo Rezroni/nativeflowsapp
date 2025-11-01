@@ -182,3 +182,227 @@ export async function getUserDetails(userId: string) {
     };
   }
 }
+
+/**
+ * Change user password (super admin only)
+ */
+export async function changeUserPassword(
+  userId: string,
+  newPassword: string
+) {
+  const supabase = await createClient();
+
+  // Check if current user is super admin
+  const adminRole = await getAdminRole();
+  if (!adminRole || adminRole.role !== 'super_admin') {
+    return { error: 'Unauthorized. Super admin access required.' };
+  }
+
+  // Validate password
+  if (!newPassword || newPassword.length < 6) {
+    return { error: 'Password must be at least 6 characters long.' };
+  }
+
+  try {
+    // Get service role client for admin operations
+    const { data, error } = await supabase.auth.admin.updateUserById(userId, {
+      password: newPassword,
+    });
+
+    if (error) throw error;
+
+    revalidatePath('/admin/users');
+
+    return {
+      success: true,
+      message: 'User password updated successfully',
+    };
+  } catch (error) {
+    console.error('Error changing user password:', error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to change user password',
+    };
+  }
+}
+
+/**
+ * Create new user (super admin only)
+ */
+export async function createUser(
+  email: string,
+  password: string,
+  fullName?: string
+) {
+  const supabase = await createClient();
+
+  // Check if current user is super admin
+  const adminRole = await getAdminRole();
+  if (!adminRole || adminRole.role !== 'super_admin') {
+    return { error: 'Unauthorized. Super admin access required.' };
+  }
+
+  // Validate input
+  if (!email || !email.includes('@')) {
+    return { error: 'Valid email is required.' };
+  }
+  if (!password || password.length < 6) {
+    return { error: 'Password must be at least 6 characters long.' };
+  }
+
+  try {
+    // Create user using admin API
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        full_name: fullName || '',
+      },
+    });
+
+    if (error) throw error;
+
+    revalidatePath('/admin/users');
+
+    return {
+      success: true,
+      message: `User ${email} created successfully`,
+      user: data.user,
+    };
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return {
+      error: error instanceof Error ? error.message : 'Failed to create user',
+    };
+  }
+}
+
+/**
+ * Assign role to user (super admin only)
+ */
+export async function assignUserRole(
+  userId: string,
+  role: 'super_admin' | 'admin' | 'editor'
+) {
+  const supabase = await createClient();
+
+  // Check if current user is super admin
+  const adminRole = await getAdminRole();
+  if (!adminRole || adminRole.role !== 'super_admin') {
+    return { error: 'Unauthorized. Super admin access required.' };
+  }
+
+  try {
+    // Check if user already has a role
+    const { data: existingRole } = await supabase
+      .from('admin_roles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (existingRole) {
+      // Update existing role
+      const { error: updateError } = await supabase
+        .from('admin_roles')
+        .update({ role, updated_at: new Date().toISOString() })
+        .eq('user_id', userId);
+
+      if (updateError) throw updateError;
+    } else {
+      // Create new role
+      const { error: insertError } = await supabase
+        .from('admin_roles')
+        .insert({ user_id: userId, role });
+
+      if (insertError) throw insertError;
+    }
+
+    revalidatePath('/admin/users');
+    revalidatePath('/admin/roles');
+
+    return {
+      success: true,
+      message: `User role updated to ${role} successfully`,
+    };
+  } catch (error) {
+    console.error('Error assigning user role:', error);
+    return {
+      error:
+        error instanceof Error ? error.message : 'Failed to assign user role',
+    };
+  }
+}
+
+/**
+ * Remove role from user (super admin only)
+ */
+export async function removeUserRole(userId: string) {
+  const supabase = await createClient();
+
+  // Check if current user is super admin
+  const adminRole = await getAdminRole();
+  if (!adminRole || adminRole.role !== 'super_admin') {
+    return { error: 'Unauthorized. Super admin access required.' };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('admin_roles')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    revalidatePath('/admin/users');
+    revalidatePath('/admin/roles');
+
+    return {
+      success: true,
+      message: 'User role removed successfully',
+    };
+  } catch (error) {
+    console.error('Error removing user role:', error);
+    return {
+      error:
+        error instanceof Error ? error.message : 'Failed to remove user role',
+    };
+  }
+}
+
+/**
+ * Get all users with their roles (admin only)
+ */
+export async function getAllUsersWithRoles() {
+  const supabase = await createClient();
+
+  // Check if current user is admin
+  const adminCheck = await isAdmin();
+  if (!adminCheck) {
+    return { error: 'Unauthorized. Admin access required.' };
+  }
+
+  try {
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('*, admin_roles(*)')
+      .order('created_at', { ascending: false });
+
+    if (profileError) throw profileError;
+
+    return {
+      success: true,
+      users: profiles,
+    };
+  } catch (error) {
+    console.error('Error getting users with roles:', error);
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to get users with roles',
+    };
+  }
+}

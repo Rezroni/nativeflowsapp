@@ -3,6 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, UserCheck, UserX, Mail } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { UserSubscriptionManager } from '@/components/admin/user-subscription-manager'
+import { ChangeUserPasswordDialog } from '@/components/admin/change-user-password-dialog'
+import { AssignRoleDialog } from '@/components/admin/assign-role-dialog'
+import { CreateUserDialog } from '@/components/admin/create-user-dialog'
+import { getAdminRole } from '@/actions/admin'
 
 export const metadata = {
   title: 'Users | Admin',
@@ -12,9 +16,13 @@ export const metadata = {
 export default async function UsersPage() {
   const supabase = await createClient()
 
+  // Get admin role to check if super admin
+  const adminRole = await getAdminRole()
+  const isSuperAdmin = adminRole?.role === 'super_admin'
+
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('*, subscriptions(*)')
+    .select('*, subscriptions(*), admin_roles(*)')
     .order('created_at', { ascending: false })
 
   const totalUsers = profiles?.length || 0
@@ -22,11 +30,14 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">Users</h1>
-        <p className="text-muted-foreground">
-          Manage and monitor all users on your platform
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Users</h1>
+          <p className="text-muted-foreground">
+            Manage and monitor all users on your platform
+          </p>
+        </div>
+        {isSuperAdmin && <CreateUserDialog />}
       </div>
 
       {/* Stats Cards */}
@@ -97,15 +108,37 @@ export default async function UsersPage() {
                       <div className="font-medium capitalize">
                         {profile.subscription_tier || 'Free'}
                       </div>
+                      <div className="text-xs text-muted-foreground">
+                        {profile.admin_roles?.length > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 mr-2">
+                            {profile.admin_roles[0].role.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-muted-foreground">
                         Joined {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
                       </div>
                     </div>
-                    <UserSubscriptionManager
-                      userId={profile.id}
-                      userEmail={profile.email}
-                      currentTier={profile.subscription_tier || null}
-                    />
+                    <div className="flex flex-col gap-2">
+                      <UserSubscriptionManager
+                        userId={profile.id}
+                        userEmail={profile.email}
+                        currentTier={profile.subscription_tier || null}
+                      />
+                      {isSuperAdmin && (
+                        <div className="flex gap-2">
+                          <ChangeUserPasswordDialog
+                            userId={profile.id}
+                            userEmail={profile.email}
+                          />
+                          <AssignRoleDialog
+                            userId={profile.id}
+                            userEmail={profile.email}
+                            currentRole={profile.admin_roles?.[0]?.role || null}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
