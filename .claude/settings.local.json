@@ -26,7 +26,10 @@
       "Bash(curl:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(npx supabase:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(git push:*)",
+      "Bash(powershell \"Stop-Process -Id 17472 -Force\")",
+      "Bash(powershell \"Stop-Process -Id 3280 -Force\")"
     ],
     "deny": [],
     "ask": []

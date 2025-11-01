@@ -134,19 +134,19 @@ export default async function HistoryPage() {
 
                         {/* Quick Stats */}
                         <div className="flex flex-wrap gap-3">
-                          {analysis.analysis_data?.marketStructure && (
+                          {analysis.analysis_data?.marketStructure?.trend && (
                             <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium">
                               Trend: {analysis.analysis_data.marketStructure.trend}
                             </div>
                           )}
-                          {analysis.analysis_data?.tradeSetup && (
+                          {analysis.analysis_data?.tradeSetup?.bias && (
                             <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium">
                               Bias: {analysis.analysis_data.tradeSetup.bias}
                             </div>
                           )}
-                          {analysis.analysis_data?.tradeSetup && (
+                          {analysis.analysis_data?.tradeSetup?.riskReward && (
                             <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium">
-                              R:R 1:{analysis.analysis_data.tradeSetup.riskReward.toFixed(2)}
+                              R:R 1:{Number(analysis.analysis_data.tradeSetup.riskReward).toFixed(2)}
                             </div>
                           )}
                         </div>
