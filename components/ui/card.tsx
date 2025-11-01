@@ -1,20 +1,61 @@
 import * as React from "react"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { cardHoverVariants, shouldReduceMotion } from "@/lib/animations/variants"
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * Enable hover animations (elevation and scale)
+   * @default false
+   */
+  animated?: boolean
+  /**
+   * Make card clickable with tap animation
+   * @default false
+   */
+  clickable?: boolean
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, animated = false, clickable = false, ...props }, ref) => {
+    // If not animated or reduced motion is preferred, render static card
+    if (!animated || shouldReduceMotion()) {
+      return (
+        <div
+          ref={ref}
+          className={cn(
+            "rounded-lg border bg-card text-card-foreground shadow-sm",
+            clickable && "cursor-pointer",
+            className
+          )}
+          {...props}
+        />
+      )
+    }
+
+    // Render animated card with Framer Motion
+    return (
+      <motion.div
+        ref={ref}
+        className={cn(
+          "rounded-lg border bg-card text-card-foreground shadow-sm",
+          clickable && "cursor-pointer",
+          className
+        )}
+        variants={cardHoverVariants}
+        initial="rest"
+        whileHover="hover"
+        whileTap={clickable ? "tap" : undefined}
+        transition={{
+          duration: 0.15,
+          ease: [0.4, 0.0, 0.2, 1],
+        }}
+        {...props}
+      />
+    )
+  }
+)
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<
@@ -77,3 +118,4 @@ const CardFooter = React.forwardRef<
 CardFooter.displayName = "CardFooter"
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export type { CardProps }

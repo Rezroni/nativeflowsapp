@@ -7,6 +7,7 @@ import { AnalyticsProvider } from "@/components/common/analytics-provider"
 import { PWAProvider } from "@/components/pwa/pwa-provider"
 import { InstallPrompt } from "@/components/pwa/install-prompt"
 import { NotificationPrompt } from "@/components/pwa/notification-prompt"
+import { PageTransition } from "@/components/animations/page-transition"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -108,7 +109,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <PWAProvider>
           <AnalyticsProvider>
-            {children}
+            <PageTransition type="fade">
+              {children}
+            </PageTransition>
             <Toaster />
             <Sonner />
             <InstallPrompt />
