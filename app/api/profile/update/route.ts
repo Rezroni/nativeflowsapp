@@ -25,38 +25,45 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!username || username.trim() === '') {
-      return NextResponse.json(
-        { error: 'Username is required' },
-        { status: 400 }
-      );
-    }
+    // Build update object
+    const updateData: any = {
+      full_name: fullName.trim(),
+      updated_at: new Date().toISOString(),
+    };
 
-    // Check if username is already taken by another user
-    if (username !== body.currentUsername) {
-      const { data: existingUser } = await supabase
+    // Only update username if it's provided and the column exists
+    if (username && username.trim() !== '') {
+      // Check if username column exists by trying to query it
+      const { data: columnCheck, error: columnError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .neq('id', user.id)
-        .single();
+        .select('username')
+        .limit(1);
 
-      if (existingUser) {
-        return NextResponse.json(
-          { error: 'Username is already taken' },
-          { status: 400 }
-        );
+      if (!columnError) {
+        // Column exists, check if username is already taken
+        if (username !== body.currentUsername) {
+          const { data: existingUser } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', username)
+            .neq('id', user.id)
+            .single();
+
+          if (existingUser) {
+            return NextResponse.json(
+              { error: 'Username is already taken' },
+              { status: 400 }
+            );
+          }
+        }
+        updateData.username = username.trim();
       }
     }
 
     // Update profile
     const { error, data } = await supabase
       .from('profiles')
-      .update({
-        full_name: fullName.trim(),
-        username: username.trim(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', user.id)
       .select()
       .single();
