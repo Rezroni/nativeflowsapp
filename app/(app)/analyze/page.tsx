@@ -168,13 +168,13 @@ export default function AnalyzePage() {
             <CardContent className="pt-6">
               {!isLoadingUsage && usageInfo?.hasReachedLimit ? (
                 <>
-                  <Link href="/pricing">
+                  <Link href="/pricing" className="block">
                     <Button
                       size="lg"
-                      className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                      className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 min-h-[56px] text-base sm:text-lg"
                     >
-                      <Crown className="mr-2 h-5 w-5" />
-                      Upgrade to Pro for Unlimited Analyses
+                      <Crown className="mr-2 h-5 w-5 flex-shrink-0" />
+                      <span className="truncate">Upgrade to Pro for Unlimited Analyses</span>
                     </Button>
                   </Link>
                   <p className="text-xs text-center text-muted-foreground mt-4">
@@ -187,22 +187,22 @@ export default function AnalyzePage() {
                     onClick={handleAnalyze}
                     disabled={isAnalyzing || isUploading || isLoadingUsage}
                     size="lg"
-                    className="w-full"
+                    className="w-full min-h-[56px] text-base sm:text-lg"
                   >
                     {isUploading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Uploading...
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
+                        <span>Uploading...</span>
                       </>
                     ) : isAnalyzing ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Analyzing Chart...
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
+                        <span>Analyzing Chart...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="mr-2 h-5 w-5" />
-                        Analyze with AI
+                        <Sparkles className="mr-2 h-5 w-5 flex-shrink-0" />
+                        <span>Analyze with AI</span>
                       </>
                     )}
                   </Button>

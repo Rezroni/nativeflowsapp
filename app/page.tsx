@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/footer'
 import { Disclaimer } from '@/components/common/disclaimer'
 import { SocialProof } from '@/components/common/social-proof'
 import { HomeAnimations } from '@/components/common/home-animations'
+import { PWARouter } from '@/components/pwa/pwa-router'
 import { createClient } from '@/lib/supabase/server'
 import {
   TrendingUp,
@@ -27,6 +28,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col gradient-bg">
+      <PWARouter isAuthenticated={!!user} />
       <Header user={user} />
       <HomeAnimations>
 
