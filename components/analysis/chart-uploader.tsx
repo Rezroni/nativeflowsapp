@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Upload, Link as LinkIcon, Loader2, X, CheckCircle2 } from 'lucide-react';
+import { useState, useCallback, useRef } from 'react';
+import { Upload, Link as LinkIcon, Loader2, X, CheckCircle2, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { duration, easing } from '@/lib/animations/variants';
 import Image from 'next/image';
+import { useMobileDetect } from '@/hooks/use-mobile-detect';
 
 interface ChartUploaderProps {
   onImageSelect: (imageUrl: string, file?: File) => void;
@@ -22,6 +23,8 @@ export function ChartUploader({
   onRemove,
   disabled = false,
 }: ChartUploaderProps) {
+  const { isMobile, isClient } = useMobileDetect();
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [urlInput, setUrlInput] = useState('');
   const [isDragging, setIsDragging] = useState(false);
@@ -118,6 +121,12 @@ export function ChartUploader({
     onRemove?.();
   }, [onRemove]);
 
+  const handleCameraClick = useCallback(() => {
+    if (!disabled && cameraInputRef.current) {
+      cameraInputRef.current.click();
+    }
+  }, [disabled]);
+
   if (previewUrl) {
     return (
       <motion.div
@@ -204,7 +213,11 @@ export function ChartUploader({
         <Tabs defaultValue="upload" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="upload">Upload File</TabsTrigger>
-            <TabsTrigger value="url">Image URL</TabsTrigger>
+            {isClient && isMobile ? (
+              <TabsTrigger value="camera">Open Camera</TabsTrigger>
+            ) : (
+              <TabsTrigger value="url">Image URL</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="upload" className="mt-4">
@@ -383,6 +396,106 @@ export function ChartUploader({
               Paste a direct link to a chart image from TradingView, Imgur, or
               any public URL
             </p>
+          </TabsContent>
+
+          <TabsContent value="camera" className="mt-4">
+            <motion.div
+              className={cn(
+                'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer relative overflow-hidden',
+                'border-muted-foreground/25',
+                disabled && 'opacity-50 cursor-not-allowed'
+              )}
+              whileHover={!disabled ? { borderColor: 'hsl(var(--muted-foreground) / 0.5)' } : {}}
+              whileTap={!disabled ? { scale: 0.98 } : {}}
+              transition={{
+                duration: duration.fast,
+                ease: easing.smooth,
+              }}
+              onClick={handleCameraClick}
+            >
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                }}
+                disabled={disabled}
+              />
+
+              <div className="relative z-10">
+                <AnimatePresence mode="wait">
+                  {isLoading ? (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{
+                        duration: duration.fast,
+                        ease: easing.smooth,
+                      }}
+                      className="flex flex-col items-center gap-2"
+                    >
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: 'linear',
+                        }}
+                      >
+                        <Loader2 className="h-12 w-12 text-primary" />
+                      </motion.div>
+                      <motion.p
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                        className="text-sm text-muted-foreground font-medium"
+                      >
+                        Processing image...
+                      </motion.p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="camera"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{
+                        duration: duration.normal,
+                        ease: easing.smooth,
+                      }}
+                      className="flex flex-col items-center gap-2"
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        transition={{
+                          duration: 0.2,
+                          ease: 'easeOut',
+                        }}
+                      >
+                        <Camera className="h-12 w-12 text-muted-foreground" />
+                      </motion.div>
+                      <div>
+                        <p className="text-sm font-medium">
+                          Tap to open camera
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Take a photo of your trading chart
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
           </TabsContent>
         </Tabs>
 

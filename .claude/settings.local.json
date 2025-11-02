@@ -29,7 +29,8 @@
       "Bash(nul)",
       "Bash(git push:*)",
       "Bash(powershell \"Stop-Process -Id 17472 -Force\")",
-      "Bash(powershell \"Stop-Process -Id 3280 -Force\")"
+      "Bash(powershell \"Stop-Process -Id 3280 -Force\")",
+      "Bash(timeout 10 bash:*)"
     ],
     "deny": [],
     "ask": []
