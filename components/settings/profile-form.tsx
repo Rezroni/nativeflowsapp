@@ -30,15 +30,22 @@ export function ProfileForm({ email, fullName, username }: ProfileFormProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          currentUsername: username, // Pass current username for validation
+        }),
       });
 
       const data = await response.json();
 
-      if (data.error) {
-        toast.error(data.error);
+      if (!response.ok || data.error) {
+        toast.error(data.error || 'Failed to update profile');
       } else {
         toast.success('Profile updated successfully');
+        // Refresh the page to show updated data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
