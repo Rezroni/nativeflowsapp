@@ -24,7 +24,7 @@ export default async function DashboardPage() {
   // Fetch user's profile and stats
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('full_name, username')
     .eq('id', user.id)
     .single();
 
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 gradient-text">
-          Welcome back, {profile?.full_name || user.email?.split('@')[0]}!
+          Welcome back, {profile?.username || profile?.full_name || user.email?.split('@')[0]}!
         </h1>
         <p className="text-muted-foreground">
           Here's an overview of your trading analysis journey
