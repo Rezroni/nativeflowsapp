@@ -2,15 +2,13 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import {
   BarChart3,
-  TrendingUp,
-  Clock,
-  Target,
   ArrowRight,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
+import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -82,81 +80,23 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Analyses */}
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Analyses
-            </CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalAnalyses || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              All time chart analyses
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* This Month */}
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{monthlyAnalyses || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {hasActivePlan ? 'Unlimited analyses' : 'No active plan'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Current Plan */}
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Current Plan</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold capitalize">
-              {currentPlan || 'No Plan'}
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              {hasActivePlan ? 'Unlimited analyses' : 'Subscribe to start analyzing'}
-            </p>
-            {!hasActivePlan && (
-              <Link href="/pricing">
-                <Button size="sm" className="w-full text-xs">
-                  View Plans
-                </Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Last Analysis */}
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Last Analysis</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {analyses && analyses.length > 0
-                ? new Date(analyses[0].created_at).toLocaleDateString()
-                : 'Never'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {analyses && analyses.length > 0
-                ? new Date(analyses[0].created_at).toLocaleTimeString()
-                : 'Upload your first chart'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Grid with Animations */}
+      <DashboardStats
+        totalAnalyses={totalAnalyses || 0}
+        monthlyAnalyses={monthlyAnalyses || 0}
+        currentPlan={currentPlan}
+        hasActivePlan={hasActivePlan}
+        lastAnalysisDate={
+          analyses && analyses.length > 0
+            ? new Date(analyses[0].created_at).toLocaleDateString()
+            : undefined
+        }
+        lastAnalysisTime={
+          analyses && analyses.length > 0
+            ? new Date(analyses[0].created_at).toLocaleTimeString()
+            : undefined
+        }
+      />
 
       {/* Usage Progress - Only show for active plans */}
       {hasActivePlan && (

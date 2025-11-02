@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { MarketStructure } from '@/types/analysis';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { staggerContainerVariants, staggerItemVariants } from '@/lib/animations/variants';
 
 interface MarketStructureCardProps {
   structure: MarketStructure;
@@ -74,10 +76,16 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
         {/* Break of Structure (BOS) */}
         <div>
           <h4 className="text-sm font-semibold mb-3">Break of Structure (BOS)</h4>
-          <div className="space-y-2">
+          <motion.div
+            variants={staggerContainerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-2"
+          >
             {bosLevels.map((bos, index) => (
-              <div
+              <motion.div
                 key={index}
+                variants={staggerItemVariants}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border-2 transition-all',
                   bos.type === 'bullish'
@@ -113,14 +121,17 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
                 >
                   {bos.type}
                 </Badge>
-              </div>
+              </motion.div>
             ))}
             {bosLevels.length === 0 && (
-              <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
+              <motion.p
+                variants={staggerItemVariants}
+                className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg"
+              >
                 No BOS identified in current timeframe
-              </p>
+              </motion.p>
             )}
-          </div>
+          </motion.div>
         </div>
 
         {/* Change of Character (CHoCH) */}
@@ -128,10 +139,16 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
           <h4 className="text-sm font-semibold mb-3">
             Change of Character (CHoCH)
           </h4>
-          <div className="space-y-2">
+          <motion.div
+            variants={staggerContainerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-2"
+          >
             {chochLevels.map((choch, index) => (
-              <div
+              <motion.div
                 key={index}
+                variants={staggerItemVariants}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg border-2 transition-all',
                   choch.type === 'bullish'
@@ -167,14 +184,17 @@ export function MarketStructureCard({ structure }: MarketStructureCardProps) {
                 >
                   {choch.type}
                 </Badge>
-              </div>
+              </motion.div>
             ))}
             {chochLevels.length === 0 && (
-              <p className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg">
+              <motion.p
+                variants={staggerItemVariants}
+                className="text-xs text-muted-foreground italic p-3 bg-slate-800/20 rounded-lg"
+              >
                 No CHoCH identified in current timeframe
-              </p>
+              </motion.p>
             )}
-          </div>
+          </motion.div>
         </div>
       </CardContent>
     </Card>

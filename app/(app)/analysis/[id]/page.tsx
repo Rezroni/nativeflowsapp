@@ -6,13 +6,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-import { MarketStructureCard } from '@/components/smc/market-structure-card';
-import { OrderBlockCard } from '@/components/smc/order-block-card';
-import { FVGCard } from '@/components/smc/fvg-card';
-import { LiquidityCard } from '@/components/smc/liquidity-card';
-import { PremiumDiscountCard } from '@/components/smc/premium-discount-card';
-import { TradeSetupCard } from '@/components/smc/trade-setup-card';
 import { ShareButton } from '@/components/analysis/share-button';
+import { AnalysisResults } from '@/components/analysis/analysis-results';
 
 export default async function AnalysisDetailPage({
   params,
@@ -148,120 +143,16 @@ export default async function AnalysisDetailPage({
         </Card>
       )}
 
-      {/* Analysis Results */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Market Structure */}
-        {marketStructure && (
-          <MarketStructureCard structure={marketStructure} />
-        )}
-
-        {/* Trade Setup */}
-        {tradeSetup && (
-          <TradeSetupCard setup={tradeSetup} />
-        )}
-      </div>
-
-      {/* Premium/Discount Zones */}
-      {premiumDiscount && (
-        <div className="mb-8">
-          <PremiumDiscountCard
-            premiumDiscount={premiumDiscount}
-          />
-        </div>
-      )}
-
-      {/* Order Blocks */}
-      {orderBlocks && orderBlocks.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Order Blocks</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {orderBlocks.map((ob: any, index: number) => (
-              <OrderBlockCard key={index} orderBlock={ob} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Fair Value Gaps */}
-      {fvgs && fvgs.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Fair Value Gaps</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {fvgs.map((fvg: any, index: number) => (
-              <FVGCard key={index} fvg={fvg} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Liquidity */}
-      {liquidity && liquidity.type && (
-        <div className="mb-8">
-          <LiquidityCard liquidity={liquidity} />
-        </div>
-      )}
-
-      {/* Educational Insights */}
-      {educationalInsights && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Educational Insights</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Key Concepts */}
-            {educationalInsights.key_concepts && educationalInsights.key_concepts.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Key Concepts</h3>
-                <div className="flex flex-wrap gap-2">
-                  {educationalInsights.key_concepts.map((concept: string, index: number) => (
-                    <div
-                      key={index}
-                      className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
-                    >
-                      {concept}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Smart Money Perspective */}
-            {educationalInsights.smart_money_perspective && (
-              <div>
-                <h3 className="font-semibold mb-2">Smart Money Perspective</h3>
-                <p className="text-sm text-muted-foreground">
-                  {educationalInsights.smart_money_perspective}
-                </p>
-              </div>
-            )}
-
-            {/* Common Mistakes */}
-            {educationalInsights.common_mistakes && (
-              <div>
-                <h3 className="font-semibold mb-2">Common Mistakes to Avoid</h3>
-                <p className="text-sm text-muted-foreground">
-                  {educationalInsights.common_mistakes}
-                </p>
-              </div>
-            )}
-
-            {/* Learning Points */}
-            {educationalInsights.learning_points && educationalInsights.learning_points.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Learning Points</h3>
-                <ul className="space-y-2">
-                  {educationalInsights.learning_points.map((point: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <span className="text-blue-600 mt-0.5">📚</span>
-                      <span className="text-muted-foreground">{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Analysis Results with Animations */}
+      <AnalysisResults
+        marketStructure={marketStructure}
+        tradeSetup={tradeSetup}
+        premiumDiscount={premiumDiscount}
+        orderBlocks={orderBlocks}
+        fvgs={fvgs}
+        liquidity={liquidity}
+        educationalInsights={educationalInsights}
+      />
     </div>
   );
 }
