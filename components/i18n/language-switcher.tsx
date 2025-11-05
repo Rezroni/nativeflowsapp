@@ -1,7 +1,7 @@
 'use client'
 
 import { useLocale } from 'next-intl'
-import { useTransition } from 'react'
+import { useTransition, useState, useEffect } from 'react'
 import {
   Select,
   SelectContent,
@@ -23,6 +23,12 @@ const localeNames: Record<Locale, string> = {
 export function LanguageSwitcher() {
   const locale = useLocale() as Locale
   const [isPending, startTransition] = useTransition()
+  const [mounted, setMounted] = useState(false)
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleLocaleChange = (newLocale: string) => {
     startTransition(() => {
@@ -31,6 +37,16 @@ export function LanguageSwitcher() {
       // Reload page to apply new locale
       window.location.reload()
     })
+  }
+
+  // Don't render until mounted to prevent hydration issues
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-2">
+        <Languages className="h-4 w-4 text-muted-foreground" />
+        <div className="w-[140px] h-10 rounded-md border bg-background" />
+      </div>
+    )
   }
 
   return (
