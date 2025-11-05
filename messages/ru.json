@@ -1,0 +1,184 @@
+{
+  "navigation": {
+    "features": "Возможности",
+    "pricing": "Цены",
+    "blog": "Блог",
+    "dashboard": "Панель управления",
+    "signIn": "Войти",
+    "signUp": "Регистрация",
+    "startFreeTrial": "Начать бесплатно",
+    "logout": "Выйти",
+    "settings": "Настройки"
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "submit": "Отправить",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "clear": "Очистить",
+    "back": "Назад",
+    "next": "Далее",
+    "previous": "Предыдущий",
+    "close": "Закрыть",
+    "confirm": "Подтвердить",
+    "yes": "Да",
+    "no": "Нет"
+  },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "С возвращением",
+    "recentAnalyses": "Последние анализы",
+    "viewAll": "Показать все",
+    "noAnalyses": "Анализов пока нет",
+    "startAnalyzing": "Начать анализ",
+    "stats": {
+      "totalAnalyses": "Всего анализов",
+      "thisWeek": "На этой неделе",
+      "accuracy": "Точность",
+      "saved": "Сохранено"
+    }
+  },
+  "pricing": {
+    "title": "Простые и прозрачные цены",
+    "subtitle": "Выберите подходящий план",
+    "monthly": "Ежемесячно",
+    "annual": "Ежегодно",
+    "save": "Скидка 20%",
+    "currentPlan": "Текущий план",
+    "choosePlan": "Выбрать план",
+    "paymentMethod": "Выберите способ оплаты",
+    "cryptocurrency": "Криптовалюта",
+    "cryptoDescription": "BTC, ETH, USDT",
+    "creditCard": "Кредитная/Дебетовая карта",
+    "cardDescription": "Visa, Mastercard и др.",
+    "selectCrypto": "Выберите криптовалюту",
+    "plans": {
+      "free": {
+        "name": "Бесплатно",
+        "price": "$0",
+        "description": "Идеально для ознакомления",
+        "features": [
+          "3 анализа в день",
+          "Базовая аналитика AI",
+          "Поддержка сообщества"
+        ]
+      },
+      "weekly": {
+        "name": "Недельный",
+        "price": "$10",
+        "description": "Отлично для краткосрочных нужд",
+        "features": [
+          "Безлимитные анализы",
+          "Расширенная аналитика AI",
+          "Приоритетная поддержка",
+          "Экспорт в PDF"
+        ]
+      },
+      "monthly": {
+        "name": "Месячный",
+        "price": "$25",
+        "description": "Самый популярный выбор",
+        "features": [
+          "Все из недельного",
+          "Продвинутые паттерны",
+          "Smart Money Concepts",
+          "Уведомления в реальном времени"
+        ]
+      },
+      "annual": {
+        "name": "Годовой",
+        "price": "$250",
+        "description": "Лучшее предложение для серьёзных трейдеров",
+        "features": [
+          "Все из месячного",
+          "Приоритетная обработка AI",
+          "Персональная поддержка",
+          "Ранний доступ к функциям"
+        ]
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "С возвращением",
+      "subtitle": "Войдите в свой аккаунт",
+      "email": "Email",
+      "password": "Пароль",
+      "forgotPassword": "Забыли пароль?",
+      "submit": "Войти",
+      "noAccount": "Нет аккаунта?",
+      "signUp": "Зарегистрироваться"
+    },
+    "signup": {
+      "title": "Создать аккаунт",
+      "subtitle": "Присоединяйтесь к тысячам трейдеров",
+      "fullName": "Полное имя",
+      "email": "Email",
+      "password": "Пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "submit": "Создать аккаунт",
+      "hasAccount": "Уже есть аккаунт?",
+      "signIn": "Войти"
+    },
+    "resetPassword": {
+      "title": "Сброс пароля",
+      "subtitle": "Введите email для получения ссылки сброса",
+      "email": "Email",
+      "submit": "Отправить ссылку",
+      "backToLogin": "Вернуться ко входу"
+    }
+  },
+  "settings": {
+    "title": "Настройки",
+    "profile": {
+      "title": "Информация профиля",
+      "fullName": "Полное имя",
+      "email": "Email",
+      "username": "Имя пользователя",
+      "save": "Сохранить изменения"
+    },
+    "subscription": {
+      "title": "Подписка",
+      "currentPlan": "Текущий план",
+      "status": "Статус",
+      "nextBilling": "Следующий платёж",
+      "cancel": "Отменить подписку",
+      "upgrade": "Улучшить план"
+    },
+    "preferences": {
+      "title": "Предпочтения",
+      "language": "Язык",
+      "notifications": "Уведомления",
+      "emailNotifications": "Email уведомления",
+      "pushNotifications": "Push уведомления"
+    }
+  },
+  "analysis": {
+    "title": "Анализ графика",
+    "uploadImage": "Загрузить изображение графика",
+    "dragDrop": "Перетащите или нажмите для загрузки",
+    "analyzing": "Анализируем...",
+    "results": "Результаты анализа",
+    "patterns": "Обнаруженные паттерны",
+    "trend": "Тренд",
+    "support": "Уровни поддержки",
+    "resistance": "Уровни сопротивления",
+    "recommendation": "Рекомендация",
+    "confidence": "Уверенность",
+    "save": "Сохранить анализ",
+    "export": "Экспорт в PDF"
+  },
+  "validation": {
+    "required": "Это поле обязательно",
+    "invalidEmail": "Неверный email адрес",
+    "passwordTooShort": "Пароль должен содержать минимум 8 символов",
+    "passwordsMustMatch": "Пароли должны совпадать",
+    "invalidFormat": "Неверный формат"
+  }
+}

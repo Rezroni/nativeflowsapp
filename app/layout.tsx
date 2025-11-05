@@ -8,6 +8,10 @@ import { PWAProvider } from "@/components/pwa/pwa-provider"
 import { InstallPrompt } from "@/components/pwa/install-prompt"
 import { NotificationPrompt } from "@/components/pwa/notification-prompt"
 import { PageTransition } from "@/components/animations/page-transition"
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
+import { cookies } from 'next/headers'
+import { defaultLocale } from '@/i18n/request'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -86,13 +90,18 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const cookieStore = await cookies()
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || defaultLocale
+  const isRTL = locale === 'ar'
+  const messages = await getMessages()
+
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} data-scroll-behavior="smooth">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
@@ -107,17 +116,19 @@ export default function RootLayout({
         <meta name="msapplication-config" content="/browserconfig.xml" />
       </head>
       <body className={inter.className}>
-        <PWAProvider>
-          <AnalyticsProvider>
-            <PageTransition type="fade">
-              {children}
-            </PageTransition>
-            <Toaster />
-            <Sonner />
-            <InstallPrompt />
-            <NotificationPrompt />
-          </AnalyticsProvider>
-        </PWAProvider>
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <PWAProvider>
+            <AnalyticsProvider>
+              <PageTransition type="fade">
+                {children}
+              </PageTransition>
+              <Toaster />
+              <Sonner />
+              <InstallPrompt />
+              <NotificationPrompt />
+            </AnalyticsProvider>
+          </PWAProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

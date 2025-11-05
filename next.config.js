@@ -1,4 +1,7 @@
 const { withSentryConfig } = require('@sentry/nextjs');
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -56,5 +59,5 @@ const nextConfig = {
   },
 }
 
-// Temporarily disable Sentry wrapping to fix build issues
-module.exports = nextConfig;
+// Wrap config with next-intl plugin
+module.exports = withNextIntl(nextConfig);

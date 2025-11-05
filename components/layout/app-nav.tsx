@@ -25,6 +25,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { NotificationCenter } from '@/components/notifications/notification-center';
+import { LanguageSwitcher } from '@/components/i18n/language-switcher';
 import { signOut } from '@/actions/auth';
 
 export function AppNav() {
@@ -91,6 +92,9 @@ export function AppNav() {
 
           {/* Notification Center */}
           <NotificationCenter />
+
+          {/* Language Switcher */}
+          <LanguageSwitcher />
 
           {/* User Menu */}
           <DropdownMenu>
@@ -174,6 +178,9 @@ export function AppNav() {
               <Settings className="h-4 w-4" />
               Settings
             </Link>
+            <div className="py-2">
+              <LanguageSwitcher />
+            </div>
             <button
               onClick={handleSignOut}
               className="flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/90 transition-colors w-full text-left"

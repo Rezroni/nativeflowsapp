@@ -1,0 +1,184 @@
+{
+  "navigation": {
+    "features": "الميزات",
+    "pricing": "الأسعار",
+    "blog": "المدونة",
+    "dashboard": "لوحة التحكم",
+    "signIn": "تسجيل الدخول",
+    "signUp": "التسجيل",
+    "startFreeTrial": "ابدأ تجربة مجانية",
+    "logout": "تسجيل الخروج",
+    "settings": "الإعدادات"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "submit": "إرسال",
+    "search": "بحث",
+    "filter": "تصفية",
+    "clear": "مسح",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بعودتك",
+    "recentAnalyses": "التحليلات الأخيرة",
+    "viewAll": "عرض الكل",
+    "noAnalyses": "لا توجد تحليلات بعد",
+    "startAnalyzing": "ابدأ التحليل",
+    "stats": {
+      "totalAnalyses": "إجمالي التحليلات",
+      "thisWeek": "هذا الأسبوع",
+      "accuracy": "الدقة",
+      "saved": "المحفوظة"
+    }
+  },
+  "pricing": {
+    "title": "أسعار بسيطة وشفافة",
+    "subtitle": "اختر الخطة المناسبة لك",
+    "monthly": "شهرياً",
+    "annual": "سنوياً",
+    "save": "وفر 20%",
+    "currentPlan": "الخطة الحالية",
+    "choosePlan": "اختر الخطة",
+    "paymentMethod": "اختر طريقة الدفع",
+    "cryptocurrency": "العملات الرقمية",
+    "cryptoDescription": "BTC، ETH، USDT",
+    "creditCard": "بطاقة ائتمان/خصم",
+    "cardDescription": "Visa، Mastercard، إلخ",
+    "selectCrypto": "اختر العملة الرقمية",
+    "plans": {
+      "free": {
+        "name": "مجاني",
+        "price": "$0",
+        "description": "مثالي لتجربة منصتنا",
+        "features": [
+          "3 تحليلات يومياً",
+          "رؤى AI أساسية",
+          "دعم المجتمع"
+        ]
+      },
+      "weekly": {
+        "name": "أسبوعي",
+        "price": "$10",
+        "description": "رائع للاحتياجات قصيرة الأجل",
+        "features": [
+          "تحليلات غير محدودة",
+          "رؤى AI متقدمة",
+          "دعم ذو أولوية",
+          "التصدير إلى PDF"
+        ]
+      },
+      "monthly": {
+        "name": "شهري",
+        "price": "$25",
+        "description": "الخيار الأكثر شعبية",
+        "features": [
+          "كل ما في الأسبوعي",
+          "أنماط الرسم البياني المتقدمة",
+          "مفاهيم الأموال الذكية",
+          "تنبيهات فورية"
+        ]
+      },
+      "annual": {
+        "name": "سنوي",
+        "price": "$250",
+        "description": "أفضل قيمة للمتداولين الجادين",
+        "features": [
+          "كل ما في الشهري",
+          "معالجة AI ذات أولوية",
+          "دعم مخصص",
+          "وصول مبكر للميزات"
+        ]
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "مرحباً بعودتك",
+      "subtitle": "سجل الدخول إلى حسابك",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "submit": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signUp": "سجل الآن"
+    },
+    "signup": {
+      "title": "إنشاء حساب",
+      "subtitle": "انضم إلى آلاف المتداولين",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "submit": "إنشاء حساب",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "signIn": "تسجيل الدخول"
+    },
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل بريدك الإلكتروني لتلقي رابط إعادة التعيين",
+      "email": "البريد الإلكتروني",
+      "submit": "إرسال رابط إعادة التعيين",
+      "backToLogin": "العودة إلى تسجيل الدخول"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "profile": {
+      "title": "معلومات الملف الشخصي",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "username": "اسم المستخدم",
+      "save": "حفظ التغييرات"
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "currentPlan": "الخطة الحالية",
+      "status": "الحالة",
+      "nextBilling": "الفاتورة التالية",
+      "cancel": "إلغاء الاشتراك",
+      "upgrade": "ترقية الخطة"
+    },
+    "preferences": {
+      "title": "التفضيلات",
+      "language": "اللغة",
+      "notifications": "الإشعارات",
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "pushNotifications": "الإشعارات الفورية"
+    }
+  },
+  "analysis": {
+    "title": "تحليل الرسم البياني",
+    "uploadImage": "تحميل صورة الرسم البياني",
+    "dragDrop": "اسحب وأفلت أو انقر للتحميل",
+    "analyzing": "جاري التحليل...",
+    "results": "نتائج التحليل",
+    "patterns": "الأنماط المكتشفة",
+    "trend": "الاتجاه",
+    "support": "مستويات الدعم",
+    "resistance": "مستويات المقاومة",
+    "recommendation": "التوصية",
+    "confidence": "الثقة",
+    "save": "حفظ التحليل",
+    "export": "تصدير PDF"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "عنوان بريد إلكتروني غير صالح",
+    "passwordTooShort": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+    "passwordsMustMatch": "يجب أن تتطابق كلمات المرور",
+    "invalidFormat": "تنسيق غير صالح"
+  }
+}

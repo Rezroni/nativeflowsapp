@@ -1,0 +1,184 @@
+{
+  "navigation": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "startFreeTrial": "Start Free Trial",
+    "logout": "Logout",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "recentAnalyses": "Recent Analyses",
+    "viewAll": "View All",
+    "noAnalyses": "No analyses yet",
+    "startAnalyzing": "Start Analyzing",
+    "stats": {
+      "totalAnalyses": "Total Analyses",
+      "thisWeek": "This Week",
+      "accuracy": "Accuracy",
+      "saved": "Saved"
+    }
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Choose the plan that works best for you",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "save": "Save 20%",
+    "currentPlan": "Current Plan",
+    "choosePlan": "Choose Plan",
+    "paymentMethod": "Choose Payment Method",
+    "cryptocurrency": "Cryptocurrency",
+    "cryptoDescription": "BTC, ETH, USDT",
+    "creditCard": "Credit/Debit Card",
+    "cardDescription": "Visa, Mastercard, etc.",
+    "selectCrypto": "Select Cryptocurrency",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "description": "Perfect for trying out our platform",
+        "features": [
+          "3 analyses per day",
+          "Basic AI insights",
+          "Community support"
+        ]
+      },
+      "weekly": {
+        "name": "Weekly",
+        "price": "$10",
+        "description": "Great for short-term needs",
+        "features": [
+          "Unlimited analyses",
+          "Advanced AI insights",
+          "Priority support",
+          "Export to PDF"
+        ]
+      },
+      "monthly": {
+        "name": "Monthly",
+        "price": "$25",
+        "description": "Most popular choice",
+        "features": [
+          "Everything in Weekly",
+          "Advanced chart patterns",
+          "Smart Money Concepts",
+          "Real-time alerts"
+        ]
+      },
+      "annual": {
+        "name": "Annual",
+        "price": "$250",
+        "description": "Best value for serious traders",
+        "features": [
+          "Everything in Monthly",
+          "Priority AI processing",
+          "Dedicated support",
+          "Early access to features"
+        ]
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up"
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join thousands of traders",
+      "fullName": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email to receive a reset link",
+      "email": "Email",
+      "submit": "Send Reset Link",
+      "backToLogin": "Back to login"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile Information",
+      "fullName": "Full Name",
+      "email": "Email",
+      "username": "Username",
+      "save": "Save Changes"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "currentPlan": "Current Plan",
+      "status": "Status",
+      "nextBilling": "Next Billing",
+      "cancel": "Cancel Subscription",
+      "upgrade": "Upgrade Plan"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "language": "Language",
+      "notifications": "Notifications",
+      "emailNotifications": "Email Notifications",
+      "pushNotifications": "Push Notifications"
+    }
+  },
+  "analysis": {
+    "title": "Analyze Chart",
+    "uploadImage": "Upload Chart Image",
+    "dragDrop": "Drag and drop or click to upload",
+    "analyzing": "Analyzing...",
+    "results": "Analysis Results",
+    "patterns": "Patterns Detected",
+    "trend": "Trend",
+    "support": "Support Levels",
+    "resistance": "Resistance Levels",
+    "recommendation": "Recommendation",
+    "confidence": "Confidence",
+    "save": "Save Analysis",
+    "export": "Export PDF"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordsMustMatch": "Passwords must match",
+    "invalidFormat": "Invalid format"
+  }
+}
