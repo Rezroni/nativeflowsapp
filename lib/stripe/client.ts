@@ -1,13 +1,21 @@
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
-}
+// Lazy initialization - only create stripe instance when needed
+// This prevents build errors when Stripe keys are not set
+let stripeInstance: Stripe | null = null
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-10-29.clover',
-  typescript: true,
-})
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-10-29.clover',
+      typescript: true,
+    })
+  }
+  return stripeInstance
+}
 
 export interface StripeCheckoutParams {
   priceId: string
@@ -22,6 +30,7 @@ export interface StripeCheckoutParams {
  * Create a Stripe Checkout session for subscription
  */
 export async function createCheckoutSession(params: StripeCheckoutParams) {
+  const stripe = getStripe()
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -54,6 +63,7 @@ export async function createCheckoutSession(params: StripeCheckoutParams) {
  * Get subscription details by Stripe subscription ID
  */
 export async function getSubscription(subscriptionId: string) {
+  const stripe = getStripe()
   return await stripe.subscriptions.retrieve(subscriptionId)
 }
 
@@ -61,6 +71,7 @@ export async function getSubscription(subscriptionId: string) {
  * Cancel a subscription
  */
 export async function cancelSubscription(subscriptionId: string) {
+  const stripe = getStripe()
   return await stripe.subscriptions.cancel(subscriptionId)
 }
 
@@ -68,6 +79,7 @@ export async function cancelSubscription(subscriptionId: string) {
  * Create or retrieve a Stripe customer
  */
 export async function getOrCreateCustomer(email: string, userId: string) {
+  const stripe = getStripe()
   // Check if customer exists
   const existingCustomers = await stripe.customers.list({
     email,
@@ -98,6 +110,7 @@ export async function constructWebhookEvent(
     throw new Error('STRIPE_WEBHOOK_SECRET is not set')
   }
 
+  const stripe = getStripe()
   return stripe.webhooks.constructEvent(
     payload,
     signature,
