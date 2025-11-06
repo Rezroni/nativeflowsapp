@@ -31,7 +31,17 @@ export type StripePlanType = keyof typeof STRIPE_PLANS
  * Get Stripe price ID for a plan
  */
 export function getStripePriceId(planType: StripePlanType): string {
-  return STRIPE_PLANS[planType].priceId
+  const priceId = STRIPE_PLANS[planType].priceId
+
+  // Check if using placeholder - means env var is not set
+  if (priceId.includes('placeholder')) {
+    throw new Error(
+      `Stripe Price ID for ${planType} plan is not configured. ` +
+      `Please set STRIPE_${planType.toUpperCase()}_PRICE_ID environment variable.`
+    )
+  }
+
+  return priceId
 }
 
 /**
