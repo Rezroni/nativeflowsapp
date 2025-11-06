@@ -25,6 +25,15 @@ export default async function UsersPage() {
     .select('*, subscriptions(*), admin_roles(*)')
     .order('created_at', { ascending: false })
 
+  // Helper function to get user's active subscription plan
+  const getUserPlan = (profile: any) => {
+    const activeSubscription = profile.subscriptions?.find((s: any) => s.status === 'active')
+    if (activeSubscription) {
+      return activeSubscription.plan_type // Returns 'weekly', 'monthly', or 'annual'
+    }
+    return 'free'
+  }
+
   const totalUsers = profiles?.length || 0
   const activeUsers = profiles?.filter(p => p.subscriptions?.some((s: any) => s.status === 'active'))?.length || 0
 
@@ -106,7 +115,7 @@ export default async function UsersPage() {
                   <div className="flex items-center gap-4 text-sm">
                     <div className="text-right mr-4">
                       <div className="font-medium capitalize">
-                        {profile.subscription_tier || 'Free'}
+                        {getUserPlan(profile)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {profile.admin_roles?.length > 0 && (
@@ -123,7 +132,7 @@ export default async function UsersPage() {
                       <UserSubscriptionManager
                         userId={profile.id}
                         userEmail={profile.email}
-                        currentTier={profile.subscription_tier || null}
+                        currentTier={getUserPlan(profile)}
                       />
                       {isSuperAdmin && (
                         <div className="flex gap-2">
