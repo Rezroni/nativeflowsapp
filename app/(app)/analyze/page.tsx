@@ -11,8 +11,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Analytics } from '@/lib/analytics/mixpanel';
+import { useTranslations } from 'next-intl';
 
 export default function AnalyzePage() {
+  const t = useTranslations('analysis');
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -48,7 +50,7 @@ export default function AnalyzePage() {
 
   const handleAnalyze = async () => {
     if (!imageUrl) {
-      toast.error('Please select a chart image first');
+      toast.error(t('errors.selectImage'));
       return;
     }
 
@@ -99,7 +101,7 @@ export default function AnalyzePage() {
           setUsageInfo(usageResult);
         }
       } else if (result.success) {
-        toast.success('Analysis complete!');
+        toast.success(t('errors.analysisComplete'));
 
         // Track analysis completed
         const duration = (Date.now() - startTime) / 1000; // in seconds
@@ -114,7 +116,7 @@ export default function AnalyzePage() {
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error('An unexpected error occurred');
+      toast.error(t('errors.unexpectedError'));
       Analytics.analysisFailed('Unexpected error');
     } finally {
       setIsAnalyzing(false);
@@ -125,10 +127,9 @@ export default function AnalyzePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Analyze Chart</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
         <p className="text-muted-foreground">
-          Upload your trading chart and get instant AI-powered Smart Money
-          Concepts analysis
+          {t('subtitle')}
         </p>
       </div>
 
@@ -144,11 +145,11 @@ export default function AnalyzePage() {
         {imageUrl && (
           <Card>
             <CardHeader>
-              <CardTitle>Additional Context (Optional)</CardTitle>
+              <CardTitle>{t('additionalContext')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
-                placeholder="Add any additional context about the chart (e.g., timeframe, pair, specific questions)..."
+                placeholder={t('contextPlaceholder')}
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 rows={4}
@@ -156,7 +157,7 @@ export default function AnalyzePage() {
                 className="resize-none"
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Providing context helps the AI give more tailored analysis
+                {t('contextHelp')}
               </p>
             </CardContent>
           </Card>
@@ -174,11 +175,11 @@ export default function AnalyzePage() {
                       className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 min-h-[56px] text-base sm:text-lg"
                     >
                       <Crown className="mr-2 h-5 w-5 flex-shrink-0" />
-                      <span className="truncate">Upgrade to Pro for Unlimited Analyses</span>
+                      <span className="truncate">{t('upgradeForUnlimited')}</span>
                     </Button>
                   </Link>
                   <p className="text-xs text-center text-muted-foreground mt-4">
-                    You've reached your monthly limit of {usageInfo.limit} analyses
+                    {t('reachedLimit', { limit: usageInfo.limit })}
                   </p>
                 </>
               ) : (
@@ -192,26 +193,26 @@ export default function AnalyzePage() {
                     {isUploading ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
-                        <span>Uploading...</span>
+                        <span>{t('uploading')}</span>
                       </>
                     ) : isAnalyzing ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
-                        <span>Analyzing Chart...</span>
+                        <span>{t('analyzingChart')}</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-5 w-5 flex-shrink-0" />
-                        <span>Analyze with AI</span>
+                        <span>{t('analyzeWithAI')}</span>
                       </>
                     )}
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground mt-4">
                     {usageInfo && usageInfo.tier === 'free' && !usageInfo.hasReachedLimit ? (
-                      `${usageInfo.remaining} of ${usageInfo.limit} analyses remaining this month`
+                      t('analysesRemaining', { remaining: usageInfo.remaining, limit: usageInfo.limit })
                     ) : (
-                      'Analysis typically takes 10-30 seconds'
+                      t('analysisTakesTime')
                     )}
                   </p>
                 </>
@@ -223,7 +224,7 @@ export default function AnalyzePage() {
         {/* Info Card */}
         <Card>
           <CardHeader>
-            <CardTitle>What You'll Get</CardTitle>
+            <CardTitle>{t('whatYouGet')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start gap-3">
@@ -231,10 +232,9 @@ export default function AnalyzePage() {
                 1
               </div>
               <div>
-                <p className="font-medium">Market Structure Analysis</p>
+                <p className="font-medium">{t('features.marketStructure.title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Trend direction, Break of Structure (BOS), and Change of
-                  Character (CHoCH) identification
+                  {t('features.marketStructure.description')}
                 </p>
               </div>
             </div>
@@ -244,10 +244,9 @@ export default function AnalyzePage() {
                 2
               </div>
               <div>
-                <p className="font-medium">Order Blocks & FVGs</p>
+                <p className="font-medium">{t('features.orderBlocks.title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Bullish and bearish order blocks, fair value gaps, and their
-                  strength ratings
+                  {t('features.orderBlocks.description')}
                 </p>
               </div>
             </div>
@@ -257,10 +256,9 @@ export default function AnalyzePage() {
                 3
               </div>
               <div>
-                <p className="font-medium">Liquidity Zones</p>
+                <p className="font-medium">{t('features.liquidity.title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Buy-side and sell-side liquidity identification with sweep
-                  analysis
+                  {t('features.liquidity.description')}
                 </p>
               </div>
             </div>
@@ -270,9 +268,9 @@ export default function AnalyzePage() {
                 4
               </div>
               <div>
-                <p className="font-medium">Trade Setup Recommendation</p>
+                <p className="font-medium">{t('features.tradeSetup.title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Entry, stop loss, take profit levels, and risk-reward ratio
+                  {t('features.tradeSetup.description')}
                 </p>
               </div>
             </div>
@@ -282,10 +280,9 @@ export default function AnalyzePage() {
                 5
               </div>
               <div>
-                <p className="font-medium">Educational Insights</p>
+                <p className="font-medium">{t('features.educational.title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Learn SMC concepts with detailed explanations and market
-                  narratives
+                  {t('features.educational.description')}
                 </p>
               </div>
             </div>

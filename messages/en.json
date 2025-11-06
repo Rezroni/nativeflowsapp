@@ -189,6 +189,7 @@
   },
   "analysis": {
     "title": "Analyze Chart",
+    "subtitle": "Upload your trading chart and get instant AI-powered Smart Money Concepts analysis",
     "uploadImage": "Upload Chart Image",
     "dragDrop": "Drag and drop or click to upload",
     "analyzing": "Analyzing...",
@@ -200,7 +201,45 @@
     "recommendation": "Recommendation",
     "confidence": "Confidence",
     "save": "Save Analysis",
-    "export": "Export PDF"
+    "export": "Export PDF",
+    "additionalContext": "Additional Context (Optional)",
+    "contextPlaceholder": "Add any additional context about the chart (e.g., timeframe, pair, specific questions)...",
+    "contextHelp": "Providing context helps the AI give more tailored analysis",
+    "uploading": "Uploading...",
+    "analyzingChart": "Analyzing Chart...",
+    "analyzeWithAI": "Analyze with AI",
+    "upgradeForUnlimited": "Upgrade to Pro for Unlimited Analyses",
+    "reachedLimit": "You've reached your monthly limit of {limit} analyses",
+    "analysesRemaining": "{remaining} of {limit} analyses remaining this month",
+    "analysisTakesTime": "Analysis typically takes 10-30 seconds",
+    "whatYouGet": "What You'll Get",
+    "features": {
+      "marketStructure": {
+        "title": "Market Structure Analysis",
+        "description": "Trend direction, Break of Structure (BOS), and Change of Character (CHoCH) identification"
+      },
+      "orderBlocks": {
+        "title": "Order Blocks & FVGs",
+        "description": "Bullish and bearish order blocks, fair value gaps, and their strength ratings"
+      },
+      "liquidity": {
+        "title": "Liquidity Zones",
+        "description": "Buy-side and sell-side liquidity identification with sweep analysis"
+      },
+      "tradeSetup": {
+        "title": "Trade Setup Recommendation",
+        "description": "Entry, stop loss, take profit levels, and risk-reward ratio"
+      },
+      "educational": {
+        "title": "Educational Insights",
+        "description": "Learn SMC concepts with detailed explanations and market narratives"
+      }
+    },
+    "errors": {
+      "selectImage": "Please select a chart image first",
+      "analysisComplete": "Analysis complete!",
+      "unexpectedError": "An unexpected error occurred"
+    }
   },
   "validation": {
     "required": "This field is required",
