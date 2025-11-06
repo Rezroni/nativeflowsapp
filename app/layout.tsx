@@ -9,9 +9,7 @@ import { InstallPrompt } from "@/components/pwa/install-prompt"
 import { NotificationPrompt } from "@/components/pwa/notification-prompt"
 import { PageTransition } from "@/components/animations/page-transition"
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
-import { cookies } from 'next/headers'
-import { defaultLocale } from '@/i18n/request'
+import { getMessages, getLocale } from 'next-intl/server'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -95,10 +93,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const locale = cookieStore.get('NEXT_LOCALE')?.value || defaultLocale
+  // Use next-intl's server functions which are automatically configured by the plugin
+  const locale = await getLocale()
+  const messages = await getMessages()
   const isRTL = locale === 'ar'
-  const messages = await getMessages({ locale })
 
   return (
     <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} data-scroll-behavior="smooth">

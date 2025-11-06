@@ -19,7 +19,7 @@ const PaymentContext = createContext<{
 
 export const usePaymentContext = () => useContext(PaymentContext);
 
-export function PricingClientWrapper() {
+export function PricingClientWrapper({ children }: { children: React.ReactNode }) {
   const [selectedCrypto, setSelectedCrypto] = useState<string>('usdttrc20');
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'card'>('crypto');
 
@@ -98,6 +98,9 @@ export function PricingClientWrapper() {
           </div>
         </div>
       )}
+
+      {/* Render children (pricing cards) within the context */}
+      {children}
     </PaymentContext.Provider>
   );
 }

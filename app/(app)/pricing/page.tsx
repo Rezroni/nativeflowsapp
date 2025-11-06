@@ -84,11 +84,10 @@ export default async function PricingPage() {
           </p>
         </div>
 
-        <PricingClientWrapper />
-
-        {/* Pricing Cards */}
-        <div className="grid gap-6 md:gap-8 lg:grid-cols-3 max-w-7xl mx-auto mb-16">
-          {plans.map((plan) => {
+        <PricingClientWrapper>
+          {/* Pricing Cards */}
+          <div className="grid gap-6 md:gap-8 lg:grid-cols-3 max-w-7xl mx-auto mb-16">
+            {plans.map((plan) => {
             const Icon = plan.icon
             const isCurrentPlan = currentPlanId === plan.id
 
@@ -156,8 +155,9 @@ export default async function PricingPage() {
                 </CardFooter>
               </Card>
             )
-          })}
-        </div>
+            })}
+          </div>
+        </PricingClientWrapper>
 
         {/* FAQ Section */}
         <div className="mx-auto max-w-3xl mt-20">
