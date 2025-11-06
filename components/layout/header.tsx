@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Menu, X, ChartCandlestick } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/i18n/language-switcher'
 
 interface HeaderProps {
   user?: any
@@ -41,6 +42,7 @@ export function Header({ user }: HeaderProps = {}) {
           >
             Blog
           </Link>
+          <LanguageSwitcher />
           {user ? (
             <Button asChild>
               <Link href="/dashboard">Dashboard</Link>
@@ -98,6 +100,9 @@ export function Header({ user }: HeaderProps = {}) {
             >
               How It Works
             </Link>
+            <div className="py-2">
+              <LanguageSwitcher />
+            </div>
             {user ? (
               <Button asChild className="w-full">
                 <Link href="/dashboard">Dashboard</Link>

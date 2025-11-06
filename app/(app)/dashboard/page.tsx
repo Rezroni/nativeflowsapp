@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { DashboardStats } from '@/components/dashboard/dashboard-stats';
+import { getTranslations } from 'next-intl/server';
 
 export default async function DashboardPage() {
+  const t = await getTranslations('dashboard');
   const supabase = await createClient();
 
   const {
@@ -73,10 +75,10 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 gradient-text">
-          Welcome back, {profile?.username || profile?.full_name || user.email?.split('@')[0]}!
+          {t('welcome')}, {profile?.username || profile?.full_name || user.email?.split('@')[0]}!
         </h1>
         <p className="text-muted-foreground">
-          Here's an overview of your trading analysis journey
+          {t('subtitle')}
         </p>
       </div>
 
@@ -102,16 +104,16 @@ export default async function DashboardPage() {
       {hasActivePlan && (
         <Card className="mb-8 glass-card">
           <CardHeader>
-            <CardTitle>Monthly Usage</CardTitle>
+            <CardTitle>{t('monthlyUsage')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>
-                  {monthlyAnalyses || 0} analyses used this month
+                  {monthlyAnalyses || 0} {t('analysesUsed')}
                 </span>
                 <span className="text-muted-foreground">
-                  Unlimited
+                  {t('unlimited')}
                 </span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -123,7 +125,7 @@ export default async function DashboardPage() {
                 />
               </div>
               <p className="text-sm text-green-600">
-                You have unlimited analyses with your {currentPlan} plan
+                {t('unlimitedMessage', { plan: currentPlan })}
               </p>
             </div>
           </CardContent>
@@ -134,24 +136,24 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card className="border-2 border-primary glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader>
-            <CardTitle>Analyze New Chart</CardTitle>
+            <CardTitle>{t('analyzeNewChart')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
               {hasActivePlan
-                ? 'Upload a chart and get instant SMC analysis with AI-powered insights'
-                : 'Subscribe to a plan to start analyzing charts with AI'}
+                ? t('analyzeDescription')
+                : t('subscribeToAnalyze')}
             </p>
             {hasActivePlan ? (
               <Link href="/analyze">
                 <Button className="w-full hover-glow">
-                  Start Analysis <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('startAnalysis')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             ) : (
               <Link href="/pricing">
                 <Button className="w-full hover-glow">
-                  View Plans <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('viewPlans')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
             )}
@@ -160,15 +162,15 @@ export default async function DashboardPage() {
 
         <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader>
-            <CardTitle>View History</CardTitle>
+            <CardTitle>{t('viewHistory')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Review your past analyses and track your trading progress
+              {t('viewHistoryDescription')}
             </p>
             <Link href="/history">
               <Button variant="outline" className="w-full">
-                View All Analyses <ArrowRight className="ml-2 h-4 w-4" />
+                {t('viewAllAnalyses')} <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </CardContent>
@@ -179,10 +181,10 @@ export default async function DashboardPage() {
       <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Recent Analyses</CardTitle>
+            <CardTitle>{t('recentAnalyses')}</CardTitle>
             <Link href="/history">
               <Button variant="ghost" size="sm">
-                View All
+                {t('viewAll')}
               </Button>
             </Link>
           </div>
@@ -209,17 +211,17 @@ export default async function DashboardPage() {
                     </div>
                     <div>
                       <p className="font-medium">
-                        Analysis #{analysis.id.slice(0, 8)}
+                        {t('analysisId', { id: analysis.id.slice(0, 8) })}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(analysis.created_at).toLocaleDateString()} at{' '}
+                        {new Date(analysis.created_at).toLocaleDateString()} {t('at')}{' '}
                         {new Date(analysis.created_at).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
                   <Link href={`/analysis/${analysis.id}`}>
                     <Button variant="ghost" size="sm">
-                      View <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('view')} <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -229,10 +231,10 @@ export default async function DashboardPage() {
             <div className="text-center py-8">
               <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
-                No analyses yet. Upload your first chart to get started!
+                {t('noAnalyses')}. {t('noAnalysesDescription')}
               </p>
               <Link href="/analyze">
-                <Button>Start Your First Analysis</Button>
+                <Button>{t('startFirstAnalysis')}</Button>
               </Link>
             </div>
           )}

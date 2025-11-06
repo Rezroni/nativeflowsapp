@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { AnimatedCounter } from '@/components/animations/animated-counter';
 import { staggerContainerVariants, staggerItemVariants } from '@/lib/animations/variants';
+import { useTranslations } from 'next-intl';
 
 interface DashboardStatsProps {
   totalAnalyses: number;
@@ -32,6 +33,9 @@ export function DashboardStats({
   lastAnalysisDate,
   lastAnalysisTime,
 }: DashboardStatsProps) {
+  const t = useTranslations('dashboard.stats');
+  const tCommon = useTranslations('dashboard');
+
   return (
     <motion.div
       variants={staggerContainerVariants}
@@ -44,7 +48,7 @@ export function DashboardStats({
         <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Analyses
+              {t('totalAnalyses')}
             </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -53,7 +57,7 @@ export function DashboardStats({
               <AnimatedCounter value={totalAnalyses} duration={2} />
             </div>
             <p className="text-xs text-muted-foreground">
-              All time chart analyses
+              {t('allTime')}
             </p>
           </CardContent>
         </Card>
@@ -63,7 +67,7 @@ export function DashboardStats({
       <motion.div variants={staggerItemVariants}>
         <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('thisMonth')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -71,7 +75,7 @@ export function DashboardStats({
               <AnimatedCounter value={monthlyAnalyses} duration={2} />
             </div>
             <p className="text-xs text-muted-foreground">
-              {hasActivePlan ? 'Unlimited analyses' : 'No active plan'}
+              {hasActivePlan ? t('unlimitedAnalyses') : t('noActivePlan')}
             </p>
           </CardContent>
         </Card>
@@ -81,7 +85,7 @@ export function DashboardStats({
       <motion.div variants={staggerItemVariants}>
         <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Current Plan</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('currentPlan')}</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -91,15 +95,15 @@ export function DashboardStats({
               transition={{ delay: 0.4, duration: 0.3 }}
               className="text-2xl font-bold capitalize"
             >
-              {currentPlan || 'No Plan'}
+              {currentPlan || t('noPlan')}
             </motion.div>
             <p className="text-xs text-muted-foreground mb-3">
-              {hasActivePlan ? 'Unlimited analyses' : 'Subscribe to start analyzing'}
+              {hasActivePlan ? t('unlimitedAnalyses') : t('subscribeToStart')}
             </p>
             {!hasActivePlan && (
               <Link href="/pricing">
                 <Button size="sm" className="w-full text-xs">
-                  View Plans
+                  {tCommon('viewPlans')}
                 </Button>
               </Link>
             )}
@@ -111,7 +115,7 @@ export function DashboardStats({
       <motion.div variants={staggerItemVariants}>
         <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Last Analysis</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('lastAnalysis')}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -121,10 +125,10 @@ export function DashboardStats({
               transition={{ delay: 0.5, duration: 0.3 }}
               className="text-2xl font-bold"
             >
-              {lastAnalysisDate || 'Never'}
+              {lastAnalysisDate || t('never')}
             </motion.div>
             <p className="text-xs text-muted-foreground">
-              {lastAnalysisTime || 'Upload your first chart'}
+              {lastAnalysisTime || t('uploadFirstChart')}
             </p>
           </CardContent>
         </Card>
