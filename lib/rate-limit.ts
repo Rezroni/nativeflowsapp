@@ -129,4 +129,7 @@ export const RateLimits = {
 
   // Strict for analysis operations (resource intensive)
   analysis: { limit: 10, window: 60 }, // 10 requests per minute
+
+  // Webhook rate limiting
+  webhook: { limit: 60, window: 60 }, // 60 requests per minute
 };

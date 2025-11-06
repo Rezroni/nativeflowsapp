@@ -102,5 +102,20 @@ const nextConfig = {
   },
 }
 
-// Wrap config with next-intl plugin
-module.exports = withNextIntl(nextConfig);
+// Wrap config with next-intl plugin, then with Sentry
+const configWithIntl = withNextIntl(nextConfig);
+
+// Export with Sentry configuration (if available)
+module.exports = withSentryConfig(configWithIntl, {
+  // Sentry Webpack Plugin Options
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+}, {
+  // Upload sourcemaps during production build
+  widenClientFileUpload: true,
+  transpileClientSDK: true,
+  tunnelRoute: "/monitoring",
+  hideSourceMaps: true,
+  disableLogger: true,
+});
