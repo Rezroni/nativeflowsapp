@@ -73,27 +73,21 @@ export default async function PricingPage() {
 
   return (
     <div className="min-h-screen gradient-bg">
-      <div className="container py-24">
+      <div className="container py-16 md:py-24 px-4">
         {/* Header */}
-        <div className="mx-auto max-w-3xl text-center mb-16">
-          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl">
+        <div className="mx-auto max-w-3xl text-center mb-12">
+          <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
             Simple, <span className="gradient-text">Transparent Pricing</span>
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Choose the plan that works best for you. Pay with cryptocurrency.
+          <p className="text-lg md:text-xl text-muted-foreground">
+            Choose the plan that works best for you. Pay with cryptocurrency or card.
           </p>
         </div>
 
-        <PricingClientWrapper
-          planId="monthly"
-          planName="Monthly"
-          cta="Get Monthly Plan"
-          popular={true}
-          currentPlanId={currentPlanId}
-        />
+        <PricingClientWrapper />
 
         {/* Pricing Cards */}
-        <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto">
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-3 max-w-7xl mx-auto mb-16">
           {plans.map((plan) => {
             const Icon = plan.icon
             const isCurrentPlan = currentPlanId === plan.id
@@ -102,56 +96,57 @@ export default async function PricingPage() {
               <Card
                 key={plan.id}
                 className={cn(
-                  'relative flex flex-col glass-card border-2 transition-all hover:-translate-y-2',
-                  isCurrentPlan ? 'border-green-500 hover-glow' :
-                  plan.popular ? 'border-primary hover-glow' : 'border-border'
+                  'relative flex flex-col glass-card border-2 transition-all duration-300',
+                  isCurrentPlan ? 'border-green-500 shadow-lg shadow-green-500/20' :
+                  plan.popular ? 'border-primary shadow-lg shadow-primary/20 scale-105' : 'border-border',
+                  !isCurrentPlan && 'hover:-translate-y-1 hover:shadow-xl'
                 )}
               >
                 {isCurrentPlan && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-green-500 text-white px-4 py-1">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <Badge className="bg-green-500 text-white px-3 py-1 text-xs font-semibold shadow-md">
                       Current Plan
                     </Badge>
                   </div>
                 )}
                 {!isCurrentPlan && plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <Badge className="bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold shadow-md">
                       Most Popular
                     </Badge>
                   </div>
                 )}
 
-                <CardHeader className="pb-8">
-                  <div className="mb-4 inline-flex rounded-xl bg-primary/20 p-3 text-primary w-fit">
-                    <Icon className="h-6 w-6" />
+                <CardHeader className="pb-6 pt-8">
+                  <div className="mb-3 inline-flex rounded-lg bg-primary/10 p-2.5 text-primary w-fit">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <CardTitle className="text-3xl">{plan.name}</CardTitle>
-                  <CardDescription className="text-base">{plan.description}</CardDescription>
+                  <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm">{plan.description}</CardDescription>
                 </CardHeader>
 
-                <CardContent className="flex-1 pb-8">
-                  <div className="mb-8">
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-5xl font-bold gradient-text">
-                        {plan.price === 0 ? 'Free' : `${plan.price} USDT`}
+                <CardContent className="flex-1 pb-6">
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-1.5 mb-1">
+                      <span className="text-4xl font-bold gradient-text">
+                        ${plan.price}
                       </span>
-                      <span className="text-muted-foreground">/{plan.duration}</span>
+                      <span className="text-sm text-muted-foreground">/{plan.duration.split(' ')[1]}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{plan.limits}</p>
+                    <p className="text-xs text-muted-foreground">{plan.limits}</p>
                   </div>
 
-                  <ul className="space-y-3">
+                  <ul className="space-y-2.5">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-muted-foreground">{feature}</span>
+                      <li key={index} className="flex items-start gap-2.5">
+                        <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-muted-foreground">{feature}</span>
                       </li>
                     ))}
                   </ul>
                 </CardContent>
 
-                <CardFooter>
+                <CardFooter className="pt-0 pb-6">
                   <PricingButton
                     planId={plan.id}
                     cta={plan.cta}
