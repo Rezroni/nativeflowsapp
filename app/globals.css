@@ -71,15 +71,8 @@
     height: -webkit-fill-available;
   }
 
-  /* Safe area insets for notch devices */
-  @supports (padding: max(0px)) {
-    body {
-      padding-left: max(0px, env(safe-area-inset-left));
-      padding-right: max(0px, env(safe-area-inset-right));
-      padding-top: max(0px, env(safe-area-inset-top));
-      padding-bottom: max(0px, env(safe-area-inset-bottom));
-    }
-  }
+  /* Safe area insets for notch devices - REMOVED from body to prevent double padding */
+  /* Individual components should use safe-area-inset classes instead */
 
   /* Smooth font rendering for mobile */
   body {
@@ -287,29 +280,29 @@
       overscroll-behavior-y: none;
     }
 
-    /* Safe area insets for devices with notches */
-    .safe-area-inset-top {
-      padding-top: env(safe-area-inset-top);
-    }
-
-    .safe-area-inset-bottom {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .safe-area-inset-left {
-      padding-left: env(safe-area-inset-left);
-    }
-
-    .safe-area-inset-right {
-      padding-right: env(safe-area-inset-right);
-    }
-
     /* Improve touch targets in standalone mode */
     button,
     a {
       min-height: 44px;
       min-width: 44px;
     }
+  }
+
+  /* Safe area insets for devices with notches - Applied to specific elements */
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-inset-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-inset-right {
+    padding-right: env(safe-area-inset-right);
   }
 
   /* iOS specific PWA fixes */

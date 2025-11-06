@@ -30,7 +30,7 @@ export function AdminHeader({ user, role }: AdminHeaderProps) {
   }
 
   return (
-    <header className="border-b border-border bg-card">
+    <header className="border-b border-border bg-card safe-area-inset-top">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold">Admin Dashboard</h2>
