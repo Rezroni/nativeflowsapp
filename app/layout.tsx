@@ -98,7 +98,7 @@ export default async function RootLayout({
   const cookieStore = await cookies()
   const locale = cookieStore.get('NEXT_LOCALE')?.value || defaultLocale
   const isRTL = locale === 'ar'
-  const messages = await getMessages()
+  const messages = await getMessages({ locale })
 
   return (
     <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} data-scroll-behavior="smooth">
