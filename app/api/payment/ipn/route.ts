@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyIPNSignature, type IPNCallbackData } from '@/lib/nowpayments/client'
+import { checkRateLimit } from '@/lib/rate-limit-redis'
 
 // Use service role key for database operations from webhook
 const supabase = createClient(
@@ -10,6 +11,19 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting to prevent webhook abuse
+    const { allowed, headers: rateLimitHeaders } = await checkRateLimit(request, 'webhook')
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: rateLimitHeaders,
+        }
+      )
+    }
+
     // Get the signature from headers
     const signature = request.headers.get('x-nowpayments-sig')
 
@@ -38,12 +52,31 @@ export async function POST(request: NextRequest) {
       order_id: callbackData.order_id,
     })
 
-    // Get subscription by order_id or payment_id
-    const { data: subscription, error: fetchError } = await supabase
+    // Get subscription by order_id first, then try payment_id
+    // Use safe query builder to prevent SQL injection
+    let subscription = null
+    let fetchError = null
+
+    // Try finding by order_id first
+    const { data: subByOrder, error: orderError } = await supabase
       .from('subscriptions')
       .select('*')
-      .or(`order_id.eq.${callbackData.order_id},payment_id.eq.${callbackData.payment_id}`)
-      .single()
+      .eq('order_id', callbackData.order_id)
+      .maybeSingle()
+
+    if (subByOrder) {
+      subscription = subByOrder
+    } else {
+      // If not found by order_id, try payment_id
+      const { data: subByPayment, error: paymentError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('payment_id', callbackData.payment_id)
+        .maybeSingle()
+
+      subscription = subByPayment
+      fetchError = paymentError || orderError
+    }
 
     if (fetchError || !subscription) {
       console.error('Subscription not found:', callbackData.order_id)
@@ -129,9 +162,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    // Log full error details server-side for debugging
     console.error('IPN callback error:', error)
+
+    // Return generic error message to client to avoid information leakage
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'IPN processing failed' },
+      { error: 'Payment processing failed' },
       { status: 500 }
     )
   }

@@ -31,33 +31,10 @@ export async function POST(request: Request) {
       updated_at: new Date().toISOString(),
     };
 
-    // Only update username if it's provided and the column exists
+    // Add username to update if provided
+    // The database has a unique constraint, so we rely on that for validation
     if (username && username.trim() !== '') {
-      // Check if username column exists by trying to query it
-      const { data: columnCheck, error: columnError } = await supabase
-        .from('profiles')
-        .select('username')
-        .limit(1);
-
-      if (!columnError) {
-        // Column exists, check if username is already taken
-        if (username !== body.currentUsername) {
-          const { data: existingUser } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('username', username)
-            .neq('id', user.id)
-            .single();
-
-          if (existingUser) {
-            return NextResponse.json(
-              { error: 'Username is already taken' },
-              { status: 400 }
-            );
-          }
-        }
-        updateData.username = username.trim();
-      }
+      updateData.username = username.trim();
     }
 
     // Update profile
@@ -70,8 +47,18 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Error updating profile:', error);
+
+      // Check if it's a unique constraint violation (username already taken)
+      if (error.code === '23505' && error.message?.includes('username')) {
+        return NextResponse.json(
+          { error: 'Username is already taken' },
+          { status: 400 }
+        );
+      }
+
+      // Generic error message to avoid information leakage
       return NextResponse.json(
-        { error: error.message || 'Failed to update profile' },
+        { error: 'Failed to update profile' },
         { status: 500 }
       );
     }
@@ -81,9 +68,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
+    // Log full error details server-side for debugging
     console.error('Error in profile update:', error);
+
+    // Return generic error message to client to avoid information leakage
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+      { error: 'Failed to update profile' },
       { status: 500 }
     );
   }

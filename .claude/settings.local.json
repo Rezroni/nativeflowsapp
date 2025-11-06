@@ -32,7 +32,10 @@
       "Bash(powershell \"Stop-Process -Id 3280 -Force\")",
       "Bash(timeout 10 bash:*)",
       "Bash(del nul 2)",
-      "Bash(powershell \"Stop-Process -Id 22016 -Force\")"
+      "Bash(powershell \"Stop-Process -Id 22016 -Force\")",
+      "Bash(del publictest-pwa.html 2)",
+      "Bash(npm audit:*)",
+      "Bash(.gitignore)"
     ],
     "deny": [],
     "ask": []

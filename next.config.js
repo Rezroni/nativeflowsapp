@@ -21,9 +21,50 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // PWA Configuration
+  // PWA Configuration and Security Headers
   headers: async () => {
     return [
+      // Security headers for all routes
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(self)',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.supabase.co https://api.nowpayments.io https://api.stripe.com https://api.anthropic.com https://api.openai.com https://openrouter.ai wss://*.supabase.co",
+              "frame-src 'self' https://js.stripe.com",
+              "worker-src 'self' blob:",
+              "manifest-src 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+      // Service Worker
       {
         source: '/service-worker.js',
         headers: [
@@ -37,6 +78,7 @@ const nextConfig = {
           },
         ],
       },
+      // Manifest
       {
         source: '/manifest.json',
         headers: [
@@ -46,6 +88,7 @@ const nextConfig = {
           },
         ],
       },
+      // PWA Icons
       {
         source: '/icons/:path*',
         headers: [

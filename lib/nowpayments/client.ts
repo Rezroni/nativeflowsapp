@@ -3,6 +3,8 @@
  * Documentation: https://documenter.getpostman.com/view/7907941/2s93JusNJt
  */
 
+import crypto from 'crypto'
+
 const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1'
 const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY!
 const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET!
@@ -198,7 +200,7 @@ export function verifyIPNSignature(
   receivedSignature: string,
   payload: string
 ): boolean {
-  const crypto = require('crypto')
+  // Use imported crypto module for signature verification
   const hmac = crypto.createHmac('sha512', NOWPAYMENTS_IPN_SECRET)
   hmac.update(payload)
   const calculatedSignature = hmac.digest('hex')
