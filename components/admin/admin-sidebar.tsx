@@ -70,7 +70,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
   )
 
   return (
-    <aside className="w-64 border-r border-border bg-card">
+    <aside className="w-64 border-r border-border bg-card flex flex-col h-screen">
       <div className="p-6">
         <Link href="/admin" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
@@ -83,7 +83,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
         </Link>
       </div>
 
-      <nav className="px-4 space-y-1">
+      <nav className="px-4 space-y-1 flex-1">
         {allowedNavigation.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -106,12 +106,26 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
         })}
       </nav>
 
-      <div className="absolute bottom-4 left-4 right-4">
+      <div className="p-4 border-t border-border mt-auto">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors"
+          className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
-          ← Back to App
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+          </svg>
+          Back to App
         </Link>
       </div>
     </aside>
