@@ -13,23 +13,36 @@ export default async function AdminDashboard() {
   const supabase = await createClient()
 
   // Get dashboard stats
-  const { data: stats } = await supabase
+  const { data: stats, error: statsError } = await supabase
     .rpc('get_dashboard_stats')
+
+  console.log('Dashboard stats:', stats, 'Error:', statsError)
 
   // Get recent activity
   const { data: recentActivity } = await supabase
     .rpc('get_recent_activity', { limit_count: 10 })
 
-  const dashboardStats = stats || {
-    total_users: 0,
-    active_subscriptions: 0,
-    total_analyses: 0,
-    analyses_today: 0,
-    new_users_this_week: 0,
-    new_users_this_month: 0,
-    revenue_this_month: 0,
+  // The RPC returns JSONB, so we need to access properties correctly
+  const dashboardStats = stats ? {
+    totalUsers: Number(stats.total_users || 0),
+    activeSubscriptions: Number(stats.active_subscriptions || 0),
+    totalAnalyses: Number(stats.total_analyses || 0),
+    analysesToday: Number(stats.analyses_today || 0),
+    newUsersThisWeek: Number(stats.new_users_this_week || 0),
+    newUsersThisMonth: Number(stats.new_users_this_month || 0),
+    revenueThisMonth: Number(stats.revenue_this_month || 0),
+    mrr: Number(stats.mrr || 0),
+    trialConversionRate: Number(stats.trial_conversion_rate || 0)
+  } : {
+    totalUsers: 0,
+    activeSubscriptions: 0,
+    totalAnalyses: 0,
+    analysesToday: 0,
+    newUsersThisWeek: 0,
+    newUsersThisMonth: 0,
+    revenueThisMonth: 0,
     mrr: 0,
-    trial_conversion_rate: 0
+    trialConversionRate: 0
   }
 
   return (
@@ -45,28 +58,28 @@ export default async function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Users"
-          value={dashboardStats.total_users.toLocaleString()}
-          description={`+${dashboardStats.new_users_this_week} this week`}
+          value={dashboardStats.totalUsers.toLocaleString()}
+          description={`+${dashboardStats.newUsersThisWeek} this week`}
           icon={<Users className="h-4 w-4" />}
           trend="up"
         />
         <StatCard
           title="Active Subscriptions"
-          value={dashboardStats.active_subscriptions.toLocaleString()}
+          value={dashboardStats.activeSubscriptions.toLocaleString()}
           description="Paying customers"
           icon={<TrendingUp className="h-4 w-4" />}
           trend="up"
         />
         <StatCard
           title="Total Analyses"
-          value={dashboardStats.total_analyses.toLocaleString()}
-          description={`${dashboardStats.analyses_today} today`}
+          value={dashboardStats.totalAnalyses.toLocaleString()}
+          description={`${dashboardStats.analysesToday} today`}
           icon={<BarChart3 className="h-4 w-4" />}
         />
         <StatCard
           title="MRR"
           value={`$${dashboardStats.mrr.toLocaleString()}`}
-          description={`$${dashboardStats.revenue_this_month.toLocaleString()} this month`}
+          description={`$${dashboardStats.revenueThisMonth.toLocaleString()} this month`}
           icon={<DollarSign className="h-4 w-4" />}
           trend="up"
         />
@@ -80,7 +93,7 @@ export default async function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.new_users_this_month}</div>
+            <div className="text-2xl font-bold">{dashboardStats.newUsersThisMonth}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Last 30 days
             </p>
@@ -93,7 +106,7 @@ export default async function AdminDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.trial_conversion_rate}%</div>
+            <div className="text-2xl font-bold">{dashboardStats.trialConversionRate}%</div>
             <p className="text-xs text-muted-foreground mt-1">
               Last 90 days
             </p>
@@ -107,8 +120,8 @@ export default async function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {dashboardStats.total_users > 0
-                ? (dashboardStats.total_analyses / dashboardStats.total_users).toFixed(1)
+              {dashboardStats.totalUsers > 0
+                ? (dashboardStats.totalAnalyses / dashboardStats.totalUsers).toFixed(1)
                 : '0'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">

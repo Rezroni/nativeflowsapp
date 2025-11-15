@@ -1,12 +1,16 @@
-# MRR Calculation Fix Instructions
+# Admin Dashboard Stats Fix Instructions
 
 ## Problem
-The admin dashboard MRR (Monthly Recurring Revenue) display shows incorrect values because the `get_dashboard_stats()` function uses outdated pricing:
-- Old: Monthly $29.99, Annual $299.99
-- Current: Weekly $10, Monthly $25, Annual $250
+The admin dashboard shows **ALL ZEROS** and incorrect data because:
+1. The `get_dashboard_stats()` function has **missing fields** (analyses_today, new_users_this_week, trial_conversion_rate, etc.)
+2. Uses **outdated pricing**: Old (Monthly $29.99, Annual $299.99) vs Current (Weekly $10, Monthly $25, Annual $250)
+3. TypeScript mapping issues between snake_case SQL and camelCase frontend
 
 ## Solution
-Update the `get_dashboard_stats()` SQL function with correct pricing calculations.
+Comprehensive fix that:
+1. Updates SQL function with ALL required fields
+2. Fixes pricing calculations (Weekly $10, Monthly $25, Annual $250)
+3. Corrects TypeScript property mapping
 
 ## How to Apply Fix
 
@@ -30,6 +34,18 @@ psql "postgresql://postgres:[YOUR-PASSWORD]@db.mkcbresdokdmdwvngeqw.supabase.co:
 
 ## What the Fix Does
 
+### All Dashboard Fields Now Included
+The updated SQL function returns ALL required fields:
+- `total_users` - Total registered users
+- `active_subscriptions` - Count of active paying subscriptions
+- `total_analyses` - Total chart analyses performed
+- `analyses_today` - Analyses performed today
+- `new_users_this_week` - New users in last 7 days
+- `new_users_this_month` - New users in last 30 days
+- `revenue_this_month` - Revenue from subscriptions started this month
+- `mrr` - Monthly Recurring Revenue (normalized to monthly)
+- `trial_conversion_rate` - % of trials that converted to paid (last 90 days)
+
 ### Updated MRR Calculation
 The function now correctly calculates Monthly Recurring Revenue:
 
@@ -39,10 +55,8 @@ The function now correctly calculates Monthly Recurring Revenue:
 | Monthly | $25 | **$25/month** |
 | Annual | $250 | $250 ÷ 12 = **$20.83/month** |
 
-### Updated Fields
-- **totalRevenue**: Uses correct prices ($10, $25, $250)
-- **mrr**: Converts all plans to monthly equivalents
-- **monthlyRevenue**: Historical revenue with correct prices
+### Revenue Calculation
+All revenue fields now use correct current prices ($10, $25, $250) instead of old prices ($29.99, $299.99)
 
 ## Verification
 
@@ -64,14 +78,38 @@ If you have:
 **MRR = (2 × $43.30) + (3 × $25) + (1 × $20.83) = $86.60 + $75 + $20.83 = $182.43**
 
 ## Files Changed
-- ✅ `supabase/migrations/20251106_fix_mrr_calculation.sql` - Migration file created
+- ✅ `supabase/migrations/20251106_fix_mrr_calculation.sql` - Updated SQL migration with all fields
+- ✅ `app/admin/page.tsx` - Fixed TypeScript property mapping
 - ✅ `scripts/fix-mrr-calculation.js` - Helper script (optional)
 - ✅ `MRR_FIX_INSTRUCTIONS.md` - This documentation
 
+## Changes Made
+
+### Frontend (app/admin/page.tsx)
+```typescript
+// Before: Incorrect property access
+const dashboardStats = stats || { total_users: 0, ... }
+value={dashboardStats.total_users.toLocaleString()}
+
+// After: Correct JSONB property mapping
+const dashboardStats = stats ? {
+  totalUsers: Number(stats.total_users || 0),
+  activeSubscriptions: Number(stats.active_subscriptions || 0),
+  ...
+}
+value={dashboardStats.totalUsers.toLocaleString()}
+```
+
+### Backend (SQL Function)
+- Added all 9 required fields
+- Updated pricing from ($29.99/$299.99) to ($10/$25/$250)
+- Fixed MRR calculation to normalize all plans to monthly rate
+
 ## Status
-- [x] Migration file created
-- [ ] SQL function updated in database (manual step required)
-- [ ] MRR displaying correctly in admin dashboard
+- [x] Migration file created and updated
+- [x] Frontend TypeScript mapping fixed
+- [ ] SQL function updated in database (**MANUAL STEP REQUIRED**)
+- [ ] Dashboard displaying correct data
 
 ## Next Steps
 1. Apply the fix using Option 1 or Option 2 above

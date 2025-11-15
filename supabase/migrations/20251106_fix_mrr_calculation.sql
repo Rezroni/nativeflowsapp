@@ -1,4 +1,4 @@
--- Fix MRR calculation to use correct current pricing
+-- Fix MRR calculation and add all missing dashboard stats
 -- Weekly: $10, Monthly: $25, Annual: $250
 
 CREATE OR REPLACE FUNCTION get_dashboard_stats()
@@ -11,20 +11,33 @@ DECLARE
 BEGIN
   -- Check if user is admin
   IF NOT EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
+    SELECT 1 FROM public.admin_roles
+    WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')
   ) THEN
     RAISE EXCEPTION 'Unauthorized';
   END IF;
 
   SELECT jsonb_build_object(
-    'totalUsers', (SELECT count(*) FROM auth.users),
-    'activeSubscriptions', (
+    'total_users', (SELECT count(*) FROM auth.users),
+    'active_subscriptions', (
       SELECT count(*)
       FROM public.subscriptions
       WHERE status = 'active'
     ),
-    'totalRevenue', (
+    'total_analyses', (SELECT count(*) FROM public.analyses),
+    'analyses_today', (
+      SELECT count(*) FROM public.analyses
+      WHERE created_at >= current_date
+    ),
+    'new_users_this_week', (
+      SELECT count(*) FROM public.profiles
+      WHERE created_at >= current_date - interval '7 days'
+    ),
+    'new_users_this_month', (
+      SELECT count(*) FROM public.profiles
+      WHERE created_at >= current_date - interval '30 days'
+    ),
+    'revenue_this_month', (
       SELECT coalesce(sum(
         case
           when plan_type = 'weekly' then 10.00
@@ -34,7 +47,8 @@ BEGIN
         end
       ), 0)
       FROM public.subscriptions
-      WHERE status = 'active' OR status = 'past_due'
+      WHERE status = 'active'
+        AND current_period_start >= current_date - interval '30 days'
     ),
     'mrr', (
       SELECT coalesce(sum(
@@ -48,57 +62,17 @@ BEGIN
       FROM public.subscriptions
       WHERE status = 'active'
     ),
-    'recentAnalyses', (
-      SELECT coalesce(jsonb_agg(
-        jsonb_build_object(
-          'id', a.id,
-          'user_id', a.user_id,
-          'image_url', a.image_url,
-          'created_at', a.created_at,
-          'user_email', u.email
-        ) ORDER BY a.created_at DESC
-      ), '[]'::jsonb)
-      FROM public.analyses a
-      LEFT JOIN auth.users u ON u.id = a.user_id
-      LIMIT 10
-    ),
-    'recentSubscriptions', (
-      SELECT coalesce(jsonb_agg(
-        jsonb_build_object(
-          'id', s.id,
-          'user_id', s.user_id,
-          'plan_type', s.plan_type,
-          'status', s.status,
-          'created_at', s.created_at,
-          'user_email', u.email
-        ) ORDER BY s.created_at DESC
-      ), '[]'::jsonb)
-      FROM public.subscriptions s
-      LEFT JOIN auth.users u ON u.id = s.user_id
-      LIMIT 10
-    ),
-    'monthlyRevenue', (
-      SELECT coalesce(jsonb_object_agg(
-        to_char(month, 'YYYY-MM'),
-        revenue
-      ), '{}'::jsonb)
-      FROM (
-        SELECT
-          date_trunc('month', created_at) as month,
-          sum(
-            case
-              when plan_type = 'weekly' then 10.00
-              when plan_type = 'monthly' then 25.00
-              when plan_type = 'annual' then 250.00
-              else 0
-            end
-          ) as revenue
-        FROM public.subscriptions
-        WHERE status IN ('active', 'past_due')
-          AND created_at >= date_trunc('month', current_date) - interval '11 months'
-        GROUP BY date_trunc('month', created_at)
-        ORDER BY month DESC
-      ) monthly_data
+    'trial_conversion_rate', (
+      SELECT coalesce(
+        round(
+          (count(*) filter (where status = 'active' and trial_end is not null)::numeric /
+          nullif(count(*) filter (where trial_end is not null), 0)::numeric) * 100,
+          2
+        ),
+        0
+      )
+      FROM public.subscriptions
+      WHERE trial_end >= current_date - interval '90 days'
     )
   ) INTO result;
 
