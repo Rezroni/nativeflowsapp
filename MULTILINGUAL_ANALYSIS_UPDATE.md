@@ -160,10 +160,10 @@ Numbers and technical values remain unchanged:
 
 ### Manual Testing Steps
 1. ✅ Create multilingual prompts file
-2. ⏳ Update `lib/openai/analyze.ts` with locale parameter
-3. ⏳ Update `lib/anthropic/analyze.ts` with locale parameter
-4. ⏳ Update `lib/openrouter/analyze.ts` with locale parameter
-5. ⏳ Update `actions/analysis.ts` to read and pass locale
+2. ✅ Update `lib/openai/analyze.ts` with locale parameter
+3. ✅ Update `lib/anthropic/analyze.ts` with locale parameter
+4. ✅ Update `lib/openrouter/analyze.ts` with locale parameter
+5. ✅ Update `actions/analysis.ts` to read and pass locale
 6. ⏳ Test with English language setting
 7. ⏳ Test with Russian language setting
 8. ⏳ Test with Arabic language setting
@@ -186,10 +186,10 @@ Numbers and technical values remain unchanged:
 ## Files Modified
 - ✅ `lib/openai/prompts-multilingual.ts` - New multilingual prompts
 - ✅ `lib/openai/prompts.ts` - Export multilingual functions
-- ⏳ `lib/openai/analyze.ts` - Add locale parameter
-- ⏳ `lib/anthropic/analyze.ts` - Add locale parameter
-- ⏳ `lib/openrouter/analyze.ts` - Add locale parameter
-- ⏳ `actions/analysis.ts` - Read locale and pass to AI
+- ✅ `lib/openai/analyze.ts` - Add locale parameter
+- ✅ `lib/anthropic/analyze.ts` - Add locale parameter
+- ✅ `lib/openrouter/analyze.ts` - Add locale parameter
+- ✅ `actions/analysis.ts` - Read locale and pass to AI
 - ✅ `MULTILINGUAL_ANALYSIS_UPDATE.md` - This documentation
 
 ## Next Steps

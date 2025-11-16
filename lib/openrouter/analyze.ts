@@ -1,5 +1,5 @@
 import { openrouter, OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODELS, isOpenRouterAvailable } from './client';
-import { SMC_ANALYSIS_PROMPT } from '../openai/prompts';
+import { getSMCAnalysisPrompt } from '../openai/prompts-multilingual';
 import type { AnalysisResult } from '@/types/analysis';
 
 async function tryModelAnalysis(
@@ -65,15 +65,17 @@ async function tryModelAnalysis(
 
 export async function analyzeChartImageWithOpenRouter(
   imageUrl: string,
-  additionalContext?: string
+  additionalContext?: string,
+  locale: string = 'en'
 ): Promise<AnalysisResult> {
   if (!isOpenRouterAvailable || !openrouter) {
     throw new Error('OpenRouter is not configured. Please add OPENROUTER_API_KEY to your environment variables.');
   }
 
+  const basePrompt = getSMCAnalysisPrompt(locale);
   const prompt = additionalContext
-    ? `${SMC_ANALYSIS_PROMPT}\n\nAdditional context: ${additionalContext}`
-    : SMC_ANALYSIS_PROMPT;
+    ? `${basePrompt}\n\nAdditional context: ${additionalContext}`
+    : basePrompt;
 
   // Try primary model first
   const modelsToTry = [OPENROUTER_MODEL, ...OPENROUTER_FALLBACK_MODELS];

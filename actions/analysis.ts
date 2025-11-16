@@ -5,6 +5,8 @@ import { analyzeChartImage } from '@/lib/openai/analyze';
 import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
 import { generateImageContentHash } from '@/lib/utils/image-hash';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { locales, defaultLocale } from '@/i18n/request';
 
 export async function analyzeChart(formData: FormData) {
   const supabase = await createClient();
@@ -102,16 +104,22 @@ export async function analyzeChart(formData: FormData) {
 
     console.log('✗ Cache miss - performing new analysis');
 
+    // Get user's locale from cookies
+    const cookieStore = await cookies();
+    const userLocale = cookieStore.get('NEXT_LOCALE')?.value || defaultLocale;
+    const locale = locales.includes(userLocale as any) ? userLocale : defaultLocale;
+    console.log(`User locale: ${locale}`);
+
     // Route to appropriate AI provider based on plan type
     let analysisResult;
     if (planType === 'weekly') {
       // Weekly plan uses ONLY OpenRouter (efficient model)
       console.log(`Routing weekly plan user to OpenRouter (OPENROUTER_API_KEY)`);
-      analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext);
+      analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext, locale);
     } else {
       // Monthly and Annual plans use premium OpenAI/Claude
       console.log(`Routing ${planType} plan user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
-      analysisResult = await analyzeChartImage(imageUrl, additionalContext);
+      analysisResult = await analyzeChartImage(imageUrl, additionalContext, locale);
     }
 
     // Save to database with image hash

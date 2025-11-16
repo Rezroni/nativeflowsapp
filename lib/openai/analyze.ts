@@ -1,17 +1,19 @@
 import { openai, VISION_MODEL, isOpenAIAvailable } from './client';
-import { SMC_ANALYSIS_PROMPT, COMPARE_ANALYSIS_PROMPT } from './prompts';
+import { SMC_ANALYSIS_PROMPT, COMPARE_ANALYSIS_PROMPT, getSMCAnalysisPrompt, getCompareAnalysisPrompt } from './prompts';
 import { analyzeChartImageWithClaude } from '../anthropic/analyze';
 import { isClaudeAvailable } from '../anthropic/client';
 import type { AnalysisResult } from '@/types/analysis';
 
 export async function analyzeChartImage(
   imageUrl: string,
-  additionalContext?: string
+  additionalContext?: string,
+  locale: string = 'en'
 ): Promise<AnalysisResult> {
   // Try OpenAI first, fall back to Claude if OpenAI fails
   if (isOpenAIAvailable && openai) {
     try {
       console.log('Attempting analysis with OpenAI GPT-4...');
+      const prompt = getSMCAnalysisPrompt(locale);
       const messages: any[] = [
         {
           role: 'user',
@@ -19,8 +21,8 @@ export async function analyzeChartImage(
             {
               type: 'text',
               text: additionalContext
-                ? `${SMC_ANALYSIS_PROMPT}\n\nAdditional context: ${additionalContext}`
-                : SMC_ANALYSIS_PROMPT,
+                ? `${prompt}\n\nAdditional context: ${additionalContext}`
+                : prompt,
             },
             {
               type: 'image_url',
@@ -71,7 +73,7 @@ export async function analyzeChartImage(
 
       // Fall back to Claude if available
       if (isClaudeAvailable) {
-        return await analyzeChartImageWithClaude(imageUrl, additionalContext);
+        return await analyzeChartImageWithClaude(imageUrl, additionalContext, locale);
       }
 
       throw error;
@@ -81,7 +83,7 @@ export async function analyzeChartImage(
   // If OpenAI is not available, try Claude
   if (isClaudeAvailable) {
     console.log('Using Claude AI for analysis...');
-    return await analyzeChartImageWithClaude(imageUrl, additionalContext);
+    return await analyzeChartImageWithClaude(imageUrl, additionalContext, locale);
   }
 
   // Neither AI provider is available
@@ -93,7 +95,8 @@ export async function analyzeChartImage(
 export async function compareWithUserAnalysis(
   professionalAnalysis: AnalysisResult,
   userAnalysis: string,
-  chartImageUrl: string
+  chartImageUrl: string,
+  locale: string = 'en'
 ): Promise<{
   strengths: string[];
   missed: string[];
@@ -107,7 +110,7 @@ export async function compareWithUserAnalysis(
   }
 
   try {
-    const prompt = COMPARE_ANALYSIS_PROMPT(userAnalysis);
+    const prompt = getCompareAnalysisPrompt(userAnalysis, locale);
 
     const response = await openai.chat.completions.create({
       model: VISION_MODEL,

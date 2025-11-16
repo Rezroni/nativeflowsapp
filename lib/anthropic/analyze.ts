@@ -1,12 +1,14 @@
 import { anthropic, CLAUDE_MODEL } from './client';
 import { CLAUDE_SMC_ANALYSIS_PROMPT } from './prompts';
+import { getSMCAnalysisPrompt } from '../openai/prompts-multilingual';
 import type { AnalysisResult } from '@/types/analysis';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export async function analyzeChartImageWithClaude(
   imageUrl: string,
-  additionalContext?: string
+  additionalContext?: string,
+  locale: string = 'en'
 ): Promise<AnalysisResult> {
   if (!anthropic) {
     throw new Error('Claude AI is not configured. Please set ANTHROPIC_API_KEY.');
@@ -44,9 +46,10 @@ export async function analyzeChartImageWithClaude(
       }
     }
 
+    const basePrompt = getSMCAnalysisPrompt(locale);
     const prompt = additionalContext
-      ? `${CLAUDE_SMC_ANALYSIS_PROMPT}\n\nAdditional context: ${additionalContext}`
-      : CLAUDE_SMC_ANALYSIS_PROMPT;
+      ? `${basePrompt}\n\nAdditional context: ${additionalContext}`
+      : basePrompt;
 
     const response = await anthropic.messages.create({
       model: CLAUDE_MODEL,
