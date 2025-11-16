@@ -1,8 +1,20 @@
-// Import multilingual prompt functions
-export { getSMCAnalysisPrompt, getCompareAnalysisPrompt } from './prompts-multilingual';
+// Language-specific instructions for AI analysis
+const LANGUAGE_INSTRUCTIONS = {
+  en: 'Respond in English.',
+  ru: 'Respond in Russian (Русский). All text fields including narrative, description, smartMoneyBehavior, scenarios, educationalNotes, and confluences MUST be in Russian.',
+  ar: 'Respond in Arabic (العربية). All text fields including narrative, description, smartMoneyBehavior, scenarios, educationalNotes, and confluences MUST be in Arabic. Use right-to-left text formatting.',
+} as const;
 
-// Keep the default English prompt for backward compatibility
-export const SMC_ANALYSIS_PROMPT = `You are an expert Smart Money Concepts (SMC) trader analyzing a trading chart. Provide a detailed technical analysis following SMC methodology.
+export function getLanguageInstruction(locale: string): string {
+  return LANGUAGE_INSTRUCTIONS[locale as keyof typeof LANGUAGE_INSTRUCTIONS] || LANGUAGE_INSTRUCTIONS.en;
+}
+
+export function getSMCAnalysisPrompt(locale: string = 'en'): string {
+  const languageInstruction = getLanguageInstruction(locale);
+
+  return `You are an expert Smart Money Concepts (SMC) trader analyzing a trading chart. Provide a detailed technical analysis following SMC methodology.
+
+**IMPORTANT: ${languageInstruction}**
 
 Analyze the chart and identify:
 
@@ -97,7 +109,7 @@ Respond in valid JSON format following this structure:
       "zone": {"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>},
       "strength": number (1-10),
       "tested": boolean,
-      "description": "string"
+      "description": "string (IN THE USER'S LANGUAGE)"
     }
   ],
   "fvgs": [
@@ -105,12 +117,12 @@ Respond in valid JSON format following this structure:
       "type": "bullish" | "bearish",
       "zone": {"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>},
       "mitigated": boolean,
-      "description": "string"
+      "description": "string (IN THE USER'S LANGUAGE)"
     }
   ],
   "liquidity": {
-    "buySide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string", "swept": boolean}],
-    "sellSide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string", "swept": boolean}]
+    "buySide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string (IN THE USER'S LANGUAGE)", "swept": boolean}],
+    "sellSide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string (IN THE USER'S LANGUAGE)", "swept": boolean}]
   },
   "premiumDiscount": {
     "premium": [{"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>}],
@@ -125,26 +137,34 @@ Respond in valid JSON format following this structure:
     "takeProfit": [<ACTUAL NUMBER>, <ACTUAL NUMBER>, <ACTUAL NUMBER>],
     "riskReward": number (calculated from entry/SL/TP),
     "positionSize": "conservative" | "moderate" | "aggressive",
-    "confluences": ["string"],
+    "confluences": ["string (IN THE USER'S LANGUAGE)"],
     "validity": "high" | "medium" | "low"
   },
   "insights": {
-    "narrative": "string",
-    "smartMoneyBehavior": "string",
+    "narrative": "string (IN THE USER'S LANGUAGE)",
+    "smartMoneyBehavior": "string (IN THE USER'S LANGUAGE)",
     "keyLevels": [<ACTUAL PRICE NUMBERS FROM CHART>],
     "scenarios": {
-      "bullish": "string",
-      "bearish": "string"
+      "bullish": "string (IN THE USER'S LANGUAGE)",
+      "bearish": "string (IN THE USER'S LANGUAGE)"
     }
   },
-  "educationalNotes": ["string"]
+  "educationalNotes": ["string (IN THE USER'S LANGUAGE)"]
 }
 
-REMEMBER: All prices MUST be actual numbers from the chart. NO 0.00 values unless the chart explicitly shows 0.00!
+REMEMBER:
+1. All prices MUST be actual numbers from the chart. NO 0.00 values unless the chart explicitly shows 0.00!
+2. All text content (descriptions, narratives, scenarios, etc.) MUST be in the user's language: ${languageInstruction}
 
 Be precise, educational, and focus on teaching SMC concepts while providing actionable analysis.`;
+}
 
-export const COMPARE_ANALYSIS_PROMPT = (userAnalysis: string) => `You are an expert SMC trader reviewing a student's chart analysis.
+export function getCompareAnalysisPrompt(userAnalysis: string, locale: string = 'en'): string {
+  const languageInstruction = getLanguageInstruction(locale);
+
+  return `You are an expert SMC trader reviewing a student's chart analysis.
+
+**IMPORTANT: ${languageInstruction}**
 
 The student provided this analysis:
 ${userAnalysis}
@@ -160,10 +180,11 @@ Be encouraging, educational, and specific. Use examples from the chart.
 
 Respond in JSON format:
 {
-  "strengths": ["string"],
-  "missed": ["string"],
-  "improvements": ["string"],
-  "learningPoints": ["string"],
+  "strengths": ["string (IN THE USER'S LANGUAGE)"],
+  "missed": ["string (IN THE USER'S LANGUAGE)"],
+  "improvements": ["string (IN THE USER'S LANGUAGE)"],
+  "learningPoints": ["string (IN THE USER'S LANGUAGE)"],
   "overallGrade": "A" | "B" | "C" | "D" | "F",
-  "feedback": "string"
+  "feedback": "string (IN THE USER'S LANGUAGE)"
 }`;
+}
