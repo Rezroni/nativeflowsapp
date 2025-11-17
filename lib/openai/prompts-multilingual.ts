@@ -95,61 +95,112 @@ If chart shows EUR/USD with prices 1.0850, 1.0860, 1.0870 on Y-axis:
 - Stop loss: 1.0858
 - Take profits: [1.0872, 1.0878, 1.0885]
 
-Respond in valid JSON format following this structure:
+Respond in EXACTLY this JSON format (match the property names exactly):
 
 {
-  "marketStructure": {
+  "disclaimer": "This analysis is for educational purposes only. Not financial advice. Trading involves substantial risk of loss.",
+  "market_structure": {
     "trend": "bullish" | "bearish" | "ranging",
-    "bos": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "direction": "bullish" | "bearish", "timestamp": "string"}],
-    "choch": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "direction": "bullish" | "bearish", "timestamp": "string"}]
+    "phase": "accumulation" | "markup" | "distribution" | "markdown",
+    "strength": "strong" | "moderate" | "weak",
+    "bos_levels": [
+      {
+        "price": <ACTUAL_NUMBER_FROM_CHART>,
+        "type": "bullish" | "bearish",
+        "date": "MM/DD/YYYY"
+      }
+    ],
+    "choch_levels": [
+      {
+        "price": <ACTUAL_NUMBER_FROM_CHART>,
+        "type": "bullish" | "bearish",
+        "date": "MM/DD/YYYY"
+      }
+    ]
   },
-  "orderBlocks": [
+  "order_blocks": [
     {
       "type": "bullish" | "bearish",
-      "zone": {"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>},
-      "strength": number (1-10),
-      "tested": boolean,
+      "high": <ACTUAL_HIGH_PRICE>,
+      "low": <ACTUAL_LOW_PRICE>,
+      "strength": "strong" | "moderate" | "weak",
+      "tested": true | false,
+      "reasoning": "string (IN THE USER'S LANGUAGE)"
+    }
+  ],
+  "fair_value_gaps": [
+    {
+      "type": "bullish" | "bearish",
+      "high": <ACTUAL_HIGH_PRICE>,
+      "low": <ACTUAL_LOW_PRICE>,
+      "filled": true | false,
+      "significance": "high" | "medium" | "low"
+    }
+  ],
+  "liquidity_zones": [
+    {
+      "type": "equal_highs" | "equal_lows" | "stop_hunt",
+      "levels": [<ACTUAL_PRICE_1>, <ACTUAL_PRICE_2>],
+      "swept": true | false,
       "description": "string (IN THE USER'S LANGUAGE)"
     }
   ],
-  "fvgs": [
+  "premium_discount": {
+    "equilibrium": <ACTUAL_50%_PRICE>,
+    "premium_high": <ACTUAL_CHART_HIGH>,
+    "discount_low": <ACTUAL_CHART_LOW>,
+    "current_position": "premium" | "equilibrium" | "discount",
+    "range_percentage": <0-100>
+  },
+  "trade_setups": [
     {
-      "type": "bullish" | "bearish",
-      "zone": {"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>},
-      "mitigated": boolean,
-      "description": "string (IN THE USER'S LANGUAGE)"
+      "type": "long" | "short",
+      "entry": {
+        "zone_type": "order_block" | "fvg" | "liquidity",
+        "price": <ACTUAL_ENTRY_PRICE>,
+        "entry_type": "market" | "limit" | "stop"
+      },
+      "stop_loss": {
+        "price": <ACTUAL_SL_PRICE>,
+        "reasoning": "string (IN THE USER'S LANGUAGE)"
+      },
+      "take_profit": [
+        {
+          "price": <ACTUAL_TP1_PRICE>,
+          "target": "tp1",
+          "percentage": "30%"
+        },
+        {
+          "price": <ACTUAL_TP2_PRICE>,
+          "target": "tp2",
+          "percentage": "40%"
+        },
+        {
+          "price": <ACTUAL_TP3_PRICE>,
+          "target": "tp3",
+          "percentage": "30%"
+        }
+      ],
+      "risk_reward": "1:3",
+      "confluence_rating": "high" | "medium" | "low",
+      "probability": <0-100>,
+      "time_sensitivity": "string (IN THE USER'S LANGUAGE)",
+      "invalidation": {
+        "price": <ACTUAL_INVALIDATION_PRICE>,
+        "condition": "string (IN THE USER'S LANGUAGE)"
+      },
+      "notes": "string (IN THE USER'S LANGUAGE)"
     }
   ],
-  "liquidity": {
-    "buySide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string (IN THE USER'S LANGUAGE)", "swept": boolean}],
-    "sellSide": [{"price": <ACTUAL PRICE NUMBER FROM CHART>, "type": "string (IN THE USER'S LANGUAGE)", "swept": boolean}]
+  "educational_insights": {
+    "key_concepts": ["string (IN THE USER'S LANGUAGE)", "string (IN THE USER'S LANGUAGE)"],
+    "smart_money_perspective": "string (IN THE USER'S LANGUAGE)",
+    "common_mistakes": "string (IN THE USER'S LANGUAGE)",
+    "learning_points": ["string (IN THE USER'S LANGUAGE)", "string (IN THE USER'S LANGUAGE)"]
   },
-  "premiumDiscount": {
-    "premium": [{"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>}],
-    "discount": [{"high": <ACTUAL PRICE NUMBER FROM CHART>, "low": <ACTUAL PRICE NUMBER FROM CHART>}],
-    "equilibrium": <ACTUAL PRICE NUMBER FROM CHART (50% level)>
-  },
-  "tradeSetup": {
-    "bias": "bullish" | "bearish" | "neutral",
-    "entryType": "market" | "limit",
-    "entry": <ACTUAL PRICE NUMBER FROM CHART>,
-    "stopLoss": <ACTUAL PRICE NUMBER FROM CHART>,
-    "takeProfit": [<ACTUAL NUMBER>, <ACTUAL NUMBER>, <ACTUAL NUMBER>],
-    "riskReward": number (calculated from entry/SL/TP),
-    "positionSize": "conservative" | "moderate" | "aggressive",
-    "confluences": ["string (IN THE USER'S LANGUAGE)"],
-    "validity": "high" | "medium" | "low"
-  },
-  "insights": {
-    "narrative": "string (IN THE USER'S LANGUAGE)",
-    "smartMoneyBehavior": "string (IN THE USER'S LANGUAGE)",
-    "keyLevels": [<ACTUAL PRICE NUMBERS FROM CHART>],
-    "scenarios": {
-      "bullish": "string (IN THE USER'S LANGUAGE)",
-      "bearish": "string (IN THE USER'S LANGUAGE)"
-    }
-  },
-  "educationalNotes": ["string (IN THE USER'S LANGUAGE)"]
+  "summary": "string (IN THE USER'S LANGUAGE)",
+  "confidence": "high" | "medium" | "low",
+  "next_steps": "string (IN THE USER'S LANGUAGE)"
 }
 
 REMEMBER:
