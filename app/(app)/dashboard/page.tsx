@@ -1,14 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import {
-  BarChart3,
-  ArrowRight,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, History, TrendingUp, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { DashboardStats } from '@/components/dashboard/dashboard-stats';
 import { getTranslations } from 'next-intl/server';
 
 export default async function DashboardPage() {
@@ -28,21 +23,18 @@ export default async function DashboardPage() {
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  // Parallelize all database queries for faster page load (4x faster!)
+  // Parallelize all database queries for faster page load
   const [
     { data: profile },
     { data: subscription },
     { data: analyses, count: totalAnalyses },
     { count: monthlyAnalyses },
   ] = await Promise.all([
-    // Fetch user's profile - only select needed columns
     supabase
       .from('profiles')
       .select('full_name, username')
       .eq('id', user.id)
       .single(),
-
-    // Get active subscription - only select needed columns
     supabase
       .from('subscriptions')
       .select('plan_type, status')
@@ -51,16 +43,12 @@ export default async function DashboardPage() {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
-
-    // Get recent analyses with total count - select specific columns
     supabase
       .from('analyses')
       .select('id, image_url, created_at', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(5),
-
-    // Get monthly usage count - use head: true for count-only query
+      .limit(3),
     supabase
       .from('analyses')
       .select('*', { count: 'exact', head: true })
@@ -68,188 +56,176 @@ export default async function DashboardPage() {
       .gte('created_at', startOfMonth.toISOString()),
   ]);
 
-  // Plan limits based on new structure
-  const planLimits = {
-    weekly: -1,   // unlimited
-    monthly: -1,  // unlimited
-    annual: -1,   // unlimited
-  };
-
   const currentPlan = subscription?.plan_type || null;
-  const limit = currentPlan ? planLimits[currentPlan as keyof typeof planLimits] : 0;
   const hasActivePlan = currentPlan !== null;
-  const usagePercent = limit === -1 ? 0 : ((monthlyAnalyses || 0) / Math.max(limit, 1)) * 100;
+  const userName = profile?.username || profile?.full_name || user.email?.split('@')[0];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 gradient-text">
-          {t('welcome')}, {profile?.username || profile?.full_name || user.email?.split('@')[0]}!
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Simplified Header */}
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-2xl font-bold mb-1">
+          {t('welcome')}, {userName}!
         </h1>
-        <p className="text-muted-foreground">
-          {t('subtitle')}
+        <p className="text-sm text-muted-foreground">
+          {hasActivePlan ? (
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              <span className="capitalize">{currentPlan}</span> {t('plan')}
+            </span>
+          ) : (
+            t('noPlan')
+          )}
         </p>
       </div>
 
-      {/* Stats Grid with Animations */}
-      <DashboardStats
-        totalAnalyses={totalAnalyses || 0}
-        monthlyAnalyses={monthlyAnalyses || 0}
-        currentPlan={currentPlan}
-        hasActivePlan={hasActivePlan}
-        lastAnalysisDate={
-          analyses && analyses.length > 0
-            ? new Date(analyses[0].created_at).toLocaleDateString()
-            : undefined
-        }
-        lastAnalysisTime={
-          analyses && analyses.length > 0
-            ? new Date(analyses[0].created_at).toLocaleTimeString()
-            : undefined
-        }
-      />
-
-      {/* Usage Progress - Only show for active plans */}
-      {hasActivePlan && (
-        <Card className="mb-8 glass-card">
-          <CardHeader>
-            <CardTitle>{t('monthlyUsage')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>
-                  {monthlyAnalyses || 0} {t('analysesUsed')}
-                </span>
-                <span className="text-muted-foreground">
-                  {t('unlimited')}
-                </span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{
-                    width: '100%',
-                  }}
-                />
-              </div>
-              <p className="text-sm text-green-600">
-                {t('unlimitedMessage', { plan: currentPlan })}
-              </p>
+      {/* Stats Overview - Simplified Cards */}
+      <div className="px-4 pb-6">
+        <div className="grid grid-cols-2 gap-3">
+          {/* Total Analyses */}
+          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <span className="text-xs text-muted-foreground">{t('stats.allTime')}</span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="text-3xl font-bold">{totalAnalyses || 0}</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('stats.totalAnalyses')}</div>
+          </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card className="border-2 border-primary glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardHeader>
-            <CardTitle>{t('analyzeNewChart')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {hasActivePlan
-                ? t('analyzeDescription')
-                : t('subscribeToAnalyze')}
-            </p>
-            {hasActivePlan ? (
-              <Link href="/analyze">
-                <Button className="w-full hover-glow">
-                  {t('startAnalysis')} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            ) : (
-              <Link href="/pricing">
-                <Button className="w-full hover-glow">
-                  {t('viewPlans')} <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardHeader>
-            <CardTitle>{t('viewHistory')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('viewHistoryDescription')}
-            </p>
-            <Link href="/history">
-              <Button variant="outline" className="w-full">
-                {t('viewAllAnalyses')} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+          {/* This Month */}
+          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <Calendar className="h-4 w-4 text-primary" />
+              <span className="text-xs text-muted-foreground">{t('stats.thisMonth')}</span>
+            </div>
+            <div className="text-3xl font-bold">{monthlyAnalyses || 0}</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('analysesUsed')}</div>
+          </div>
+        </div>
       </div>
 
-      {/* Recent Analyses */}
-      <Card className="glass-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{t('recentAnalyses')}</CardTitle>
+      {/* Primary Action - Prominent CTA */}
+      <div className="px-4 pb-6">
+        {hasActivePlan ? (
+          <Link href="/analyze" className="block">
+            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-6 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <div className="text-lg font-bold mb-1">{t('analyzeNewChart')}</div>
+                  <div className="text-sm opacity-90">{t('analyzeDescription')}</div>
+                </div>
+                <div className="bg-white/20 rounded-full p-3">
+                  <Plus className="h-6 w-6" />
+                </div>
+              </div>
+            </button>
+          </Link>
+        ) : (
+          <Link href="/pricing" className="block">
+            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-6 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <div className="text-lg font-bold mb-1">{t('viewPlans')}</div>
+                  <div className="text-sm opacity-90">{t('subscribeToAnalyze')}</div>
+                </div>
+                <div className="bg-white/20 rounded-full p-3">
+                  <Plus className="h-6 w-6" />
+                </div>
+              </div>
+            </button>
+          </Link>
+        )}
+      </div>
+
+      {/* Recent Analyses - Clean List */}
+      {analyses && analyses.length > 0 && (
+        <div className="px-4 pb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">{t('recentAnalyses')}</h2>
             <Link href="/history">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="text-xs h-8">
                 {t('viewAll')}
               </Button>
             </Link>
           </div>
-        </CardHeader>
-        <CardContent>
-          {analyses && analyses.length > 0 ? (
-            <div className="space-y-4">
-              {analyses.map((analysis) => (
-                <div
-                  key={analysis.id}
-                  className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded bg-muted relative overflow-hidden">
+          <div className="space-y-3">
+            {analyses.map((analysis) => (
+              <Link href={`/analysis/${analysis.id}`} key={analysis.id}>
+                <div className="bg-card/50 backdrop-blur-sm border rounded-xl p-3 transition-all active:scale-[0.98] hover:border-primary/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-lg bg-muted relative overflow-hidden flex-shrink-0">
                       {analysis.image_url && (
                         <Image
                           src={analysis.image_url}
                           alt="Chart"
                           fill
                           className="object-cover"
-                          sizes="64px"
+                          sizes="56px"
                         />
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
                         {t('analysisId', { id: analysis.id.slice(0, 8) })}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(analysis.created_at).toLocaleDateString()} {t('at')}{' '}
-                        {new Date(analysis.created_at).toLocaleTimeString()}
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(analysis.created_at).toLocaleDateString()}
                       </p>
                     </div>
+                    <div className="text-muted-foreground flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
-                  <Link href={`/analysis/${analysis.id}`}>
-                    <Button variant="ghost" size="sm">
-                      {t('view')} <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">
-                {t('noAnalyses')}. {t('noAnalysesDescription')}
-              </p>
-              <Link href="/analyze">
-                <Button>{t('startFirstAnalysis')}</Button>
               </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {(!analyses || analyses.length === 0) && (
+        <div className="px-4 pb-6">
+          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <History className="h-8 w-8 text-muted-foreground" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <h3 className="font-semibold mb-2">{t('noAnalyses')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('noAnalysesDescription')}
+            </p>
+            {hasActivePlan && (
+              <Link href="/analyze">
+                <Button size="sm">{t('startFirstAnalysis')}</Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Secondary Action */}
+      <div className="px-4 pb-8">
+        <Link href="/history" className="block">
+          <button className="w-full bg-card/50 backdrop-blur-sm border hover:border-primary/50 rounded-2xl p-4 transition-all active:scale-[0.98]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 rounded-full p-2">
+                  <History className="h-5 w-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold">{t('viewHistory')}</div>
+                  <div className="text-xs text-muted-foreground">{t('viewHistoryDescription')}</div>
+                </div>
+              </div>
+              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }
