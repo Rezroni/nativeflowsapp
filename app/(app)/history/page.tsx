@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, BarChart3, ArrowLeft } from 'lucide-react';
+import { History, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import Image from 'next/image';
 
 export default async function HistoryPage() {
@@ -18,170 +16,144 @@ export default async function HistoryPage() {
   }
 
   // Fetch all analyses for the user
-  const { data: analyses, error } = await supabase
+  const { data: analyses } = await supabase
     .from('analyses')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
+  const thisMonthCount = analyses?.filter((a) => {
+    const date = new Date(a.created_at);
+    const now = new Date();
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  }).length || 0;
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
       {/* Header */}
-      <div className="mb-8">
-        <Link href="/dashboard">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold mb-2 gradient-text">Analysis History</h1>
-        <p className="text-muted-foreground">
-          View and manage your past chart analyses
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-2xl font-bold mb-1">Analysis History</h1>
+        <p className="text-sm text-muted-foreground">
+          {analyses?.length || 0} total analyses • {thisMonthCount} this month
         </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                Total Analyses
-              </p>
-              <p className="text-3xl font-bold">{analyses?.length || 0}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">This Month</p>
-              <p className="text-3xl font-bold">
-                {
-                  analyses?.filter((a) => {
-                    const date = new Date(a.created_at);
-                    const now = new Date();
-                    return (
-                      date.getMonth() === now.getMonth() &&
-                      date.getFullYear() === now.getFullYear()
-                    );
-                  }).length
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card hover-glow transition-all hover:-translate-y-1">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">This Week</p>
-              <p className="text-3xl font-bold">
-                {
-                  analyses?.filter((a) => {
-                    const date = new Date(a.created_at);
-                    const now = new Date();
-                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                    return date >= weekAgo;
-                  }).length
-                }
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Analyses List */}
       {analyses && analyses.length > 0 ? (
-        <div className="space-y-4">
-          {analyses.map((analysis) => (
-            <Card key={analysis.id} className="glass-card hover-glow transition-all hover:-translate-y-1">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-                  {/* Thumbnail */}
-                  <div className="w-full sm:w-32 h-48 sm:h-32 rounded-lg bg-muted relative overflow-hidden flex-shrink-0">
-                    {analysis.image_url && (
-                      <Image
-                        src={analysis.image_url}
-                        alt="Chart"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 100vw, 128px"
-                      />
-                    )}
-                  </div>
+        <div className="px-4 space-y-3">
+          {analyses.map((analysis) => {
+            const trend = analysis.analysis_data?.marketStructure?.trend;
+            const bias = analysis.analysis_data?.tradeSetup?.bias;
+            const rr = analysis.analysis_data?.tradeSetup?.riskReward;
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 w-full">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold mb-1 truncate">
-                          Analysis #{analysis.id.slice(0, 8)}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {new Date(analysis.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}{' '}
-                          at{' '}
-                          {new Date(analysis.created_at).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
+            return (
+              <Link href={`/analysis/${analysis.id}`} key={analysis.id}>
+                <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-3 transition-all active:scale-[0.98] hover:border-primary/50">
+                  <div className="flex gap-3">
+                    {/* Thumbnail */}
+                    <div className="w-20 h-20 rounded-lg bg-muted relative overflow-hidden flex-shrink-0">
+                      {analysis.image_url && (
+                        <Image
+                          src={analysis.image_url}
+                          alt="Chart"
+                          fill
+                          className="object-cover"
+                          sizes="80px"
+                        />
+                      )}
+                    </div>
 
-                        {/* Quick Stats */}
-                        <div className="flex flex-wrap gap-2">
-                          {analysis.analysis_data?.marketStructure?.trend && (
-                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium capitalize">
-                              Trend: {analysis.analysis_data.marketStructure.trend}
-                            </div>
-                          )}
-                          {analysis.analysis_data?.tradeSetup?.bias && (
-                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium capitalize">
-                              Bias: {analysis.analysis_data.tradeSetup.bias}
-                            </div>
-                          )}
-                          {analysis.analysis_data?.tradeSetup?.riskReward && (
-                            <div className="px-3 py-1 rounded-full bg-muted text-xs font-medium">
-                              R:R 1:{Number(analysis.analysis_data.tradeSetup.riskReward).toFixed(2)}
-                            </div>
-                          )}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">
+                            Analysis #{analysis.id.slice(0, 8)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(analysis.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}{' '}
+                            {new Date(analysis.created_at).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
                         </div>
+
+                        {/* Bias Icon */}
+                        {(bias === 'bullish' || bias === 'bearish' || bias === 'ranging') && (
+                          <div
+                            className={`rounded-full p-1.5 ${
+                              bias === 'bullish'
+                                ? 'bg-green-500/20'
+                                : bias === 'bearish'
+                                ? 'bg-red-500/20'
+                                : 'bg-muted'
+                            }`}
+                          >
+                            {bias === 'bullish' ? (
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                            ) : bias === 'bearish' ? (
+                              <TrendingDown className="h-4 w-4 text-red-600" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Action Button */}
-                      <Link href={`/analysis/${analysis.id}`} className="w-full sm:w-auto">
-                        <Button className="hover-glow w-full sm:w-auto">
-                          View Details <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </Link>
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {trend && (
+                          <span className="px-2 py-0.5 rounded-md bg-muted text-xs font-medium capitalize">
+                            {trend}
+                          </span>
+                        )}
+                        {bias && (
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-xs font-medium capitalize ${
+                              bias === 'bullish'
+                                ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                                : bias === 'bearish'
+                                ? 'bg-red-500/20 text-red-700 dark:text-red-400'
+                                : 'bg-muted'
+                            }`}
+                          >
+                            {bias}
+                          </span>
+                        )}
+                        {rr && (
+                          <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
+                            R:R 1:{Number(rr).toFixed(1)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       ) : (
-        <Card className="glass-card">
-          <CardContent className="py-16">
-            <div className="text-center">
-              <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No analyses yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Start analyzing charts to build your history
-              </p>
-              <Link href="/analyze">
-                <Button size="lg">
-                  Analyze Your First Chart <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+        <div className="px-4">
+          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <History className="h-8 w-8 text-muted-foreground" />
             </div>
-          </CardContent>
-        </Card>
+            <h3 className="font-semibold mb-2">No analyses yet</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Start analyzing charts to build your history
+            </p>
+            <Link href="/analyze">
+              <button className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-medium transition-all active:scale-95">
+                Analyze First Chart
+              </button>
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );

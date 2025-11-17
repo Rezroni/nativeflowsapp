@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ChartUploader } from '@/components/analysis/chart-uploader';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Sparkles, Crown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Loader2, Sparkles, Crown, Camera, Upload, X } from 'lucide-react';
 import { analyzeChart, uploadChartImage, getUserAnalysisUsage } from '@/actions/analysis';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Analytics } from '@/lib/analytics/mixpanel';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 export default function AnalyzePage() {
   const t = useTranslations('analysis');
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [context, setContext] = useState('');
@@ -25,27 +25,58 @@ export default function AnalyzePage() {
   const [isLoadingUsage, setIsLoadingUsage] = useState(true);
 
   useEffect(() => {
-    // Load user usage info
     const loadUsage = async () => {
-      const result = await getUserAnalysisUsage();
-      if (result.success) {
-        setUsageInfo(result);
+      try {
+        const result = await getUserAnalysisUsage();
+        if (result.success) {
+          setUsageInfo(result);
+        }
+      } catch (error) {
+        console.error('Error loading usage:', error);
+      } finally {
+        setIsLoadingUsage(false);
       }
-      setIsLoadingUsage(false);
     };
     loadUsage();
   }, []);
 
-  const handleImageSelect = (url: string, file?: File) => {
-    setImageUrl(url);
-    setImageFile(file || null);
-    // Track chart upload
-    Analytics.chartUploaded(file ? 'file' : 'url');
+  const handleFileSelect = async (file: File) => {
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size must be less than 10MB');
+      return;
+    }
+
+    try {
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const url = e.target?.result as string;
+        setImageUrl(url);
+        setImageFile(file);
+        Analytics.chartUploaded('file');
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read file');
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      toast.error('Failed to process image');
+    }
   };
 
   const handleRemove = () => {
     setImageUrl(null);
     setImageFile(null);
+    setContext('');
   };
 
   const handleAnalyze = async () => {
@@ -56,31 +87,28 @@ export default function AnalyzePage() {
 
     setIsAnalyzing(true);
     const startTime = Date.now();
-
-    // Track analysis started
     Analytics.analysisStarted();
 
     try {
       let finalImageUrl = imageUrl;
 
-      // If user uploaded a file (not a URL), upload it first
+      // Upload file if it's a local file
       if (imageFile) {
         setIsUploading(true);
         const formData = new FormData();
         formData.append('file', imageFile);
 
         const uploadResult = await uploadChartImage(formData);
+        setIsUploading(false);
 
         if (uploadResult.error) {
           toast.error(uploadResult.error);
           Analytics.analysisFailed(uploadResult.error);
           setIsAnalyzing(false);
-          setIsUploading(false);
           return;
         }
 
         finalImageUrl = uploadResult.url!;
-        setIsUploading(false);
       }
 
       // Perform analysis
@@ -95,19 +123,18 @@ export default function AnalyzePage() {
       if (result.error) {
         toast.error(result.error);
         Analytics.analysisFailed(result.error);
-        // Reload usage to check if limit was reached
+
+        // Reload usage
         const usageResult = await getUserAnalysisUsage();
         if (usageResult.success) {
           setUsageInfo(usageResult);
         }
       } else if (result.success) {
         toast.success(t('errors.analysisComplete'));
-
-        // Track analysis completed
-        const duration = (Date.now() - startTime) / 1000; // in seconds
+        const duration = (Date.now() - startTime) / 1000;
         Analytics.analysisCompleted(duration);
 
-        // Reload usage after successful analysis
+        // Reload usage
         const usageResult = await getUserAnalysisUsage();
         if (usageResult.success) {
           setUsageInfo(usageResult);
@@ -125,170 +152,184 @@ export default function AnalyzePage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
-        <p className="text-muted-foreground">
-          {t('subtitle')}
-        </p>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
+      {/* Header */}
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-2xl font-bold mb-1">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      <div className="space-y-6">
-        {/* Chart Uploader */}
-        <ChartUploader
-          onImageSelect={handleImageSelect}
-          onRemove={handleRemove}
-          disabled={isAnalyzing || isUploading}
-        />
+      {/* Image Upload/Preview */}
+      <div className="px-4 pb-4">
+        {!imageUrl ? (
+          <div className="space-y-3">
+            {/* Camera Button */}
+            <button
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={isAnalyzing}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-6 transition-all active:scale-[0.98] shadow-lg shadow-primary/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <div className="text-lg font-bold mb-1">Take Photo</div>
+                  <div className="text-sm opacity-90">Use your camera</div>
+                </div>
+                <div className="bg-white/20 rounded-full p-3">
+                  <Camera className="h-6 w-6" />
+                </div>
+              </div>
+            </button>
 
-        {/* Additional Context */}
-        {imageUrl && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('additionalContext')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
+            {/* Upload Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isAnalyzing}
+              className="w-full bg-card/50 backdrop-blur-sm border hover:border-primary/50 rounded-2xl p-6 transition-all active:scale-[0.98]"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <div className="text-lg font-bold mb-1">Upload Image</div>
+                  <div className="text-sm text-muted-foreground">From gallery or files</div>
+                </div>
+                <div className="bg-primary/10 rounded-full p-3">
+                  <Upload className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+            </button>
+
+            {/* Hidden inputs */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileSelect(file);
+              }}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileSelect(file);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4">
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-muted mb-4">
+              <Image
+                src={imageUrl}
+                alt="Chart preview"
+                fill
+                className="object-contain"
+              />
+              <button
+                onClick={handleRemove}
+                disabled={isAnalyzing || isUploading}
+                className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-2 hover:bg-destructive/90 transition-all active:scale-95"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Context Input */}
+            <div className="mb-4">
+              <label className="text-sm font-medium mb-2 block">
+                {t('additionalContext')} <span className="text-muted-foreground">(Optional)</span>
+              </label>
+              <textarea
                 placeholder={t('contextPlaceholder')}
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
-                rows={4}
+                rows={3}
                 disabled={isAnalyzing || isUploading}
-                className="resize-none"
+                className="w-full px-3 py-2 rounded-lg border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               />
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-1">
                 {t('contextHelp')}
               </p>
-            </CardContent>
-          </Card>
-        )}
+            </div>
 
-        {/* Analyze Button or Upgrade Button */}
-        {imageUrl && (
-          <Card className="border-2 border-primary">
-            <CardContent className="pt-6">
-              {!isLoadingUsage && usageInfo?.hasReachedLimit ? (
-                <>
-                  <Link href="/pricing" className="block">
-                    <Button
-                      size="lg"
-                      className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 min-h-[56px] text-base sm:text-lg"
-                    >
-                      <Crown className="mr-2 h-5 w-5 flex-shrink-0" />
-                      <span className="truncate">{t('upgradeForUnlimited')}</span>
-                    </Button>
-                  </Link>
-                  <p className="text-xs text-center text-muted-foreground mt-4">
-                    {t('reachedLimit', { limit: usageInfo.limit })}
-                  </p>
-                </>
+            {/* Analyze Button */}
+            {!isLoadingUsage && usageInfo?.hasReachedLimit ? (
+              <Link href="/pricing" className="block">
+                <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-2xl p-4 transition-all active:scale-[0.98] font-semibold">
+                  <div className="flex items-center justify-center gap-2">
+                    <Crown className="h-5 w-5" />
+                    <span>{t('upgradeForUnlimited')}</span>
+                  </div>
+                </button>
+              </Link>
+            ) : (
+              <button
+                onClick={handleAnalyze}
+                disabled={isAnalyzing || isUploading || isLoadingUsage}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-4 transition-all active:scale-[0.98] font-semibold disabled:opacity-50"
+              >
+                {isUploading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>{t('uploading')}</span>
+                  </div>
+                ) : isAnalyzing ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>{t('analyzingChart')}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <Sparkles className="h-5 w-5" />
+                    <span>{t('analyzeWithAI')}</span>
+                  </div>
+                )}
+              </button>
+            )}
+
+            {/* Usage Info */}
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              {usageInfo && usageInfo.tier === 'free' && !usageInfo.hasReachedLimit ? (
+                t('analysesRemaining', { remaining: usageInfo.remaining, limit: usageInfo.limit })
               ) : (
-                <>
-                  <Button
-                    onClick={handleAnalyze}
-                    disabled={isAnalyzing || isUploading || isLoadingUsage}
-                    size="lg"
-                    className="w-full min-h-[56px] text-base sm:text-lg"
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
-                        <span>{t('uploading')}</span>
-                      </>
-                    ) : isAnalyzing ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin flex-shrink-0" />
-                        <span>{t('analyzingChart')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-5 w-5 flex-shrink-0" />
-                        <span>{t('analyzeWithAI')}</span>
-                      </>
-                    )}
-                  </Button>
-
-                  <p className="text-xs text-center text-muted-foreground mt-4">
-                    {usageInfo && usageInfo.tier === 'free' && !usageInfo.hasReachedLimit ? (
-                      t('analysesRemaining', { remaining: usageInfo.remaining, limit: usageInfo.limit })
-                    ) : (
-                      t('analysisTakesTime')
-                    )}
-                  </p>
-                </>
+                t('analysisTakesTime')
               )}
-            </CardContent>
-          </Card>
+            </p>
+          </div>
         )}
-
-        {/* Info Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('whatYouGet')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                1
-              </div>
-              <div>
-                <p className="font-medium">{t('features.marketStructure.title')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('features.marketStructure.description')}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                2
-              </div>
-              <div>
-                <p className="font-medium">{t('features.orderBlocks.title')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('features.orderBlocks.description')}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                3
-              </div>
-              <div>
-                <p className="font-medium">{t('features.liquidity.title')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('features.liquidity.description')}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                4
-              </div>
-              <div>
-                <p className="font-medium">{t('features.tradeSetup.title')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('features.tradeSetup.description')}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                5
-              </div>
-              <div>
-                <p className="font-medium">{t('features.educational.title')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('features.educational.description')}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      {/* Info Section */}
+      {!imageUrl && (
+        <div className="px-4 pb-6">
+          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4">
+            <h2 className="text-lg font-semibold mb-3">{t('whatYouGet')}</h2>
+            <div className="space-y-3">
+              {[
+                { num: 1, key: 'marketStructure' },
+                { num: 2, key: 'orderBlocks' },
+                { num: 3, key: 'liquidity' },
+                { num: 4, key: 'tradeSetup' },
+                { num: 5, key: 'educational' },
+              ].map((item) => (
+                <div key={item.num} className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-sm font-semibold">
+                    {item.num}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{t(`features.${item.key}.title`)}</p>
+                    <p className="text-xs text-muted-foreground">{t(`features.${item.key}.description`)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
