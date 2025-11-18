@@ -118,6 +118,57 @@ export default async function AnalysisDetailPage({
 
       {/* Content */}
       <div className="px-4 -mt-8 relative z-10">
+        {/* Trade Levels Card - Prominent */}
+        {(entry || stopLoss || takeProfit1) && (
+          <div className="bg-card border-2 border-primary/20 rounded-2xl p-4 mb-4 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold">Trade Levels</h2>
+              {riskReward && (
+                <div className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-semibold">
+                  R:R 1:{Number(riskReward).toFixed(1)}
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              {entry && (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-blue-500 rounded-full p-2">
+                      <Target className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="font-semibold">Entry Point</span>
+                  </div>
+                  <span className="text-lg font-bold text-blue-600">{entry}</span>
+                </div>
+              )}
+
+              {stopLoss && (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-red-500 rounded-full p-2">
+                      <AlertCircle className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="font-semibold">Stop Loss</span>
+                  </div>
+                  <span className="text-lg font-bold text-red-600">{stopLoss}</span>
+                </div>
+              )}
+
+              {takeProfit1 && (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-500 rounded-full p-2">
+                      <DollarSign className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="font-semibold">Take Profit</span>
+                  </div>
+                  <span className="text-lg font-bold text-green-600">{takeProfit1}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Bias Badge */}
         <div className="flex items-center gap-2 mb-4">
           <div
@@ -138,12 +189,6 @@ export default async function AnalysisDetailPage({
             )}
             <span className="capitalize">{bias}</span>
           </div>
-
-          {riskReward && (
-            <div className="px-4 py-2 rounded-full bg-primary/20 text-primary font-semibold">
-              R:R 1:{Number(riskReward).toFixed(1)}
-            </div>
-          )}
         </div>
 
         {/* Summary */}
@@ -153,50 +198,6 @@ export default async function AnalysisDetailPage({
             <p className="text-sm text-muted-foreground leading-relaxed">
               {summary}
             </p>
-          </div>
-        )}
-
-        {/* Trade Setup */}
-        {(entry || stopLoss || takeProfit1) && (
-          <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4 mb-4">
-            <h2 className="text-lg font-bold mb-3">Trade Setup</h2>
-            <div className="space-y-3">
-              {entry && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 rounded-full p-2">
-                      <Target className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium">Entry</span>
-                  </div>
-                  <span className="font-semibold">{entry}</span>
-                </div>
-              )}
-
-              {stopLoss && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-red-500/10 rounded-full p-2">
-                      <AlertCircle className="h-4 w-4 text-red-600" />
-                    </div>
-                    <span className="text-sm font-medium">Stop Loss</span>
-                  </div>
-                  <span className="font-semibold">{stopLoss}</span>
-                </div>
-              )}
-
-              {takeProfit1 && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-green-500/10 rounded-full p-2">
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                    </div>
-                    <span className="text-sm font-medium">Take Profit</span>
-                  </div>
-                  <span className="font-semibold">{takeProfit1}</span>
-                </div>
-              )}
-            </div>
           </div>
         )}
 
