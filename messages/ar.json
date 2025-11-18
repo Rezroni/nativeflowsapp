@@ -239,6 +239,13 @@
       "selectImage": "الرجاء تحديد صورة رسم بياني أولاً",
       "analysisComplete": "اكتمل التحليل!",
       "unexpectedError": "حدث خطأ غير متوقع"
+    },
+    "progress": {
+      "uploading": "تحميل الرسم البياني",
+      "processing": "معالجة الصورة",
+      "analyzing": "تحليل الأنماط",
+      "generating": "توليد الرؤى",
+      "complete": "اكتمل التحليل"
     }
   },
   "validation": {

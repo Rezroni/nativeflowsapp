@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, Sparkles, Crown, Camera, Upload, X } from 'lucide-react';
+import { Sparkles, Crown, Camera, Upload, X } from 'lucide-react';
 import { analyzeChart, uploadChartImage, getUserAnalysisUsage } from '@/actions/analysis';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Analytics } from '@/lib/analytics/mixpanel';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { AnalysisProgress, type AnalysisStage } from '@/components/analysis/analysis-progress';
 
 export default function AnalyzePage() {
   const t = useTranslations('analysis');
@@ -23,6 +24,8 @@ export default function AnalyzePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [usageInfo, setUsageInfo] = useState<any>(null);
   const [isLoadingUsage, setIsLoadingUsage] = useState(true);
+  const [analysisStage, setAnalysisStage] = useState<AnalysisStage>('uploading');
+  const [analysisError, setAnalysisError] = useState<string | undefined>();
 
   useEffect(() => {
     const loadUsage = async () => {
@@ -86,15 +89,21 @@ export default function AnalyzePage() {
     }
 
     setIsAnalyzing(true);
+    setAnalysisError(undefined);
     const startTime = Date.now();
     Analytics.analysisStarted();
 
     try {
       let finalImageUrl = imageUrl;
 
-      // Upload file if it's a local file
+      // Stage 1: Upload file if it's a local file
       if (imageFile) {
+        setAnalysisStage('uploading');
         setIsUploading(true);
+
+        // Simulate minimum time for better UX (users can see the progress)
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         const formData = new FormData();
         formData.append('file', imageFile);
 
@@ -102,6 +111,7 @@ export default function AnalyzePage() {
         setIsUploading(false);
 
         if (uploadResult.error) {
+          setAnalysisError(uploadResult.error);
           toast.error(uploadResult.error);
           Analytics.analysisFailed(uploadResult.error);
           setIsAnalyzing(false);
@@ -110,6 +120,13 @@ export default function AnalyzePage() {
 
         finalImageUrl = uploadResult.url!;
       }
+
+      // Stage 2: Processing image (hash generation)
+      setAnalysisStage('processing');
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Stage 3: Analyzing with AI
+      setAnalysisStage('analyzing');
 
       // Perform analysis
       const formData = new FormData();
@@ -120,7 +137,12 @@ export default function AnalyzePage() {
 
       const result = await analyzeChart(formData);
 
+      // Stage 4: Generating insights
+      setAnalysisStage('generating');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       if (result.error) {
+        setAnalysisError(result.error);
         toast.error(result.error);
         Analytics.analysisFailed(result.error);
 
@@ -130,6 +152,10 @@ export default function AnalyzePage() {
           setUsageInfo(usageResult);
         }
       } else if (result.success) {
+        // Stage 5: Complete
+        setAnalysisStage('complete');
+        await new Promise(resolve => setTimeout(resolve, 800));
+
         toast.success(t('errors.analysisComplete'));
         const duration = (Date.now() - startTime) / 1000;
         Analytics.analysisCompleted(duration);
@@ -143,7 +169,9 @@ export default function AnalyzePage() {
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error(t('errors.unexpectedError'));
+      const errorMessage = t('errors.unexpectedError');
+      setAnalysisError(errorMessage);
+      toast.error(errorMessage);
       Analytics.analysisFailed('Unexpected error');
     } finally {
       setIsAnalyzing(false);
@@ -238,67 +266,78 @@ export default function AnalyzePage() {
               </button>
             </div>
 
-            {/* Context Input */}
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-2 block">
-                {t('additionalContext')} <span className="text-muted-foreground">(Optional)</span>
-              </label>
-              <textarea
-                placeholder={t('contextPlaceholder')}
-                value={context}
-                onChange={(e) => setContext(e.target.value)}
-                rows={3}
-                disabled={isAnalyzing || isUploading}
-                className="w-full px-3 py-2 rounded-lg border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('contextHelp')}
-              </p>
-            </div>
-
-            {/* Analyze Button */}
-            {!isLoadingUsage && usageInfo?.hasReachedLimit ? (
-              <Link href="/pricing" className="block">
-                <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-2xl p-4 transition-all active:scale-[0.98] font-semibold">
-                  <div className="flex items-center justify-center gap-2">
-                    <Crown className="h-5 w-5" />
-                    <span>{t('upgradeForUnlimited')}</span>
-                  </div>
-                </button>
-              </Link>
-            ) : (
-              <button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || isUploading || isLoadingUsage}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-4 transition-all active:scale-[0.98] font-semibold disabled:opacity-50"
-              >
-                {isUploading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>{t('uploading')}</span>
-                  </div>
-                ) : isAnalyzing ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>{t('analyzingChart')}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <Sparkles className="h-5 w-5" />
-                    <span>{t('analyzeWithAI')}</span>
-                  </div>
-                )}
-              </button>
+            {/* Progress Indicator - Show when analyzing */}
+            {isAnalyzing && (
+              <div className="mb-4">
+                <AnalysisProgress
+                  currentStage={analysisStage}
+                  error={analysisError}
+                  stageLabels={{
+                    uploading: t('progress.uploading') || 'Uploading chart',
+                    processing: t('progress.processing') || 'Processing image',
+                    analyzing: t('progress.analyzing') || 'Analyzing patterns',
+                    generating: t('progress.generating') || 'Generating insights',
+                    complete: t('progress.complete') || 'Analysis complete',
+                  }}
+                />
+              </div>
             )}
 
-            {/* Usage Info */}
-            <p className="text-xs text-center text-muted-foreground mt-3">
-              {usageInfo && usageInfo.tier === 'free' && !usageInfo.hasReachedLimit ? (
-                t('analysesRemaining', { remaining: usageInfo.remaining, limit: usageInfo.limit })
-              ) : (
-                t('analysisTakesTime')
-              )}
-            </p>
+            {/* Context Input - Hide when analyzing */}
+            {!isAnalyzing && (
+              <div className="mb-4">
+                <label className="text-sm font-medium mb-2 block">
+                  {t('additionalContext')} <span className="text-muted-foreground">(Optional)</span>
+                </label>
+                <textarea
+                  placeholder={t('contextPlaceholder')}
+                  value={context}
+                  onChange={(e) => setContext(e.target.value)}
+                  rows={3}
+                  disabled={isAnalyzing || isUploading}
+                  className="w-full px-3 py-2 rounded-lg border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('contextHelp')}
+                </p>
+              </div>
+            )}
+
+            {/* Analyze Button - Only show when not analyzing */}
+            {!isAnalyzing && (
+              <>
+                {!isLoadingUsage && usageInfo?.hasReachedLimit ? (
+                  <Link href="/pricing" className="block">
+                    <button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-2xl p-4 transition-all active:scale-[0.98] font-semibold">
+                      <div className="flex items-center justify-center gap-2">
+                        <Crown className="h-5 w-5" />
+                        <span>{t('upgradeForUnlimited')}</span>
+                      </div>
+                    </button>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing || isUploading || isLoadingUsage}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-4 transition-all active:scale-[0.98] font-semibold disabled:opacity-50"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <Sparkles className="h-5 w-5" />
+                      <span>{t('analyzeWithAI')}</span>
+                    </div>
+                  </button>
+                )}
+
+                {/* Usage Info */}
+                <p className="text-xs text-center text-muted-foreground mt-3">
+                  {usageInfo && usageInfo.tier === 'free' && !usageInfo.hasReachedLimit ? (
+                    t('analysesRemaining', { remaining: usageInfo.remaining, limit: usageInfo.limit })
+                  ) : (
+                    t('analysisTakesTime')
+                  )}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

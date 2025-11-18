@@ -239,6 +239,13 @@
       "selectImage": "Please select a chart image first",
       "analysisComplete": "Analysis complete!",
       "unexpectedError": "An unexpected error occurred"
+    },
+    "progress": {
+      "uploading": "Uploading chart",
+      "processing": "Processing image",
+      "analyzing": "Analyzing patterns",
+      "generating": "Generating insights",
+      "complete": "Analysis complete"
     }
   },
   "validation": {

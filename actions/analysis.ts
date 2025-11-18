@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { analyzeChartImage } from '@/lib/openai/analyze';
 import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
 import { generateImageContentHash } from '@/lib/utils/image-hash';
-import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { locales, defaultLocale } from '@/i18n/request';
 
@@ -27,8 +26,11 @@ export async function analyzeChart(formData: FormData) {
   }
 
   try {
+    console.log('[AnalyzeChart] Starting chart analysis for user:', user.id);
+    console.log('[AnalyzeChart] Image URL:', imageUrl.substring(0, 100) + '...');
+
     // Get user's active subscription to determine plan type
-    const { data: subscription } = await supabase
+    const { data: subscription, error: subscriptionError } = await supabase
       .from('subscriptions')
       .select('plan_type, status, current_period_end')
       .eq('user_id', user.id)
@@ -37,8 +39,13 @@ export async function analyzeChart(formData: FormData) {
       .limit(1)
       .single();
 
+    if (subscriptionError) {
+      console.error('[AnalyzeChart] Error fetching subscription:', subscriptionError);
+    }
+
     // Check if user has an active subscription
     if (!subscription) {
+      console.log('[AnalyzeChart] No active subscription found');
       return {
         error: 'No active subscription found. Please subscribe to a plan to start analyzing charts.',
       };
@@ -46,17 +53,19 @@ export async function analyzeChart(formData: FormData) {
 
     // Check if subscription is expired
     if (subscription.current_period_end && new Date(subscription.current_period_end) < new Date()) {
+      console.log('[AnalyzeChart] Subscription expired:', subscription.current_period_end);
       return {
         error: 'Your subscription has expired. Please renew your subscription to continue.',
       };
     }
 
     const planType = subscription.plan_type as 'weekly' | 'monthly' | 'annual';
+    console.log('[AnalyzeChart] User plan type:', planType);
 
     // Generate image hash for duplicate detection
-    console.log('Generating image hash for duplicate detection...');
+    console.log('[AnalyzeChart] Generating image hash for duplicate detection...');
     const imageHash = await generateImageContentHash(imageUrl);
-    console.log(`Image hash generated: ${imageHash.slice(0, 16)}...`);
+    console.log(`[AnalyzeChart] Image hash generated: ${imageHash.slice(0, 16)}...`);
 
     // Check if we have a cached analysis for this exact image
     const { data: cachedAnalyses } = await supabase
@@ -102,27 +111,47 @@ export async function analyzeChart(formData: FormData) {
       };
     }
 
-    console.log('✗ Cache miss - performing new analysis');
+    console.log('[AnalyzeChart] ✗ Cache miss - performing new analysis');
 
     // Get user's locale from cookies
     const cookieStore = await cookies();
     const userLocale = cookieStore.get('NEXT_LOCALE')?.value || defaultLocale;
     const locale = locales.includes(userLocale as any) ? userLocale : defaultLocale;
-    console.log(`User locale: ${locale}`);
+    console.log(`[AnalyzeChart] User locale: ${locale}`);
 
     // Route to appropriate AI provider based on plan type
     let analysisResult;
-    if (planType === 'weekly') {
-      // Weekly plan uses ONLY OpenRouter (efficient model)
-      console.log(`Routing weekly plan user to OpenRouter (OPENROUTER_API_KEY)`);
-      analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext, locale);
-    } else {
-      // Monthly and Annual plans use premium OpenAI/Claude
-      console.log(`Routing ${planType} plan user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
-      analysisResult = await analyzeChartImage(imageUrl, additionalContext, locale);
+    try {
+      if (planType === 'weekly') {
+        // Weekly plan uses ONLY OpenRouter (efficient model)
+        console.log(`[AnalyzeChart] Routing weekly plan user to OpenRouter (OPENROUTER_API_KEY)`);
+        analysisResult = await analyzeChartImageWithOpenRouter(imageUrl, additionalContext, locale);
+      } else {
+        // Monthly and Annual plans use premium OpenAI/Claude
+        console.log(`[AnalyzeChart] Routing ${planType} plan user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
+        analysisResult = await analyzeChartImage(imageUrl, additionalContext, locale);
+      }
+      console.log('[AnalyzeChart] AI analysis completed successfully');
+    } catch (aiError) {
+      console.error('[AnalyzeChart] AI analysis failed:', aiError);
+
+      // Provide more specific error messages
+      if (aiError instanceof Error) {
+        if (aiError.message.includes('API key')) {
+          return { error: 'AI service configuration error. Please contact support.' };
+        } else if (aiError.message.includes('rate limit') || aiError.message.includes('quota')) {
+          return { error: 'AI service is temporarily unavailable. Please try again in a few minutes.' };
+        } else if (aiError.message.includes('timeout')) {
+          return { error: 'Analysis timed out. Please try again with a clearer image.' };
+        }
+        return { error: `Analysis failed: ${aiError.message}` };
+      }
+
+      return { error: 'Failed to analyze chart. Please try again.' };
     }
 
     // Save to database with image hash
+    console.log('[AnalyzeChart] Saving analysis to database...');
     const { data: savedAnalysis, error: saveError } = await supabase
       .from('analyses')
       .insert({
@@ -136,9 +165,11 @@ export async function analyzeChart(formData: FormData) {
       .single();
 
     if (saveError) {
-      console.error('Error saving analysis:', saveError);
-      return { error: 'Failed to save analysis' };
+      console.error('[AnalyzeChart] Error saving analysis:', saveError);
+      return { error: 'Failed to save analysis. Please try again.' };
     }
+
+    console.log('[AnalyzeChart] Analysis saved successfully with ID:', savedAnalysis.id);
 
     // Log usage
     await supabase.from('usage_logs').insert({
@@ -169,22 +200,43 @@ export async function uploadChartImage(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    console.error('[UploadChart] Unauthorized upload attempt');
     return { error: 'Unauthorized' };
   }
 
   const file = formData.get('file') as File;
 
   if (!file) {
+    console.error('[UploadChart] No file provided');
     return { error: 'No file provided' };
   }
 
   try {
+    console.log('[UploadChart] Starting upload for user:', user.id);
+    console.log('[UploadChart] File name:', file.name);
+    console.log('[UploadChart] File size:', file.size, 'bytes');
+    console.log('[UploadChart] File type:', file.type);
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      console.error('[UploadChart] Invalid file type:', file.type);
+      return { error: 'File must be an image' };
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      console.error('[UploadChart] File too large:', file.size);
+      return { error: 'Image size must be less than 10MB' };
+    }
+
     // Generate unique filename
     const fileExt = file.name.split('.').pop();
     const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
+    console.log('[UploadChart] Uploading to:', fileName);
+
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('chart-images')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -192,8 +244,18 @@ export async function uploadChartImage(formData: FormData) {
       });
 
     if (error) {
-      console.error('Error uploading file:', error);
-      return { error: 'Failed to upload file' };
+      console.error('[UploadChart] Error uploading file:', error);
+
+      // Provide more specific error messages
+      if (error.message.includes('Bucket not found')) {
+        return { error: 'Storage configuration error. Please contact support.' };
+      } else if (error.message.includes('Policy')) {
+        return { error: 'Permission denied. Please check your account.' };
+      } else if (error.message.includes('size')) {
+        return { error: 'File size exceeds the limit' };
+      }
+
+      return { error: 'Failed to upload file. Please try again.' };
     }
 
     // Get public URL
@@ -201,12 +263,20 @@ export async function uploadChartImage(formData: FormData) {
       data: { publicUrl },
     } = supabase.storage.from('chart-images').getPublicUrl(fileName);
 
+    console.log('[UploadChart] Upload successful. Public URL:', publicUrl.substring(0, 100) + '...');
+
     return {
       success: true,
       url: publicUrl,
     };
   } catch (error) {
-    console.error('Error uploading chart image:', error);
+    console.error('[UploadChart] Error uploading chart image:', error);
+
+    if (error instanceof Error) {
+      console.error('[UploadChart] Error name:', error.name);
+      console.error('[UploadChart] Error message:', error.message);
+    }
+
     return {
       error:
         error instanceof Error ? error.message : 'Failed to upload chart image',

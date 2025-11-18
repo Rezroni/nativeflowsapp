@@ -12,7 +12,9 @@ export async function analyzeChartImage(
   // Try OpenAI first, fall back to Claude if OpenAI fails
   if (isOpenAIAvailable && openai) {
     try {
-      console.log('Attempting analysis with OpenAI GPT-4...');
+      console.log('[OpenAI] Attempting analysis with OpenAI GPT-4...');
+      console.log('[OpenAI] Image URL:', imageUrl.substring(0, 100) + '...');
+
       const prompt = getSMCAnalysisPrompt(locale);
       const messages: any[] = [
         {
@@ -35,6 +37,7 @@ export async function analyzeChartImage(
         },
       ];
 
+      console.log('[OpenAI] Sending request to OpenAI API...');
       const response = await openai.chat.completions.create({
         model: VISION_MODEL,
         messages,
@@ -42,18 +45,22 @@ export async function analyzeChartImage(
         temperature: 0.7,
       });
 
+      console.log('[OpenAI] Received response from OpenAI');
       const content = response.choices[0]?.message?.content;
       if (!content) {
         throw new Error('No response from OpenAI');
       }
 
+      console.log('[OpenAI] Parsing JSON response...');
       // Parse JSON response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.error('[OpenAI] Invalid response format:', content.substring(0, 200));
         throw new Error('Invalid JSON response from OpenAI');
       }
 
       const analysis = JSON.parse(jsonMatch[0]);
+      console.log('[OpenAI] Analysis completed successfully');
 
       return {
         id: crypto.randomUUID(),
@@ -68,8 +75,15 @@ export async function analyzeChartImage(
         },
       };
     } catch (error) {
-      console.error('OpenAI analysis failed:', error);
-      console.log('Falling back to Claude AI...');
+      console.error('[OpenAI] Analysis failed:', error);
+
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error('[OpenAI] Error name:', error.name);
+        console.error('[OpenAI] Error message:', error.message);
+      }
+
+      console.log('[OpenAI] Falling back to Claude AI...');
 
       // Fall back to Claude if available
       if (isClaudeAvailable) {
