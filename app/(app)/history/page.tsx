@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { History, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { History, TrendingUp, TrendingDown, Minus, Home } from 'lucide-react';
 import Image from 'next/image';
 
 export default async function HistoryPage() {
@@ -32,7 +32,16 @@ export default async function HistoryPage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <h1 className="text-2xl font-bold mb-1">Analysis History</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Analysis History</h1>
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 px-4 py-2 bg-card border rounded-xl hover:bg-accent transition-all active:scale-95"
+          >
+            <Home className="h-4 w-4" />
+            <span className="text-sm font-medium">Dashboard</span>
+          </Link>
+        </div>
         <p className="text-sm text-muted-foreground">
           {analyses?.length || 0} total analyses • {thisMonthCount} this month
         </p>
@@ -42,9 +51,21 @@ export default async function HistoryPage() {
       {analyses && analyses.length > 0 ? (
         <div className="px-4 space-y-3">
           {analyses.map((analysis) => {
-            const trend = analysis.analysis_data?.marketStructure?.trend;
-            const bias = analysis.analysis_data?.tradeSetup?.bias;
-            const rr = analysis.analysis_data?.tradeSetup?.riskReward;
+            // Parse analysis data safely
+            let analysisData: any = {};
+            try {
+              analysisData =
+                typeof analysis.analysis_data === 'string'
+                  ? JSON.parse(analysis.analysis_data)
+                  : analysis.analysis_data || {};
+            } catch (e) {
+              console.error('Failed to parse analysis_data:', e);
+            }
+
+            // Extract all possible fields
+            const trend = analysisData.marketStructure?.trend || analysisData.market_structure?.trend;
+            const bias = analysisData.tradeSetup?.bias || analysisData.trade_setups?.[0]?.bias || analysisData.marketStructure?.trend || 'neutral';
+            const rr = analysisData.tradeSetup?.riskReward || analysisData.trade_setups?.[0]?.riskReward;
 
             return (
               <Link href={`/analysis/${analysis.id}`} key={analysis.id}>
@@ -82,48 +103,44 @@ export default async function HistoryPage() {
                           </p>
                         </div>
 
-                        {/* Bias Icon */}
-                        {(bias === 'bullish' || bias === 'bearish' || bias === 'ranging') && (
-                          <div
-                            className={`rounded-full p-1.5 ${
-                              bias === 'bullish'
-                                ? 'bg-green-500/20'
-                                : bias === 'bearish'
-                                ? 'bg-red-500/20'
-                                : 'bg-muted'
-                            }`}
-                          >
-                            {bias === 'bullish' ? (
-                              <TrendingUp className="h-4 w-4 text-green-600" />
-                            ) : bias === 'bearish' ? (
-                              <TrendingDown className="h-4 w-4 text-red-600" />
-                            ) : (
-                              <Minus className="h-4 w-4 text-muted-foreground" />
-                            )}
-                          </div>
-                        )}
+                        {/* Bias Icon - Always show */}
+                        <div
+                          className={`rounded-full p-1.5 ${
+                            bias === 'bullish'
+                              ? 'bg-green-500/20'
+                              : bias === 'bearish'
+                              ? 'bg-red-500/20'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          {bias === 'bullish' ? (
+                            <TrendingUp className="h-4 w-4 text-green-600" />
+                          ) : bias === 'bearish' ? (
+                            <TrendingDown className="h-4 w-4 text-red-600" />
+                          ) : (
+                            <Minus className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
                       </div>
 
-                      {/* Tags */}
+                      {/* Tags - Always show at least bias */}
                       <div className="flex flex-wrap gap-1.5">
                         {trend && (
                           <span className="px-2 py-0.5 rounded-md bg-muted text-xs font-medium capitalize">
                             {trend}
                           </span>
                         )}
-                        {bias && (
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-xs font-medium capitalize ${
-                              bias === 'bullish'
-                                ? 'bg-green-500/20 text-green-700 dark:text-green-400'
-                                : bias === 'bearish'
-                                ? 'bg-red-500/20 text-red-700 dark:text-red-400'
-                                : 'bg-muted'
-                            }`}
-                          >
-                            {bias}
-                          </span>
-                        )}
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-xs font-medium capitalize ${
+                            bias === 'bullish'
+                              ? 'bg-green-500/20 text-green-700 dark:text-green-400'
+                              : bias === 'bearish'
+                              ? 'bg-red-500/20 text-red-700 dark:text-red-400'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          {bias}
+                        </span>
                         {rr && (
                           <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-medium">
                             R:R 1:{Number(rr).toFixed(1)}
