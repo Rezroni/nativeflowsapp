@@ -50,14 +50,16 @@ Analyze the chart and identify:
    - Discount zones (below 50% Fibonacci)
    - Equilibrium levels
 
-6. **Trade Setup Recommendation**:
+6. **Trade Setup Recommendation** (REQUIRED - MUST PROVIDE):
    - Entry type (market/limit)
-   - Entry price and zone
-   - Stop loss placement
-   - Take profit targets (TP1, TP2, TP3)
-   - Risk-reward ratio
+   - Entry price and zone (REQUIRED - MUST be actual chart price)
+   - Stop loss placement (REQUIRED - MUST be actual chart price, CANNOT be 0.00 or "See chart")
+   - Take profit targets (TP1, TP2, TP3) (REQUIRED - MUST be actual chart prices)
+   - Risk-reward ratio (REQUIRED)
    - Position sizing suggestion
    - Setup validity and confluences
+
+   **CRITICAL**: You MUST provide Entry, Stop Loss, and Take Profit values. Users NEED these numbers to execute trades. If you cannot read exact prices from the chart, estimate based on visible candles and price levels. NEVER return 0.00 or leave these fields empty.
 
 7. **Key Insights**:
    - Market narrative and story

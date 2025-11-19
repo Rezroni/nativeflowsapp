@@ -36,18 +36,20 @@ Analyze the chart and provide:
    - Current position (premium/equilibrium/discount)
    - Range percentage
 
-6. **Trade Setup** (provide ONE complete setup):
+6. **Trade Setup** (REQUIRED - MUST PROVIDE):
    - Trade type (long or short)
-   - Entry zone with REAL price from chart
+   - Entry zone with REAL price from chart (REQUIRED - MUST be actual chart price)
    - Entry type (market/limit/stop)
-   - Stop loss with REAL price and reasoning
-   - Take profit targets (tp1, tp2, tp3) with REAL prices and percentages
-   - Risk-reward ratio (e.g., "1:3")
+   - Stop loss with REAL price and reasoning (REQUIRED - MUST be actual chart price, CANNOT be 0.00 or "See chart")
+   - Take profit targets (tp1, tp2, tp3) with REAL prices and percentages (REQUIRED - MUST be actual chart prices)
+   - Risk-reward ratio (e.g., "1:3") (REQUIRED)
    - Confluence rating (high/medium/low)
    - Probability percentage (0-100)
    - Time sensitivity
    - Invalidation price and condition
    - Detailed notes
+
+   **CRITICAL**: You MUST provide Entry, Stop Loss, and Take Profit values. Users NEED these numbers to execute trades. If you cannot read exact prices from the chart, estimate based on visible candles and price levels. NEVER return 0.00 or leave these fields empty.
 
 7. **Educational Insights**:
    - Key SMC concepts demonstrated in this chart
