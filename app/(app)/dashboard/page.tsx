@@ -70,11 +70,14 @@ export default async function DashboardPage() {
         <p className="text-sm text-muted-foreground">
           {hasActivePlan ? (
             <span className="inline-flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
               <span className="capitalize">{currentPlan}</span> {t('plan')}
             </span>
           ) : (
-            t('noPlan')
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-muted flex-shrink-0"></span>
+              {t('noPlan')}
+            </span>
           )}
         </p>
       </div>
@@ -84,9 +87,11 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           {/* Total Analyses */}
           <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">{t('stats.allTime')}</span>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="bg-primary/10 rounded-full p-2.5">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground mt-1">{t('stats.allTime')}</span>
             </div>
             <div className="text-3xl font-bold">{totalAnalyses || 0}</div>
             <div className="text-xs text-muted-foreground mt-1">{t('stats.totalAnalyses')}</div>
@@ -94,9 +99,11 @@ export default async function DashboardPage() {
 
           {/* This Month */}
           <div className="bg-card/50 backdrop-blur-sm border rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground">{t('stats.thisMonth')}</span>
+            <div className="flex items-start gap-3 mb-3">
+              <div className="bg-primary/10 rounded-full p-2.5">
+                <Calendar className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground mt-1">{t('stats.thisMonth')}</span>
             </div>
             <div className="text-3xl font-bold">{monthlyAnalyses || 0}</div>
             <div className="text-xs text-muted-foreground mt-1">{t('analysesUsed')}</div>
@@ -108,13 +115,13 @@ export default async function DashboardPage() {
       <div className="px-4 pb-6">
         {hasActivePlan ? (
           <Link href="/analyze" className="block">
-            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-6 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
-              <div className="flex items-center justify-between">
-                <div className="text-left">
+            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-5 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-left flex-1">
                   <div className="text-lg font-bold mb-1">{t('analyzeNewChart')}</div>
-                  <div className="text-sm opacity-90">{t('analyzeDescription')}</div>
+                  <div className="text-sm opacity-90 line-clamp-2">{t('analyzeDescription')}</div>
                 </div>
-                <div className="bg-white/20 rounded-full p-3">
+                <div className="bg-white/20 rounded-full p-2.5 flex-shrink-0">
                   <Plus className="h-6 w-6" />
                 </div>
               </div>
@@ -122,13 +129,13 @@ export default async function DashboardPage() {
           </Link>
         ) : (
           <Link href="/pricing" className="block">
-            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-6 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
-              <div className="flex items-center justify-between">
-                <div className="text-left">
+            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-5 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-left flex-1">
                   <div className="text-lg font-bold mb-1">{t('viewPlans')}</div>
-                  <div className="text-sm opacity-90">{t('subscribeToAnalyze')}</div>
+                  <div className="text-sm opacity-90 line-clamp-2">{t('subscribeToAnalyze')}</div>
                 </div>
-                <div className="bg-white/20 rounded-full p-3">
+                <div className="bg-white/20 rounded-full p-2.5 flex-shrink-0">
                   <Plus className="h-6 w-6" />
                 </div>
               </div>

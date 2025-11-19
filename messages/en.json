@@ -55,6 +55,8 @@
     "analysisId": "Analysis #{id}",
     "at": "at",
     "view": "View",
+    "plan": "plan",
+    "noPlan": "No active plan",
     "stats": {
       "totalAnalyses": "Total Analyses",
       "thisWeek": "This Week",

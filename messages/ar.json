@@ -55,6 +55,8 @@
     "analysisId": "تحليل #{id}",
     "at": "في",
     "view": "عرض",
+    "plan": "خطة",
+    "noPlan": "لا توجد خطة نشطة",
     "stats": {
       "totalAnalyses": "إجمالي التحليلات",
       "thisWeek": "هذا الأسبوع",
