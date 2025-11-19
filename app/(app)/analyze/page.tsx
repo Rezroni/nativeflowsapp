@@ -44,35 +44,58 @@ export default function AnalyzePage() {
   }, []);
 
   const handleFileSelect = async (file: File) => {
-    if (!file) return;
+    if (!file) {
+      console.error('[AnalyzePage] No file provided');
+      return;
+    }
 
-    // Validate file
+    console.log('[AnalyzePage] File selected:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified,
+    });
+
+    // Validate file type
     if (!file.type.startsWith('image/')) {
+      console.error('[AnalyzePage] Invalid file type:', file.type);
       toast.error('Please select an image file');
       return;
     }
 
+    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
+      console.error('[AnalyzePage] File too large:', file.size);
       toast.error('Image size must be less than 10MB');
       return;
     }
 
+    // Check for corrupted or empty files
+    if (file.size === 0) {
+      console.error('[AnalyzePage] Empty file');
+      toast.error('The selected file is empty. Please try again.');
+      return;
+    }
+
     try {
+      console.log('[AnalyzePage] Creating preview URL...');
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
         const url = e.target?.result as string;
+        console.log('[AnalyzePage] Preview URL created, length:', url.length);
         setImageUrl(url);
         setImageFile(file);
         Analytics.chartUploaded('file');
       };
-      reader.onerror = () => {
-        toast.error('Failed to read file');
+      reader.onerror = (error) => {
+        console.error('[AnalyzePage] FileReader error:', error);
+        toast.error('Failed to read file. Please try again.');
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Error processing file:', error);
-      toast.error('Failed to process image');
+      console.error('[AnalyzePage] Error processing file:', error);
+      toast.error('Failed to process image. Please try again.');
     }
   };
 
@@ -98,6 +121,7 @@ export default function AnalyzePage() {
 
       // Stage 1: Upload file if it's a local file
       if (imageFile) {
+        console.log('[AnalyzePage] Starting upload for file:', imageFile.name);
         setAnalysisStage('uploading');
         setIsUploading(true);
 
@@ -107,10 +131,14 @@ export default function AnalyzePage() {
         const formData = new FormData();
         formData.append('file', imageFile);
 
+        console.log('[AnalyzePage] FormData created, calling uploadChartImage...');
+
         const uploadResult = await uploadChartImage(formData);
+        console.log('[AnalyzePage] Upload result:', uploadResult);
         setIsUploading(false);
 
         if (uploadResult.error) {
+          console.error('[AnalyzePage] Upload failed:', uploadResult.error);
           setAnalysisError(uploadResult.error);
           toast.error(uploadResult.error);
           Analytics.analysisFailed(uploadResult.error);
@@ -118,7 +146,17 @@ export default function AnalyzePage() {
           return;
         }
 
-        finalImageUrl = uploadResult.url!;
+        if (!uploadResult.url) {
+          console.error('[AnalyzePage] Upload succeeded but no URL returned');
+          setAnalysisError('Upload failed: No URL returned');
+          toast.error('Upload failed. Please try again.');
+          Analytics.analysisFailed('No URL returned from upload');
+          setIsAnalyzing(false);
+          return;
+        }
+
+        finalImageUrl = uploadResult.url;
+        console.log('[AnalyzePage] Upload successful, URL:', finalImageUrl.substring(0, 100) + '...');
       }
 
       // Stage 2: Processing image (hash generation)

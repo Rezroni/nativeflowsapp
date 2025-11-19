@@ -235,33 +235,42 @@ export async function uploadChartImage(formData: FormData) {
     return { error: 'Unauthorized' };
   }
 
-  const file = formData.get('file') as File;
+  const file = formData.get('file');
 
   if (!file) {
-    console.error('[UploadChart] No file provided');
+    console.error('[UploadChart] No file provided in FormData');
     return { error: 'No file provided' };
   }
 
+  // Validate it's actually a File or Blob object
+  if (typeof file === 'string') {
+    console.error('[UploadChart] File is a string, not a File object');
+    return { error: 'Invalid file format. Please try again.' };
+  }
+
+  // Now we can safely cast to File
+  const imageFile = file as File;
+
   try {
     console.log('[UploadChart] Starting upload for user:', user.id);
-    console.log('[UploadChart] File name:', file.name);
-    console.log('[UploadChart] File size:', file.size, 'bytes');
-    console.log('[UploadChart] File type:', file.type);
+    console.log('[UploadChart] File name:', imageFile.name || 'unnamed');
+    console.log('[UploadChart] File size:', imageFile.size, 'bytes');
+    console.log('[UploadChart] File type:', imageFile.type || 'unknown');
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      console.error('[UploadChart] Invalid file type:', file.type);
+    if (!imageFile.type.startsWith('image/')) {
+      console.error('[UploadChart] Invalid file type:', imageFile.type);
       return { error: 'File must be an image' };
     }
 
     // Validate file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      console.error('[UploadChart] File too large:', file.size);
+    if (imageFile.size > 10 * 1024 * 1024) {
+      console.error('[UploadChart] File too large:', imageFile.size);
       return { error: 'Image size must be less than 10MB' };
     }
 
     // Generate unique filename
-    const fileExt = file.name.split('.').pop();
+    const fileExt = imageFile.name.split('.').pop() || 'jpg';
     const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
     console.log('[UploadChart] Uploading to:', fileName);
@@ -269,7 +278,7 @@ export async function uploadChartImage(formData: FormData) {
     // Upload to Supabase Storage
     const { error } = await supabase.storage
       .from('chart-images')
-      .upload(fileName, file, {
+      .upload(fileName, imageFile, {
         cacheControl: '3600',
         upsert: false,
       });
