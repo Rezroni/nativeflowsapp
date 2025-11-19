@@ -22,12 +22,20 @@ export async function analyzeChart(formData: FormData) {
   const additionalContext = formData.get('context') as string;
 
   if (!imageUrl) {
+    console.error('[AnalyzeChart] Missing image URL');
     return { error: 'Image URL is required' };
   }
 
   try {
     console.log('[AnalyzeChart] Starting chart analysis for user:', user.id);
     console.log('[AnalyzeChart] Image URL:', imageUrl.substring(0, 100) + '...');
+    console.log('[AnalyzeChart] Additional context provided:', !!additionalContext);
+
+    // Validate that the image URL is accessible
+    if (imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) {
+      console.error('[AnalyzeChart] Invalid image URL format (blob or data URL). Must be uploaded to storage first.');
+      return { error: 'Image must be uploaded before analysis. Please try again.' };
+    }
 
     // Get user's active subscription to determine plan type
     const { data: subscription, error: subscriptionError } = await supabase
@@ -185,10 +193,33 @@ export async function analyzeChart(formData: FormData) {
       analysisId: savedAnalysis.id,
     };
   } catch (error) {
-    console.error('Error analyzing chart:', error);
-    return {
-      error: error instanceof Error ? error.message : 'Failed to analyze chart',
-    };
+    console.error('[AnalyzeChart] ❌ Fatal error in analyzeChart:', error);
+
+    // Log detailed error information
+    if (error instanceof Error) {
+      console.error('[AnalyzeChart] Error name:', error.name);
+      console.error('[AnalyzeChart] Error message:', error.message);
+      console.error('[AnalyzeChart] Error stack:', error.stack);
+    }
+
+    // Provide user-friendly error messages
+    if (error instanceof Error) {
+      // Check for common error types
+      if (error.message.includes('fetch') || error.message.includes('network')) {
+        return { error: 'Network error. Please check your internet connection and try again.' };
+      } else if (error.message.includes('timeout')) {
+        return { error: 'Request timed out. Please try again.' };
+      } else if (error.message.includes('CORS')) {
+        return { error: 'Image loading error. Please try uploading the image again.' };
+      } else if (error.message.includes('unauthorized') || error.message.includes('Unauthorized')) {
+        return { error: 'Session expired. Please refresh the page and try again.' };
+      }
+
+      // Return the actual error message for debugging (in production, you might want to hide this)
+      return { error: `Analysis failed: ${error.message}` };
+    }
+
+    return { error: 'An unexpected error occurred. Please try again or contact support if the issue persists.' };
   }
 }
 
@@ -270,17 +301,26 @@ export async function uploadChartImage(formData: FormData) {
       url: publicUrl,
     };
   } catch (error) {
-    console.error('[UploadChart] Error uploading chart image:', error);
+    console.error('[UploadChart] ❌ Fatal error uploading chart image:', error);
 
     if (error instanceof Error) {
       console.error('[UploadChart] Error name:', error.name);
       console.error('[UploadChart] Error message:', error.message);
+      console.error('[UploadChart] Error stack:', error.stack);
+
+      // Provide user-friendly error messages
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        return { error: 'Network error. Please check your connection and try again.' };
+      } else if (error.message.includes('size') || error.message.includes('large')) {
+        return { error: 'Image size must be less than 10MB' };
+      } else if (error.message.includes('format') || error.message.includes('type')) {
+        return { error: 'Invalid image format. Please use JPG, PNG, or similar formats.' };
+      }
+
+      return { error: `Upload failed: ${error.message}` };
     }
 
-    return {
-      error:
-        error instanceof Error ? error.message : 'Failed to upload chart image',
-    };
+    return { error: 'Failed to upload chart image. Please try again.' };
   }
 }
 
