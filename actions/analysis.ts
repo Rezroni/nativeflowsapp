@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { analyzeChartImage } from '@/lib/openai/analyze';
 import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
-import { generateImageContentHash } from '@/lib/utils/image-hash';
+import { generateImageContentHash, generateImageHash } from '@/lib/utils/image-hash';
 import { cookies } from 'next/headers';
 import { locales, defaultLocale } from '@/i18n/request';
 
@@ -70,10 +70,23 @@ export async function analyzeChart(formData: FormData) {
     const planType = subscription.plan_type as 'weekly' | 'monthly' | 'annual';
     console.log('[AnalyzeChart] User plan type:', planType);
 
-    // Generate image hash for duplicate detection
+    // Generate image hash for duplicate detection with timeout protection
     console.log('[AnalyzeChart] Generating image hash for duplicate detection...');
-    const imageHash = await generateImageContentHash(imageUrl);
-    console.log(`[AnalyzeChart] Image hash generated: ${imageHash.slice(0, 16)}...`);
+    let imageHash: string;
+    try {
+      imageHash = await Promise.race([
+        generateImageContentHash(imageUrl),
+        new Promise<string>((_, reject) =>
+          setTimeout(() => reject(new Error('Hash generation timeout')), 20000)
+        )
+      ]);
+      console.log(`[AnalyzeChart] Image hash generated: ${imageHash.slice(0, 16)}...`);
+    } catch (hashError) {
+      console.error('[AnalyzeChart] Hash generation failed, using fallback:', hashError);
+      // Use URL-based hash as fallback
+      imageHash = generateImageHash(imageUrl);
+      console.log(`[AnalyzeChart] Using fallback hash: ${imageHash.slice(0, 16)}...`);
+    }
 
     // Check if we have a cached analysis for this exact image
     const { data: cachedAnalyses } = await supabase
@@ -239,12 +252,23 @@ export async function uploadChartImage(formData: FormData) {
 
   if (!file) {
     console.error('[UploadChart] No file provided in FormData');
+    console.error('[UploadChart] FormData keys:', Array.from(formData.keys()));
     return { error: 'No file provided' };
   }
+
+  // Log what we received
+  console.log('[UploadChart] Received file type:', typeof file);
+  console.log('[UploadChart] File constructor name:', file?.constructor?.name);
 
   // Validate it's actually a File or Blob object
   if (typeof file === 'string') {
     console.error('[UploadChart] File is a string, not a File object');
+    return { error: 'Invalid file format. Please try again.' };
+  }
+
+  // Check if it's a valid Blob/File object
+  if (!file || !(file instanceof Blob)) {
+    console.error('[UploadChart] File is not a Blob or File object');
     return { error: 'Invalid file format. Please try again.' };
   }
 
@@ -256,6 +280,12 @@ export async function uploadChartImage(formData: FormData) {
     console.log('[UploadChart] File name:', imageFile.name || 'unnamed');
     console.log('[UploadChart] File size:', imageFile.size, 'bytes');
     console.log('[UploadChart] File type:', imageFile.type || 'unknown');
+
+    // Additional validation for empty files
+    if (imageFile.size === 0) {
+      console.error('[UploadChart] Empty file (0 bytes)');
+      return { error: 'The file is empty. Please try taking the photo again.' };
+    }
 
     // Validate file type
     if (!imageFile.type.startsWith('image/')) {
@@ -275,27 +305,54 @@ export async function uploadChartImage(formData: FormData) {
 
     console.log('[UploadChart] Uploading to:', fileName);
 
-    // Upload to Supabase Storage
-    const { error } = await supabase.storage
-      .from('chart-images')
-      .upload(fileName, imageFile, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+    // Upload to Supabase Storage with retry logic
+    let uploadError = null;
+    let uploadAttempts = 0;
+    const maxAttempts = 2;
 
-    if (error) {
-      console.error('[UploadChart] Error uploading file:', error);
+    while (uploadAttempts < maxAttempts) {
+      uploadAttempts++;
+      console.log(`[UploadChart] Upload attempt ${uploadAttempts}/${maxAttempts}`);
 
-      // Provide more specific error messages
-      if (error.message.includes('Bucket not found')) {
-        return { error: 'Storage configuration error. Please contact support.' };
-      } else if (error.message.includes('Policy')) {
-        return { error: 'Permission denied. Please check your account.' };
-      } else if (error.message.includes('size')) {
-        return { error: 'File size exceeds the limit' };
+      const { error } = await supabase.storage
+        .from('chart-images')
+        .upload(fileName, imageFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: imageFile.type || 'image/jpeg',
+        });
+
+      if (!error) {
+        console.log('[UploadChart] Upload successful');
+        uploadError = null;
+        break;
       }
 
-      return { error: 'Failed to upload file. Please try again.' };
+      console.error(`[UploadChart] Upload attempt ${uploadAttempts} failed:`, error);
+      uploadError = error;
+
+      // If first attempt failed, wait a bit before retry
+      if (uploadAttempts < maxAttempts) {
+        console.log('[UploadChart] Waiting before retry...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    if (uploadError) {
+      console.error('[UploadChart] All upload attempts failed:', uploadError);
+
+      // Provide more specific error messages
+      if (uploadError.message.includes('Bucket not found')) {
+        return { error: 'Storage configuration error. Please contact support.' };
+      } else if (uploadError.message.includes('Policy') || uploadError.message.includes('policy')) {
+        return { error: 'Permission denied. Please try logging out and back in.' };
+      } else if (uploadError.message.includes('size')) {
+        return { error: 'File size exceeds the limit' };
+      } else if (uploadError.message.includes('network') || uploadError.message.includes('fetch')) {
+        return { error: 'Network error. Please check your connection and try again.' };
+      }
+
+      return { error: `Upload failed: ${uploadError.message || 'Unknown error'}. Please try again.` };
     }
 
     // Get public URL
