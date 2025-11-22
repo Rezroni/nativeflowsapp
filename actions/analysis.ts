@@ -253,30 +253,39 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
   }
 
   try {
-    console.log('[UploadDataUrl] Starting upload from data URL for user:', user.id);
+    console.log('[UploadDataUrl] ========== Starting Data URL Upload ==========');
+    console.log('[UploadDataUrl] User ID:', user.id);
     console.log('[UploadDataUrl] Data URL length:', dataUrl.length);
+    console.log('[UploadDataUrl] Data URL prefix:', dataUrl.substring(0, 50));
 
     // Validate data URL format
     if (!dataUrl.startsWith('data:image/')) {
-      console.error('[UploadDataUrl] Invalid data URL format');
+      console.error('[UploadDataUrl] Invalid data URL format - does not start with data:image/');
+      console.error('[UploadDataUrl] Actual prefix:', dataUrl.substring(0, 20));
       return { error: 'Invalid image format' };
     }
 
     // Extract base64 data and mime type
+    console.log('[UploadDataUrl] Parsing data URL with regex...');
     const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
       console.error('[UploadDataUrl] Failed to parse data URL');
+      console.error('[UploadDataUrl] Regex matches:', matches);
+      console.error('[UploadDataUrl] Data URL sample:', dataUrl.substring(0, 100));
       return { error: 'Invalid image data' };
     }
 
     const mimeType = matches[1];
     const base64Data = matches[2];
 
+    console.log('[UploadDataUrl] ✓ Data URL parsed successfully');
     console.log('[UploadDataUrl] Mime type:', mimeType);
     console.log('[UploadDataUrl] Base64 data length:', base64Data.length);
 
     // Convert base64 to buffer
+    console.log('[UploadDataUrl] Converting base64 to buffer...');
     const buffer = Buffer.from(base64Data, 'base64');
+    console.log('[UploadDataUrl] ✓ Buffer created successfully');
     console.log('[UploadDataUrl] Buffer size:', buffer.length, 'bytes');
 
     // Validate size (10MB limit)
@@ -302,33 +311,45 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
     const fileExt = extensionMap[mimeType.toLowerCase()] || 'jpg';
     const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
-    console.log('[UploadDataUrl] Uploading to:', fileName);
+    console.log('[UploadDataUrl] File extension:', fileExt);
+    console.log('[UploadDataUrl] File name:', fileName);
+    console.log('[UploadDataUrl] Content type:', mimeType);
 
     // Upload to Supabase Storage with retry
     let uploadError = null;
     let uploadAttempts = 0;
     const maxAttempts = 2;
 
+    console.log('[UploadDataUrl] Starting upload to Supabase Storage...');
+
     while (uploadAttempts < maxAttempts) {
       uploadAttempts++;
-      console.log(`[UploadDataUrl] Upload attempt ${uploadAttempts}/${maxAttempts}`);
+      console.log(`[UploadDataUrl] ===== Attempt ${uploadAttempts}/${maxAttempts} =====`);
 
-      const { error } = await supabase.storage
-        .from('chart-images')
-        .upload(fileName, buffer, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: mimeType,
-        });
+      try {
+        const { error, data } = await supabase.storage
+          .from('chart-images')
+          .upload(fileName, buffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: mimeType,
+          });
 
-      if (!error) {
-        console.log('[UploadDataUrl] Upload successful');
-        uploadError = null;
-        break;
+        if (!error) {
+          console.log('[UploadDataUrl] ✓ Upload successful!');
+          console.log('[UploadDataUrl] Upload data:', data);
+          uploadError = null;
+          break;
+        }
+
+        console.error(`[UploadDataUrl] ✗ Attempt ${uploadAttempts} failed`);
+        console.error('[UploadDataUrl] Error message:', error.message);
+        console.error('[UploadDataUrl] Error object:', error);
+        uploadError = error;
+      } catch (exception) {
+        console.error(`[UploadDataUrl] ✗ Exception during upload attempt ${uploadAttempts}:`, exception);
+        uploadError = exception as any;
       }
-
-      console.error(`[UploadDataUrl] Upload attempt ${uploadAttempts} failed:`, error);
-      uploadError = error;
 
       if (uploadAttempts < maxAttempts) {
         console.log('[UploadDataUrl] Waiting before retry...');

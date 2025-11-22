@@ -120,7 +120,66 @@ export default function AnalyzePage() {
       let finalImageUrl = imageUrl;
 
       // Stage 1: Upload file if it's a local file or data URL
-      if (imageFile || (imageUrl && imageUrl.startsWith('data:image/'))) {
+      // IMPORTANT: Prioritize data URL upload (more reliable for mobile camera)
+      if (imageUrl && imageUrl.startsWith('data:image/')) {
+        console.log('[AnalyzePage] Detected data URL - using direct upload method');
+        setAnalysisStage('uploading');
+        setIsUploading(true);
+
+        try {
+          // Simulate minimum time for better UX (users can see the progress)
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          console.log('[AnalyzePage] Uploading from data URL');
+          console.log('[AnalyzePage] Data URL length:', imageUrl.length);
+
+          const uploadResult = await uploadChartImageFromDataUrl(imageUrl);
+          console.log('[AnalyzePage] Data URL upload result:', uploadResult);
+
+          setIsUploading(false);
+
+          if (!uploadResult) {
+            console.error('[AnalyzePage] No upload result');
+            setAnalysisError('Upload failed: No result');
+            toast.error('Upload failed. Please try again.');
+            Analytics.analysisFailed('No upload result');
+            setIsAnalyzing(false);
+            return;
+          }
+
+          if (uploadResult.error) {
+            console.error('[AnalyzePage] Upload failed:', uploadResult.error);
+            setAnalysisError(uploadResult.error);
+            toast.error(uploadResult.error);
+            Analytics.analysisFailed(uploadResult.error);
+            setIsAnalyzing(false);
+            return;
+          }
+
+          if (!uploadResult.url) {
+            console.error('[AnalyzePage] Upload succeeded but no URL returned');
+            setAnalysisError('Upload failed: No URL returned');
+            toast.error('Upload failed. Please try again.');
+            Analytics.analysisFailed('No URL returned from upload');
+            setIsAnalyzing(false);
+            return;
+          }
+
+          finalImageUrl = uploadResult.url;
+          console.log('[AnalyzePage] Upload successful, URL:', finalImageUrl.substring(0, 100) + '...');
+        } catch (uploadError) {
+          console.error('[AnalyzePage] Exception during data URL upload:', uploadError);
+          setAnalysisError('Upload failed with exception');
+          toast.error('Upload failed. Please try again.');
+          Analytics.analysisFailed('Upload exception');
+          setIsAnalyzing(false);
+          setIsUploading(false);
+          return;
+        }
+      }
+      // Fallback: Use FormData upload for file objects (when not a data URL)
+      else if (imageFile) {
+        console.log('[AnalyzePage] Using FormData upload method');
         setAnalysisStage('uploading');
         setIsUploading(true);
 
@@ -130,30 +189,19 @@ export default function AnalyzePage() {
 
           let uploadResult;
 
-          // Use data URL upload for camera photos (more reliable on mobile)
-          if (imageUrl && imageUrl.startsWith('data:image/')) {
-            console.log('[AnalyzePage] Uploading from data URL (camera photo)');
-            console.log('[AnalyzePage] Data URL length:', imageUrl.length);
+          console.log('[AnalyzePage] Uploading from File object');
+          console.log('[AnalyzePage] File details:', {
+            name: imageFile.name,
+            type: imageFile.type,
+            size: imageFile.size,
+          });
 
-            uploadResult = await uploadChartImageFromDataUrl(imageUrl);
-            console.log('[AnalyzePage] Data URL upload result:', uploadResult);
-          }
-          // Use FormData upload for file objects
-          else if (imageFile) {
-            console.log('[AnalyzePage] Uploading from File object');
-            console.log('[AnalyzePage] File details:', {
-              name: imageFile.name,
-              type: imageFile.type,
-              size: imageFile.size,
-            });
+          const formData = new FormData();
+          formData.append('file', imageFile, imageFile.name);
 
-            const formData = new FormData();
-            formData.append('file', imageFile, imageFile.name);
-
-            console.log('[AnalyzePage] FormData created, calling uploadChartImage...');
-            uploadResult = await uploadChartImage(formData);
-            console.log('[AnalyzePage] FormData upload result:', uploadResult);
-          }
+          console.log('[AnalyzePage] FormData created, calling uploadChartImage...');
+          uploadResult = await uploadChartImage(formData);
+          console.log('[AnalyzePage] FormData upload result:', uploadResult);
 
           setIsUploading(false);
 
