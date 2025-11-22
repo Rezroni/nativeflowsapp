@@ -102,7 +102,7 @@ export function AppNav() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+                className="relative hover:bg-primary/10"
                 aria-label="User menu"
               >
                 <User className="h-5 w-5" />
@@ -138,7 +138,24 @@ export function AppNav() {
         {/* Mobile Menu Button */}
         <div className="flex items-center gap-2 md:hidden">
           <NotificationCenter />
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+
+          {/* Mobile User Button - Direct link to settings */}
+          <Link href="/settings">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative hover:bg-primary/10"
+              aria-label="Settings"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          </Link>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 hover:bg-accent rounded-md transition-colors"
+            aria-label="Toggle menu"
+          >
             {mobileMenuOpen ? (
               <X className="h-6 w-6" />
             ) : (
