@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Crown, Camera, Upload, X } from 'lucide-react';
-import { analyzeChart, uploadChartImage, getUserAnalysisUsage } from '@/actions/analysis';
+import { analyzeChart, uploadChartImage, uploadChartImageFromDataUrl, getUserAnalysisUsage } from '@/actions/analysis';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -119,44 +119,82 @@ export default function AnalyzePage() {
     try {
       let finalImageUrl = imageUrl;
 
-      // Stage 1: Upload file if it's a local file
-      if (imageFile) {
-        console.log('[AnalyzePage] Starting upload for file:', imageFile.name);
+      // Stage 1: Upload file if it's a local file or data URL
+      if (imageFile || (imageUrl && imageUrl.startsWith('data:image/'))) {
         setAnalysisStage('uploading');
         setIsUploading(true);
 
-        // Simulate minimum time for better UX (users can see the progress)
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+          // Simulate minimum time for better UX (users can see the progress)
+          await new Promise(resolve => setTimeout(resolve, 500));
 
-        const formData = new FormData();
-        formData.append('file', imageFile);
+          let uploadResult;
 
-        console.log('[AnalyzePage] FormData created, calling uploadChartImage...');
+          // Use data URL upload for camera photos (more reliable on mobile)
+          if (imageUrl && imageUrl.startsWith('data:image/')) {
+            console.log('[AnalyzePage] Uploading from data URL (camera photo)');
+            console.log('[AnalyzePage] Data URL length:', imageUrl.length);
 
-        const uploadResult = await uploadChartImage(formData);
-        console.log('[AnalyzePage] Upload result:', uploadResult);
-        setIsUploading(false);
+            uploadResult = await uploadChartImageFromDataUrl(imageUrl);
+            console.log('[AnalyzePage] Data URL upload result:', uploadResult);
+          }
+          // Use FormData upload for file objects
+          else if (imageFile) {
+            console.log('[AnalyzePage] Uploading from File object');
+            console.log('[AnalyzePage] File details:', {
+              name: imageFile.name,
+              type: imageFile.type,
+              size: imageFile.size,
+            });
 
-        if (uploadResult.error) {
-          console.error('[AnalyzePage] Upload failed:', uploadResult.error);
-          setAnalysisError(uploadResult.error);
-          toast.error(uploadResult.error);
-          Analytics.analysisFailed(uploadResult.error);
-          setIsAnalyzing(false);
-          return;
-        }
+            const formData = new FormData();
+            formData.append('file', imageFile, imageFile.name);
 
-        if (!uploadResult.url) {
-          console.error('[AnalyzePage] Upload succeeded but no URL returned');
-          setAnalysisError('Upload failed: No URL returned');
+            console.log('[AnalyzePage] FormData created, calling uploadChartImage...');
+            uploadResult = await uploadChartImage(formData);
+            console.log('[AnalyzePage] FormData upload result:', uploadResult);
+          }
+
+          setIsUploading(false);
+
+          if (!uploadResult) {
+            console.error('[AnalyzePage] No upload result');
+            setAnalysisError('Upload failed: No result');
+            toast.error('Upload failed. Please try again.');
+            Analytics.analysisFailed('No upload result');
+            setIsAnalyzing(false);
+            return;
+          }
+
+          if (uploadResult.error) {
+            console.error('[AnalyzePage] Upload failed:', uploadResult.error);
+            setAnalysisError(uploadResult.error);
+            toast.error(uploadResult.error);
+            Analytics.analysisFailed(uploadResult.error);
+            setIsAnalyzing(false);
+            return;
+          }
+
+          if (!uploadResult.url) {
+            console.error('[AnalyzePage] Upload succeeded but no URL returned');
+            setAnalysisError('Upload failed: No URL returned');
+            toast.error('Upload failed. Please try again.');
+            Analytics.analysisFailed('No URL returned from upload');
+            setIsAnalyzing(false);
+            return;
+          }
+
+          finalImageUrl = uploadResult.url;
+          console.log('[AnalyzePage] Upload successful, URL:', finalImageUrl.substring(0, 100) + '...');
+        } catch (uploadError) {
+          console.error('[AnalyzePage] Exception during upload:', uploadError);
+          setAnalysisError('Upload failed with exception');
           toast.error('Upload failed. Please try again.');
-          Analytics.analysisFailed('No URL returned from upload');
+          Analytics.analysisFailed('Upload exception');
           setIsAnalyzing(false);
+          setIsUploading(false);
           return;
         }
-
-        finalImageUrl = uploadResult.url;
-        console.log('[AnalyzePage] Upload successful, URL:', finalImageUrl.substring(0, 100) + '...');
       }
 
       // Stage 2: Processing image (hash generation)

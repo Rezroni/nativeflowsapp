@@ -34,16 +34,32 @@ export function ChartUploader({
 
   const handleFileSelect = useCallback(
     async (file: File) => {
+      console.log('[ChartUploader] File selected:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
+      });
+
       setError(null);
+
+      // Validate file exists and has content
+      if (!file || file.size === 0) {
+        console.error('[ChartUploader] Empty or invalid file');
+        setError('The selected file is empty. Please try again.');
+        return;
+      }
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
+        console.error('[ChartUploader] Invalid file type:', file.type);
         setError('Please select an image file');
         return;
       }
 
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
+        console.error('[ChartUploader] File too large:', file.size);
         setError('Image size must be less than 10MB');
         return;
       }
@@ -51,24 +67,49 @@ export function ChartUploader({
       setIsLoading(true);
 
       try {
+        console.log('[ChartUploader] Creating FileReader for preview...');
         // Create preview
         const reader = new FileReader();
+
         reader.onload = (e) => {
           const url = e.target?.result as string;
+
+          if (!url || !url.startsWith('data:image/')) {
+            console.error('[ChartUploader] Invalid data URL generated');
+            setError('Failed to process image. Please try again.');
+            setIsLoading(false);
+            return;
+          }
+
+          console.log('[ChartUploader] Preview created successfully, size:', url.length);
           setPreviewUrl(url);
-          onImageSelect(url, file);
+
+          // Create a new File object with explicit properties for better serialization
+          const processedFile = new File([file], file.name || 'camera-photo.jpg', {
+            type: file.type || 'image/jpeg',
+            lastModified: file.lastModified || Date.now(),
+          });
+
+          console.log('[ChartUploader] Calling onImageSelect with processed file');
+          onImageSelect(url, processedFile);
           setIsLoading(false);
+
           // Show success animation briefly
           setUploadSuccess(true);
           setTimeout(() => setUploadSuccess(false), 2000);
         };
-        reader.onerror = () => {
-          setError('Failed to read file');
+
+        reader.onerror = (error) => {
+          console.error('[ChartUploader] FileReader error:', error);
+          setError('Failed to read file. Please try again.');
           setIsLoading(false);
         };
+
+        console.log('[ChartUploader] Starting FileReader.readAsDataURL...');
         reader.readAsDataURL(file);
       } catch (err) {
-        setError('Failed to process image');
+        console.error('[ChartUploader] Exception in handleFileSelect:', err);
+        setError('Failed to process image. Please try again.');
         setIsLoading(false);
       }
     },

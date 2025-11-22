@@ -236,6 +236,131 @@ export async function analyzeChart(formData: FormData) {
   }
 }
 
+/**
+ * Upload chart image from base64 data URL
+ * More reliable for camera captures on mobile devices
+ */
+export async function uploadChartImageFromDataUrl(dataUrl: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error('[UploadDataUrl] Unauthorized upload attempt');
+    return { error: 'Unauthorized' };
+  }
+
+  try {
+    console.log('[UploadDataUrl] Starting upload from data URL for user:', user.id);
+    console.log('[UploadDataUrl] Data URL length:', dataUrl.length);
+
+    // Validate data URL format
+    if (!dataUrl.startsWith('data:image/')) {
+      console.error('[UploadDataUrl] Invalid data URL format');
+      return { error: 'Invalid image format' };
+    }
+
+    // Extract base64 data and mime type
+    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      console.error('[UploadDataUrl] Failed to parse data URL');
+      return { error: 'Invalid image data' };
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+
+    console.log('[UploadDataUrl] Mime type:', mimeType);
+    console.log('[UploadDataUrl] Base64 data length:', base64Data.length);
+
+    // Convert base64 to buffer
+    const buffer = Buffer.from(base64Data, 'base64');
+    console.log('[UploadDataUrl] Buffer size:', buffer.length, 'bytes');
+
+    // Validate size (10MB limit)
+    if (buffer.length > 10 * 1024 * 1024) {
+      console.error('[UploadDataUrl] File too large:', buffer.length);
+      return { error: 'Image size must be less than 10MB' };
+    }
+
+    if (buffer.length === 0) {
+      console.error('[UploadDataUrl] Empty buffer');
+      return { error: 'Image data is empty' };
+    }
+
+    // Determine file extension from mime type
+    const extensionMap: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+    };
+
+    const fileExt = extensionMap[mimeType.toLowerCase()] || 'jpg';
+    const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
+
+    console.log('[UploadDataUrl] Uploading to:', fileName);
+
+    // Upload to Supabase Storage with retry
+    let uploadError = null;
+    let uploadAttempts = 0;
+    const maxAttempts = 2;
+
+    while (uploadAttempts < maxAttempts) {
+      uploadAttempts++;
+      console.log(`[UploadDataUrl] Upload attempt ${uploadAttempts}/${maxAttempts}`);
+
+      const { error } = await supabase.storage
+        .from('chart-images')
+        .upload(fileName, buffer, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: mimeType,
+        });
+
+      if (!error) {
+        console.log('[UploadDataUrl] Upload successful');
+        uploadError = null;
+        break;
+      }
+
+      console.error(`[UploadDataUrl] Upload attempt ${uploadAttempts} failed:`, error);
+      uploadError = error;
+
+      if (uploadAttempts < maxAttempts) {
+        console.log('[UploadDataUrl] Waiting before retry...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    if (uploadError) {
+      console.error('[UploadDataUrl] All upload attempts failed:', uploadError);
+      return { error: `Upload failed: ${uploadError.message}. Please try again.` };
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('chart-images').getPublicUrl(fileName);
+
+    console.log('[UploadDataUrl] Upload successful, public URL:', publicUrl);
+
+    return {
+      url: publicUrl,
+      fileName,
+    };
+  } catch (error) {
+    console.error('[UploadDataUrl] Unexpected error:', error);
+    if (error instanceof Error) {
+      return { error: `Upload failed: ${error.message}` };
+    }
+    return { error: 'Failed to upload image. Please try again.' };
+  }
+}
+
 export async function uploadChartImage(formData: FormData) {
   const supabase = await createClient();
 
