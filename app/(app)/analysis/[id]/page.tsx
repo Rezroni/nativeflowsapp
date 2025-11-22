@@ -67,11 +67,61 @@ export default async function AnalysisDetailPage({
   const disclaimer = analysisData.disclaimer || '';
 
   const bias = tradeSetup.bias || marketStructure.trend || 'ranging';
-  const entry = tradeSetup.entry?.price || tradeSetup.entryPrice;
-  const stopLoss = tradeSetup.stopLoss?.price || tradeSetup.stopLossPrice;
-  const takeProfit1 =
-    tradeSetup.takeProfit?.[0]?.price || tradeSetup.takeProfitPrices?.[0];
-  const riskReward = tradeSetup.riskReward;
+
+  // Log trade setup for debugging
+  console.log('[AnalysisPage] Trade setup data:', JSON.stringify(tradeSetup, null, 2));
+
+  // Extract entry price with multiple fallback paths
+  let entry =
+    tradeSetup.entry?.price ||
+    tradeSetup.entry ||
+    tradeSetup.entryPrice ||
+    tradeSetup.entry_price ||
+    null;
+
+  // Ensure entry is a number and format it
+  if (entry && typeof entry === 'number') {
+    entry = entry.toFixed(entry < 10 ? 5 : 2);
+  } else if (entry && typeof entry === 'string' && !isNaN(parseFloat(entry))) {
+    entry = parseFloat(entry).toFixed(parseFloat(entry) < 10 ? 5 : 2);
+  }
+
+  // Extract stop loss with multiple fallback paths
+  let stopLoss =
+    tradeSetup.stopLoss?.price ||
+    tradeSetup.stopLoss ||
+    tradeSetup.stopLossPrice ||
+    tradeSetup.stop_loss?.price ||
+    tradeSetup.stop_loss ||
+    null;
+
+  // Ensure stop loss is a number and format it
+  if (stopLoss && typeof stopLoss === 'number') {
+    stopLoss = stopLoss.toFixed(stopLoss < 10 ? 5 : 2);
+  } else if (stopLoss && typeof stopLoss === 'string' && !isNaN(parseFloat(stopLoss))) {
+    stopLoss = parseFloat(stopLoss).toFixed(parseFloat(stopLoss) < 10 ? 5 : 2);
+  }
+
+  // Extract take profit with multiple fallback paths
+  let takeProfit1 =
+    tradeSetup.takeProfit?.[0]?.price ||
+    tradeSetup.takeProfit?.[0] ||
+    tradeSetup.takeProfitPrices?.[0] ||
+    tradeSetup.take_profit?.[0]?.price ||
+    tradeSetup.take_profit?.[0] ||
+    (Array.isArray(tradeSetup.takeProfit) && tradeSetup.takeProfit[0]) ||
+    null;
+
+  // Ensure take profit is a number and format it
+  if (takeProfit1 && typeof takeProfit1 === 'number') {
+    takeProfit1 = takeProfit1.toFixed(takeProfit1 < 10 ? 5 : 2);
+  } else if (takeProfit1 && typeof takeProfit1 === 'string' && !isNaN(parseFloat(takeProfit1))) {
+    takeProfit1 = parseFloat(takeProfit1).toFixed(parseFloat(takeProfit1) < 10 ? 5 : 2);
+  }
+
+  console.log('[AnalysisPage] Extracted values:', { entry, stopLoss, takeProfit1 });
+
+  const riskReward = tradeSetup.riskReward || tradeSetup.risk_reward;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">

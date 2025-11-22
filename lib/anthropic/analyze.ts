@@ -91,6 +91,22 @@ export async function analyzeChartImageWithClaude(
 
     const analysis = JSON.parse(jsonMatch[0]);
 
+    // Validate critical trade setup data
+    const tradeSetup = analysis.tradeSetup || analysis.trade_setups?.[0] || {};
+    const hasEntry = tradeSetup.entry || tradeSetup.entryPrice || tradeSetup.entry_price;
+    const hasStopLoss = tradeSetup.stopLoss || tradeSetup.stopLossPrice || tradeSetup.stop_loss;
+    const hasTakeProfit = tradeSetup.takeProfit || tradeSetup.takeProfitPrices || tradeSetup.take_profit;
+
+    if (!hasEntry || !hasStopLoss || !hasTakeProfit) {
+      console.error('[Claude] CRITICAL: Missing required trade levels!');
+      console.error('[Claude] Trade setup:', JSON.stringify(tradeSetup, null, 2));
+      console.warn('[Claude] Entry:', hasEntry, 'StopLoss:', hasStopLoss, 'TakeProfit:', hasTakeProfit);
+
+      throw new Error('AI response missing required trade levels (entry/stopLoss/takeProfit)');
+    }
+
+    console.log('[Claude] ✓ Analysis validation passed - all trade levels present');
+
     return {
       id: crypto.randomUUID(),
       userId: '', // Will be set by the caller
