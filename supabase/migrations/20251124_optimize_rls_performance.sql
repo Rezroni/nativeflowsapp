@@ -249,7 +249,7 @@ ON blog_posts
 FOR SELECT
 TO authenticated
 USING (
-  published = true
+  status = 'published'
   OR author_id = (SELECT private.current_user_id())
   OR (SELECT private.is_admin())
 );

@@ -31,8 +31,8 @@ WHERE feedback_rating IS NOT NULL;
 
 -- Index for blog posts by published status and date
 CREATE INDEX IF NOT EXISTS idx_blog_posts_published
-ON blog_posts(published, published_at DESC)
-WHERE published = true;
+ON blog_posts(status, published_at DESC)
+WHERE status = 'published';
 
 -- Index for admin roles lookup
 CREATE INDEX IF NOT EXISTS idx_admin_roles_user
