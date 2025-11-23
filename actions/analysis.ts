@@ -7,8 +7,17 @@ import { generateImageContentHash } from '@/lib/utils/image-hash';
 import { cookies } from 'next/headers';
 import { locales, defaultLocale } from '@/i18n/request';
 import { updateCache, CacheTags } from '@/lib/cache/revalidate';
+import {
+  logError,
+  logDatabaseError,
+  logAIError,
+  logUploadError,
+  addBreadcrumb,
+  trackPerformance,
+} from '@/lib/sentry/error-logging';
 
 export async function analyzeChart(formData: FormData) {
+  const startTime = Date.now();
   const supabase = await createClient();
 
   const {
@@ -28,6 +37,11 @@ export async function analyzeChart(formData: FormData) {
   }
 
   try {
+    addBreadcrumb('Starting chart analysis', {
+      userId: user.id,
+      hasContext: !!additionalContext,
+    }, 'analysis');
+
     console.log('[AnalyzeChart] Starting chart analysis for user:', user.id);
     console.log('[AnalyzeChart] Image URL:', imageUrl.substring(0, 100) + '...');
     console.log('[AnalyzeChart] Additional context provided:', !!additionalContext);
@@ -50,7 +64,13 @@ export async function analyzeChart(formData: FormData) {
 
     if (subscriptionError) {
       console.error('[AnalyzeChart] Error fetching subscription:', subscriptionError);
+      logDatabaseError(subscriptionError, 'SELECT subscriptions', user.id);
     }
+
+    addBreadcrumb('Fetched subscription', {
+      planType: subscription?.plan_type,
+      hasSubscription: !!subscription,
+    }, 'analysis');
 
     // Check if user has an active subscription
     if (!subscription) {
@@ -131,7 +151,13 @@ export async function analyzeChart(formData: FormData) {
 
     // Route to appropriate AI provider based on plan type
     let analysisResult;
+    const aiStartTime = Date.now();
     try {
+      addBreadcrumb('Starting AI analysis', {
+        planType,
+        provider: planType === 'weekly' ? 'openrouter' : 'openai/claude',
+      }, 'ai');
+
       if (planType === 'weekly') {
         // Weekly plan uses ONLY OpenRouter (efficient model)
         console.log(`[AnalyzeChart] Routing weekly plan user to OpenRouter (OPENROUTER_API_KEY)`);
@@ -141,9 +167,27 @@ export async function analyzeChart(formData: FormData) {
         console.log(`[AnalyzeChart] Routing ${planType} plan user to OpenAI/Claude (OPENAI_API_KEY/ANTHROPIC_API_KEY)`);
         analysisResult = await analyzeChartImage(imageUrl, additionalContext, locale);
       }
+
+      const aiDuration = Date.now() - aiStartTime;
+      trackPerformance('ai_analysis_duration', aiDuration, {
+        provider: planType === 'weekly' ? 'openrouter' : 'openai',
+        planType,
+      });
+
+      addBreadcrumb('AI analysis completed', {
+        duration: aiDuration,
+      }, 'ai');
+
       console.log('[AnalyzeChart] AI analysis completed successfully');
     } catch (aiError) {
       console.error('[AnalyzeChart] AI analysis failed:', aiError);
+
+      const provider = planType === 'weekly' ? 'openrouter' : ('openai' as const);
+      logAIError(aiError, provider, user.id, {
+        imageUrl: imageUrl.substring(0, 100),
+        planType,
+        locale,
+      });
 
       // Provide more specific error messages
       if (aiError instanceof Error) {
@@ -176,8 +220,13 @@ export async function analyzeChart(formData: FormData) {
 
     if (saveError) {
       console.error('[AnalyzeChart] Error saving analysis:', saveError);
+      logDatabaseError(saveError, 'INSERT analyses', user.id);
       return { error: 'Failed to save analysis. Please try again.' };
     }
+
+    addBreadcrumb('Analysis saved to database', {
+      analysisId: savedAnalysis.id,
+    }, 'database');
 
     console.log('[AnalyzeChart] Analysis saved successfully with ID:', savedAnalysis.id);
 
@@ -198,12 +247,35 @@ export async function analyzeChart(formData: FormData) {
       CacheTags.USER_USAGE(user.id),
     ]);
 
+    // Track total operation performance
+    const totalDuration = Date.now() - startTime;
+    trackPerformance('analyze_chart_total', totalDuration, {
+      planType,
+      cacheHit: 'false',
+    });
+
+    addBreadcrumb('Analysis completed successfully', {
+      analysisId: savedAnalysis.id,
+      totalDuration,
+    }, 'analysis');
+
     return {
       success: true,
       analysisId: savedAnalysis.id,
     };
   } catch (error) {
     console.error('[AnalyzeChart] ❌ Fatal error in analyzeChart:', error);
+
+    // Log fatal error to Sentry
+    logError(error, {
+      userId: user.id,
+      action: 'analyze_chart',
+      level: 'fatal',
+      metadata: {
+        imageUrl: imageUrl?.substring(0, 100),
+        hasContext: !!additionalContext,
+      },
+    });
 
     // Log detailed error information
     if (error instanceof Error) {
@@ -242,6 +314,7 @@ export async function analyzeChart(formData: FormData) {
  * to avoid FormData serialization issues on Android.
  */
 export async function uploadChartImageFromDataUrl(dataUrl: string) {
+  const startTime = Date.now();
   const supabase = await createClient();
 
   const {
@@ -254,6 +327,11 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
   }
 
   try {
+    addBreadcrumb('Starting data URL upload', {
+      userId: user.id,
+      dataUrlLength: dataUrl.length,
+    }, 'upload');
+
     console.log('[UploadDataUrl] ========== Starting Data URL Upload ==========');
     console.log('[UploadDataUrl] User ID:', user.id);
     console.log('[UploadDataUrl] Data URL length:', dataUrl.length, 'characters');
@@ -435,12 +513,28 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
     console.log('[UploadDataUrl] Public URL:', publicUrl);
     console.log('[UploadDataUrl] File size:', Math.round(buffer.length / 1024), 'KB');
 
+    // Track upload performance
+    const uploadDuration = Date.now() - startTime;
+    trackPerformance('upload_data_url', uploadDuration, {
+      fileSizeKB: Math.round(buffer.length / 1024).toString(),
+    });
+
+    addBreadcrumb('Data URL upload completed', {
+      fileName,
+      fileSizeKB: Math.round(buffer.length / 1024),
+      duration: uploadDuration,
+    }, 'upload');
+
     return {
       url: publicUrl,
       fileName,
     };
   } catch (error) {
     console.error('[UploadDataUrl] ❌ Fatal unexpected error:', error);
+
+    // Log upload error to Sentry
+    logUploadError(error, 'data-url-image', dataUrl.length, user.id);
+
     if (error instanceof Error) {
       console.error('[UploadDataUrl] Error name:', error.name);
       console.error('[UploadDataUrl] Error message:', error.message);
@@ -452,6 +546,7 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
 }
 
 export async function uploadChartImage(formData: FormData) {
+  const startTime = Date.now();
   const supabase = await createClient();
 
   const {
@@ -470,6 +565,11 @@ export async function uploadChartImage(formData: FormData) {
     console.error('[UploadChart] FormData keys:', Array.from(formData.keys()));
     return { error: 'No file provided' };
   }
+
+  addBreadcrumb('Starting file upload', {
+    userId: user.id,
+    fileType: file instanceof File ? file.type : 'unknown',
+  }, 'upload');
 
   // Log what we received
   console.log('[UploadChart] Received file type:', typeof file);
@@ -577,12 +677,33 @@ export async function uploadChartImage(formData: FormData) {
 
     console.log('[UploadChart] Upload successful. Public URL:', publicUrl.substring(0, 100) + '...');
 
+    // Track upload performance
+    const uploadDuration = Date.now() - startTime;
+    trackPerformance('upload_file', uploadDuration, {
+      fileSizeKB: Math.round(imageFile.size / 1024).toString(),
+      fileType: imageFile.type,
+    });
+
+    addBreadcrumb('File upload completed', {
+      fileName,
+      fileSizeKB: Math.round(imageFile.size / 1024),
+      duration: uploadDuration,
+    }, 'upload');
+
     return {
       success: true,
       url: publicUrl,
     };
   } catch (error) {
     console.error('[UploadChart] ❌ Fatal error uploading chart image:', error);
+
+    // Log upload error to Sentry
+    logUploadError(
+      error,
+      imageFile?.name || 'unknown',
+      imageFile?.size || 0,
+      user.id
+    );
 
     if (error instanceof Error) {
       console.error('[UploadChart] Error name:', error.name);
@@ -602,6 +723,67 @@ export async function uploadChartImage(formData: FormData) {
     }
 
     return { error: 'Failed to upload chart image. Please try again.' };
+  }
+}
+
+/**
+ * Delete an analysis
+ */
+export async function deleteAnalysis(analysisId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  try {
+    console.log('[DeleteAnalysis] Deleting analysis:', analysisId);
+
+    // Verify ownership
+    const { data: analysis, error: fetchError } = await supabase
+      .from('analyses')
+      .select('id, user_id')
+      .eq('id', analysisId)
+      .single();
+
+    if (fetchError || !analysis) {
+      console.error('[DeleteAnalysis] Analysis not found:', fetchError);
+      return { error: 'Analysis not found' };
+    }
+
+    if (analysis.user_id !== user.id) {
+      console.error('[DeleteAnalysis] Unauthorized delete attempt');
+      return { error: 'Unauthorized' };
+    }
+
+    // Delete the analysis
+    const { error: deleteError } = await supabase
+      .from('analyses')
+      .delete()
+      .eq('id', analysisId);
+
+    if (deleteError) {
+      console.error('[DeleteAnalysis] Delete failed:', deleteError);
+      return { error: 'Failed to delete analysis' };
+    }
+
+    console.log('[DeleteAnalysis] Analysis deleted successfully');
+
+    // Revalidate cache tags
+    await updateCache([
+      CacheTags.USER_ANALYSES(user.id),
+      CacheTags.ANALYSIS_LIST,
+      CacheTags.RECENT_ANALYSES,
+    ]);
+
+    return { success: true };
+  } catch (error) {
+    console.error('[DeleteAnalysis] Error:', error);
+    return { error: 'Failed to delete analysis' };
   }
 }
 
