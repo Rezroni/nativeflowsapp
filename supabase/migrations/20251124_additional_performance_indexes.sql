@@ -38,9 +38,13 @@ WHERE status = 'published';
 CREATE INDEX IF NOT EXISTS idx_admin_roles_user
 ON admin_roles(user_id, role);
 
--- Index for notification preferences by user
-CREATE INDEX IF NOT EXISTS idx_notification_preferences_user
-ON notification_preferences(user_id);
+-- Index for notification preferences by user (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification_preferences') THEN
+    CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences(user_id);
+  END IF;
+END $$;
 
 -- Composite index for subscription with period end (for expiration checks)
 CREATE INDEX IF NOT EXISTS idx_subscriptions_status_period_end
@@ -65,5 +69,12 @@ ANALYZE saved_setups;
 ANALYZE analyses;
 ANALYZE blog_posts;
 ANALYZE admin_roles;
-ANALYZE notification_preferences;
 ANALYZE subscriptions;
+
+-- Analyze notification_preferences only if it exists
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification_preferences') THEN
+    EXECUTE 'ANALYZE notification_preferences';
+  END IF;
+END $$;

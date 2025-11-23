@@ -265,35 +265,43 @@ WITH CHECK (
   (SELECT private.is_admin())
 );
 
--- NOTIFICATION_PREFERENCES TABLE
-DROP POLICY IF EXISTS "Users can manage own notification preferences" ON notification_preferences;
-DROP POLICY IF EXISTS "Users can view own notification preferences" ON notification_preferences;
-DROP POLICY IF EXISTS "Users can insert own notification preferences" ON notification_preferences;
-DROP POLICY IF EXISTS "Users can update own notification preferences" ON notification_preferences;
+-- NOTIFICATION_PREFERENCES TABLE (only if it exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification_preferences') THEN
+    DROP POLICY IF EXISTS "Users can manage own notification preferences" ON notification_preferences;
+    DROP POLICY IF EXISTS "Users can view own notification preferences" ON notification_preferences;
+    DROP POLICY IF EXISTS "Users can insert own notification preferences" ON notification_preferences;
+    DROP POLICY IF EXISTS "Users can update own notification preferences" ON notification_preferences;
 
-CREATE POLICY "Users can view own notification preferences"
-ON notification_preferences
-FOR SELECT
-TO authenticated
-USING (
-  user_id = (SELECT private.current_user_id())
-);
+    EXECUTE '
+      CREATE POLICY "Users can view own notification preferences"
+      ON notification_preferences
+      FOR SELECT
+      TO authenticated
+      USING (
+        user_id = (SELECT private.current_user_id())
+      )';
 
-CREATE POLICY "Users can insert own notification preferences"
-ON notification_preferences
-FOR INSERT
-TO authenticated
-WITH CHECK (
-  user_id = (SELECT private.current_user_id())
-);
+    EXECUTE '
+      CREATE POLICY "Users can insert own notification preferences"
+      ON notification_preferences
+      FOR INSERT
+      TO authenticated
+      WITH CHECK (
+        user_id = (SELECT private.current_user_id())
+      )';
 
-CREATE POLICY "Users can update own notification preferences"
-ON notification_preferences
-FOR UPDATE
-TO authenticated
-USING (
-  user_id = (SELECT private.current_user_id())
-);
+    EXECUTE '
+      CREATE POLICY "Users can update own notification preferences"
+      ON notification_preferences
+      FOR UPDATE
+      TO authenticated
+      USING (
+        user_id = (SELECT private.current_user_id())
+      )';
+  END IF;
+END $$;
 
 -- =====================================================
 -- PART 3: Grant Necessary Permissions
@@ -315,5 +323,12 @@ ANALYZE usage_logs;
 ANALYZE saved_setups;
 ANALYZE push_subscriptions;
 ANALYZE blog_posts;
-ANALYZE notification_preferences;
 ANALYZE admin_roles;
+
+-- Analyze notification_preferences only if it exists
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification_preferences') THEN
+    EXECUTE 'ANALYZE notification_preferences';
+  END IF;
+END $$;
