@@ -60,8 +60,15 @@ COMMENT ON INDEX idx_analyses_symbol_timeframe IS 'Optimizes market analysis que
 COMMENT ON INDEX idx_analyses_feedback IS 'Optimizes feedback analytics queries';
 COMMENT ON INDEX idx_blog_posts_published IS 'Optimizes published blog posts queries';
 COMMENT ON INDEX idx_admin_roles_user IS 'Optimizes admin role checks';
-COMMENT ON INDEX idx_notification_preferences_user IS 'Optimizes notification preferences lookups';
 COMMENT ON INDEX idx_subscriptions_status_period_end IS 'Optimizes subscription expiration checks';
+
+-- Add comment on notification_preferences index only if it exists
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_notification_preferences_user') THEN
+    EXECUTE 'COMMENT ON INDEX idx_notification_preferences_user IS ''Optimizes notification preferences lookups''';
+  END IF;
+END $$;
 
 -- Update table statistics for query planner
 ANALYZE usage_logs;
