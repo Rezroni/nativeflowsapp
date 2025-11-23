@@ -6,6 +6,7 @@ import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
 import { generateImageContentHash } from '@/lib/utils/image-hash';
 import { cookies } from 'next/headers';
 import { locales, defaultLocale } from '@/i18n/request';
+import { updateCache, CacheTags } from '@/lib/cache/revalidate';
 
 export async function analyzeChart(formData: FormData) {
   const supabase = await createClient();
@@ -188,6 +189,14 @@ export async function analyzeChart(formData: FormData) {
         analysis_id: savedAnalysis.id,
       },
     });
+
+    // Revalidate cache tags for immediate updates (read-your-own-writes)
+    await updateCache([
+      CacheTags.USER_ANALYSES(user.id),
+      CacheTags.ANALYSIS_LIST,
+      CacheTags.RECENT_ANALYSES,
+      CacheTags.USER_USAGE(user.id),
+    ]);
 
     return {
       success: true,
