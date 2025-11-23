@@ -25,6 +25,14 @@
     --input: 265 40% 15%;
     --ring: 346 83% 61%;
     --radius: 0.75rem;
+
+    /* 2025 UI Enhancement: Semantic Colors for Trends */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -189,7 +197,7 @@
     animation: slideInFromRight 0.6s ease-out forwards;
   }
 
-  /* Glassmorphism effect */
+  /* 2025 Enhanced Glassmorphism Effects */
   .glass {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -202,6 +210,36 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* 2025 UI: Primary glass cards with stronger blur */
+  .glass-card-primary {
+    background: rgba(26, 20, 37, 0.4);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 8px 32px 0 rgba(31, 38, 135, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* 2025 UI: Elevated glass cards */
+  .glass-card-elevated {
+    background: rgba(26, 20, 37, 0.6);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 12px 48px 0 rgba(234, 75, 113, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  }
+
+  /* 2025 UI: Frosted glass for overlays */
+  .glass-frosted {
+    background: rgba(26, 20, 37, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
   /* Gradient text */
@@ -359,5 +397,257 @@
 
   .offline-loading {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* ========================================
+     2025 UI ENHANCEMENTS - Phase 1
+     ======================================== */
+
+  /* Advanced Micro-interactions */
+
+  /* Ripple effect for buttons */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .ripple:active::after {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+
+  /* Interactive card with enhanced hover states */
+  .interactive-card {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:-translate-y-1 hover:shadow-2xl;
+    @apply active:scale-[0.98];
+    @apply focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+    @apply focus-visible:ring-offset-background;
+  }
+
+  /* Button with glow effect */
+  .btn-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(234, 75, 113, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-out, height 0.6s ease-out;
+  }
+
+  .btn-glow:hover::before {
+    width: 300%;
+    height: 300%;
+  }
+
+  /* Shimmer loading effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .shimmer {
+    animation: shimmer 2s infinite linear;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 1000px 100%;
+  }
+
+  /* Skeleton loading with shimmer */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Animated gradient blobs for backgrounds */
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20px, -30px) scale(1.1);
+    }
+    50% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+      transform: translate(30px, 10px) scale(1.05);
+    }
+  }
+
+  .animated-blob {
+    animation: blob 20s infinite ease-in-out;
+    filter: blur(60px);
+    opacity: 0.3;
+  }
+
+  .animated-blob-slow {
+    animation: blob 30s infinite ease-in-out;
+    filter: blur(80px);
+    opacity: 0.2;
+  }
+
+  /* Scale-in animation */
+  @keyframes scaleIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  /* Bounce effect for success states */
+  @keyframes bounce-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-bounce-in {
+    animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Trend indicators */
+  .trend-up {
+    @apply text-emerald-500;
+    animation: trend-up-pulse 2s ease-in-out infinite;
+  }
+
+  .trend-down {
+    @apply text-rose-500;
+    animation: trend-down-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes trend-up-pulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+  }
+
+  @keyframes trend-down-pulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(2px);
+    }
+  }
+
+  /* Success checkmark animation */
+  @keyframes checkmark {
+    0% {
+      stroke-dashoffset: 50;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-checkmark {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    animation: checkmark 0.6s ease-out forwards;
+  }
+
+  /* Focus ring with better visibility */
+  .focus-ring-enhanced {
+    @apply focus-visible:outline-none focus-visible:ring-2;
+    @apply focus-visible:ring-primary focus-visible:ring-offset-2;
+    @apply focus-visible:ring-offset-background;
+    @apply transition-shadow duration-200;
+  }
+
+  /* Stagger children animation utility */
+  .stagger-children > * {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .stagger-children > *:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  .stagger-children > *:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .stagger-children > *:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  .stagger-children > *:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+
+  .stagger-children > *:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+
+  /* Haptic feedback simulation (visual) */
+  .haptic-press {
+    @apply active:scale-95 active:opacity-80;
+    @apply transition-all duration-100;
   }
 }
