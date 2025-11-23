@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import { sanitizePlainText } from '@/lib/utils/sanitize';
 
 export async function POST(request: Request) {
   try {
@@ -25,16 +26,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Build update object
+    // Build update object with sanitized inputs to prevent XSS
     const updateData: any = {
-      full_name: fullName.trim(),
+      full_name: sanitizePlainText(fullName.trim()),
       updated_at: new Date().toISOString(),
     };
 
-    // Add username to update if provided
+    // Add username to update if provided (sanitize and validate)
     // The database has a unique constraint, so we rely on that for validation
     if (username && username.trim() !== '') {
-      updateData.username = username.trim();
+      const sanitizedUsername = sanitizePlainText(username.trim());
+      // Additional validation: username should only contain alphanumeric, dash, underscore
+      if (!/^[a-zA-Z0-9_-]+$/.test(sanitizedUsername)) {
+        return NextResponse.json(
+          { error: 'Username can only contain letters, numbers, dashes, and underscores' },
+          { status: 400 }
+        );
+      }
+      updateData.username = sanitizedUsername;
     }
 
     // Update profile

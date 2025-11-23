@@ -19,6 +19,7 @@ import { BlogEditor } from './blog-editor'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Save, Eye } from 'lucide-react'
+import { sanitizeRichText, sanitizePlainText } from '@/lib/utils/sanitize'
 
 interface BlogPostFormProps {
   initialData?: {
@@ -150,17 +151,18 @@ export function BlogPostForm({ initialData }: BlogPostFormProps) {
         throw new Error('Not authenticated')
       }
 
+      // Sanitize all user inputs to prevent XSS attacks
       const postData = {
-        title: formData.title,
-        slug: formData.slug,
-        excerpt: formData.excerpt,
-        content: { html: formData.content },
+        title: sanitizePlainText(formData.title),
+        slug: sanitizePlainText(formData.slug),
+        excerpt: sanitizePlainText(formData.excerpt),
+        content: { html: sanitizeRichText(formData.content) }, // Allow rich text but sanitize
         status,
         featured_image_url: formData.featured_image_url || null,
-        meta_title: formData.meta_title || formData.title,
-        meta_description: formData.meta_description || formData.excerpt,
-        categories: formData.categories ? formData.categories.split(',').map(c => c.trim()) : [],
-        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
+        meta_title: sanitizePlainText(formData.meta_title || formData.title),
+        meta_description: sanitizePlainText(formData.meta_description || formData.excerpt),
+        categories: formData.categories ? formData.categories.split(',').map(c => sanitizePlainText(c.trim())) : [],
+        tags: formData.tags ? formData.tags.split(',').map(t => sanitizePlainText(t.trim())) : [],
         author_id: user.id,
         published_at: status === 'published' ? new Date().toISOString() : null,
         reading_time_minutes: Math.ceil(formData.content.split(' ').length / 200)
