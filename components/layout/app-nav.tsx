@@ -99,26 +99,29 @@ export function AppNav() {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative hover:bg-primary/10"
+              <button
+                className="inline-flex items-center justify-center relative h-10 w-10 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-primary/10 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ripple focus-ring-enhanced cursor-pointer"
                 aria-label="User menu"
+                type="button"
               >
                 <User className="h-5 w-5" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent
+              align="end"
+              className="w-56 glass-card-elevated animate-scale-in"
+              sideOffset={8}
+            >
+              <DropdownMenuLabel className="font-semibold">My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center cursor-pointer w-full">
+                <Link href="/settings" className="flex items-center cursor-pointer w-full focus:bg-primary/10 transition-colors">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/pricing" className="flex items-center cursor-pointer w-full">
+                <Link href="/pricing" className="flex items-center cursor-pointer w-full focus:bg-primary/10 transition-colors">
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Pricing</span>
                 </Link>
@@ -126,7 +129,7 @@ export function AppNav() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleSignOut}
-                className="text-destructive focus:text-destructive cursor-pointer"
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer transition-colors"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Sign Out</span>
