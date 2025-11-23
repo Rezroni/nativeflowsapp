@@ -180,19 +180,6 @@ export function addBreadcrumb(
 }
 
 /**
- * Start a performance transaction
- */
-export function startTransaction(
-  name: string,
-  op: string
-): Sentry.Transaction | undefined {
-  return Sentry.startTransaction({
-    name,
-    op,
-  });
-}
-
-/**
  * Track a performance metric
  */
 export function trackPerformance(
@@ -200,10 +187,21 @@ export function trackPerformance(
   duration: number,
   tags?: Record<string, string>
 ): void {
-  Sentry.metrics.distribution(name, duration, {
-    tags,
-    unit: 'millisecond',
+  // Log performance metrics to Sentry as breadcrumbs
+  Sentry.addBreadcrumb({
+    category: 'performance',
+    message: `${name}: ${duration}ms`,
+    level: 'info',
+    data: {
+      duration,
+      ...tags,
+    },
   });
+
+  // Also log to console in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Performance] ${name}: ${duration}ms`, tags);
+  }
 }
 
 /**
