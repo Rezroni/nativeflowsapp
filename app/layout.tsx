@@ -10,6 +10,8 @@ import { NotificationPrompt } from "@/components/pwa/notification-prompt"
 import { PageTransition } from "@/components/animations/page-transition"
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -127,6 +129,10 @@ export default async function RootLayout({
             </AnalyticsProvider>
           </PWAProvider>
         </NextIntlClientProvider>
+        {/* Vercel Analytics - Track page views and visitors */}
+        <Analytics />
+        {/* Vercel Speed Insights - Track Core Web Vitals and performance */}
+        <SpeedInsights />
       </body>
     </html>
   )
