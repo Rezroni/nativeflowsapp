@@ -239,6 +239,10 @@ export async function analyzeChart(formData: FormData) {
 /**
  * Upload chart image from base64 data URL
  * More reliable for camera captures on mobile devices
+ *
+ * IMPORTANT: This function handles large base64 data from camera photos.
+ * The data URL is sent directly from the client and parsed server-side
+ * to avoid FormData serialization issues on Android.
  */
 export async function uploadChartImageFromDataUrl(dataUrl: string) {
   const supabase = await createClient();
@@ -249,30 +253,40 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
 
   if (!user) {
     console.error('[UploadDataUrl] Unauthorized upload attempt');
-    return { error: 'Unauthorized' };
+    return { error: 'Unauthorized - Please log in again' };
   }
 
   try {
     console.log('[UploadDataUrl] ========== Starting Data URL Upload ==========');
     console.log('[UploadDataUrl] User ID:', user.id);
-    console.log('[UploadDataUrl] Data URL length:', dataUrl.length);
-    console.log('[UploadDataUrl] Data URL prefix:', dataUrl.substring(0, 50));
+    console.log('[UploadDataUrl] Data URL length:', dataUrl.length, 'characters');
+    console.log('[UploadDataUrl] Estimated size:', Math.round(dataUrl.length / 1024), 'KB');
 
     // Validate data URL format
+    if (!dataUrl || typeof dataUrl !== 'string') {
+      console.error('[UploadDataUrl] Data URL is not a string:', typeof dataUrl);
+      return { error: 'Invalid data format' };
+    }
+
     if (!dataUrl.startsWith('data:image/')) {
       console.error('[UploadDataUrl] Invalid data URL format - does not start with data:image/');
       console.error('[UploadDataUrl] Actual prefix:', dataUrl.substring(0, 20));
-      return { error: 'Invalid image format' };
+      return { error: 'Invalid image format. Please try again.' };
+    }
+
+    // Check if data URL is suspiciously small (likely corrupted)
+    if (dataUrl.length < 100) {
+      console.error('[UploadDataUrl] Data URL too small - likely corrupted');
+      return { error: 'Image data corrupted. Please take the photo again.' };
     }
 
     // Extract base64 data and mime type
-    console.log('[UploadDataUrl] Parsing data URL with regex...');
+    console.log('[UploadDataUrl] Parsing data URL...');
     const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
       console.error('[UploadDataUrl] Failed to parse data URL');
-      console.error('[UploadDataUrl] Regex matches:', matches);
-      console.error('[UploadDataUrl] Data URL sample:', dataUrl.substring(0, 100));
-      return { error: 'Invalid image data' };
+      console.error('[UploadDataUrl] Data URL format:', dataUrl.substring(0, 50) + '...');
+      return { error: 'Invalid image data format. Please try again.' };
     }
 
     const mimeType = matches[1];
@@ -280,23 +294,45 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
 
     console.log('[UploadDataUrl] ✓ Data URL parsed successfully');
     console.log('[UploadDataUrl] Mime type:', mimeType);
-    console.log('[UploadDataUrl] Base64 data length:', base64Data.length);
+    console.log('[UploadDataUrl] Base64 data length:', base64Data.length, 'characters');
 
-    // Convert base64 to buffer
-    console.log('[UploadDataUrl] Converting base64 to buffer...');
-    const buffer = Buffer.from(base64Data, 'base64');
-    console.log('[UploadDataUrl] ✓ Buffer created successfully');
-    console.log('[UploadDataUrl] Buffer size:', buffer.length, 'bytes');
-
-    // Validate size (10MB limit)
-    if (buffer.length > 10 * 1024 * 1024) {
-      console.error('[UploadDataUrl] File too large:', buffer.length);
-      return { error: 'Image size must be less than 10MB' };
+    // Validate mime type
+    const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validMimeTypes.includes(mimeType.toLowerCase())) {
+      console.error('[UploadDataUrl] Unsupported mime type:', mimeType);
+      return { error: `Unsupported image format: ${mimeType}` };
     }
 
+    // Convert base64 to buffer with error handling
+    console.log('[UploadDataUrl] Converting base64 to buffer...');
+    let buffer: Buffer;
+    try {
+      buffer = Buffer.from(base64Data, 'base64');
+      console.log('[UploadDataUrl] ✓ Buffer created successfully');
+      console.log('[UploadDataUrl] Buffer size:', buffer.length, 'bytes (', Math.round(buffer.length / 1024), 'KB)');
+    } catch (bufferError) {
+      console.error('[UploadDataUrl] Failed to create buffer:', bufferError);
+      return { error: 'Failed to process image data. Please try again.' };
+    }
+
+    // Validate buffer size
     if (buffer.length === 0) {
-      console.error('[UploadDataUrl] Empty buffer');
-      return { error: 'Image data is empty' };
+      console.error('[UploadDataUrl] Empty buffer - image has no data');
+      return { error: 'Image data is empty. Please take the photo again.' };
+    }
+
+    // Check size limit (10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (buffer.length > maxSize) {
+      console.error('[UploadDataUrl] File too large:', buffer.length, 'bytes');
+      console.error('[UploadDataUrl] Max allowed:', maxSize, 'bytes');
+      return { error: 'Image size must be less than 10MB. Please reduce quality and try again.' };
+    }
+
+    // Warn if image is very large (might be slow)
+    if (buffer.length > 5 * 1024 * 1024) {
+      console.warn('[UploadDataUrl] ⚠ Large image detected:', Math.round(buffer.length / 1024 / 1024), 'MB');
+      console.warn('[UploadDataUrl] Upload might take longer than usual');
     }
 
     // Determine file extension from mime type
@@ -311,14 +347,13 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
     const fileExt = extensionMap[mimeType.toLowerCase()] || 'jpg';
     const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
-    console.log('[UploadDataUrl] File extension:', fileExt);
-    console.log('[UploadDataUrl] File name:', fileName);
+    console.log('[UploadDataUrl] Target file:', fileName);
     console.log('[UploadDataUrl] Content type:', mimeType);
 
-    // Upload to Supabase Storage with retry
-    let uploadError = null;
+    // Upload to Supabase Storage with retry and better error handling
+    let uploadError: any = null;
     let uploadAttempts = 0;
-    const maxAttempts = 2;
+    const maxAttempts = 3; // Increased to 3 attempts for mobile reliability
 
     console.log('[UploadDataUrl] Starting upload to Supabase Storage...');
 
@@ -327,6 +362,8 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
       console.log(`[UploadDataUrl] ===== Attempt ${uploadAttempts}/${maxAttempts} =====`);
 
       try {
+        const uploadStartTime = Date.now();
+
         const { error, data } = await supabase.storage
           .from('chart-images')
           .upload(fileName, buffer, {
@@ -335,47 +372,82 @@ export async function uploadChartImageFromDataUrl(dataUrl: string) {
             contentType: mimeType,
           });
 
+        const uploadDuration = Date.now() - uploadStartTime;
+        console.log(`[UploadDataUrl] Upload attempt took ${uploadDuration}ms`);
+
         if (!error) {
           console.log('[UploadDataUrl] ✓ Upload successful!');
-          console.log('[UploadDataUrl] Upload data:', data);
+          console.log('[UploadDataUrl] Upload data:', JSON.stringify(data, null, 2));
           uploadError = null;
           break;
         }
 
         console.error(`[UploadDataUrl] ✗ Attempt ${uploadAttempts} failed`);
         console.error('[UploadDataUrl] Error message:', error.message);
-        console.error('[UploadDataUrl] Error object:', error);
+        console.error('[UploadDataUrl] Error details:', JSON.stringify(error, null, 2));
         uploadError = error;
+
+        // Check for specific error types that shouldn't be retried
+        if (error.message?.includes('Bucket not found')) {
+          console.error('[UploadDataUrl] CRITICAL: Storage bucket not configured');
+          return { error: 'Storage not configured. Please contact support.' };
+        }
+
+        if (error.message?.includes('unauthorized') || error.message?.includes('Unauthorized')) {
+          console.error('[UploadDataUrl] CRITICAL: Authentication failed');
+          return { error: 'Session expired. Please refresh and try again.' };
+        }
+
       } catch (exception) {
         console.error(`[UploadDataUrl] ✗ Exception during upload attempt ${uploadAttempts}:`, exception);
-        uploadError = exception as any;
+        uploadError = exception;
       }
 
+      // Wait before retry with exponential backoff
       if (uploadAttempts < maxAttempts) {
-        console.log('[UploadDataUrl] Waiting before retry...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const waitTime = 1000 * uploadAttempts; // 1s, 2s, 3s
+        console.log(`[UploadDataUrl] Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
 
     if (uploadError) {
-      console.error('[UploadDataUrl] All upload attempts failed:', uploadError);
-      return { error: `Upload failed: ${uploadError.message}. Please try again.` };
+      console.error('[UploadDataUrl] ❌ All upload attempts failed!');
+      console.error('[UploadDataUrl] Final error:', uploadError);
+
+      // Provide specific error messages
+      const errorMsg = uploadError.message || 'Unknown error';
+      if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+        return { error: 'Network error. Please check your connection and try again.' };
+      } else if (errorMsg.includes('timeout')) {
+        return { error: 'Upload timed out. Please try with a smaller image.' };
+      } else if (errorMsg.includes('size') || errorMsg.includes('large')) {
+        return { error: 'Image too large. Please reduce quality and try again.' };
+      }
+
+      return { error: `Upload failed: ${errorMsg}` };
     }
 
     // Get public URL
+    console.log('[UploadDataUrl] Getting public URL...');
     const {
       data: { publicUrl },
     } = supabase.storage.from('chart-images').getPublicUrl(fileName);
 
-    console.log('[UploadDataUrl] Upload successful, public URL:', publicUrl);
+    console.log('[UploadDataUrl] ✓✓✓ Upload complete! ✓✓✓');
+    console.log('[UploadDataUrl] Public URL:', publicUrl);
+    console.log('[UploadDataUrl] File size:', Math.round(buffer.length / 1024), 'KB');
 
     return {
       url: publicUrl,
       fileName,
     };
   } catch (error) {
-    console.error('[UploadDataUrl] Unexpected error:', error);
+    console.error('[UploadDataUrl] ❌ Fatal unexpected error:', error);
     if (error instanceof Error) {
+      console.error('[UploadDataUrl] Error name:', error.name);
+      console.error('[UploadDataUrl] Error message:', error.message);
+      console.error('[UploadDataUrl] Error stack:', error.stack);
       return { error: `Upload failed: ${error.message}` };
     }
     return { error: 'Failed to upload image. Please try again.' };

@@ -122,24 +122,51 @@ export default function AnalyzePage() {
       // Stage 1: Upload file if it's a local file or data URL
       // IMPORTANT: Prioritize data URL upload (more reliable for mobile camera)
       if (imageUrl && imageUrl.startsWith('data:image/')) {
+        console.log('[AnalyzePage] ========== DATA URL UPLOAD FLOW ==========');
         console.log('[AnalyzePage] Detected data URL - using direct upload method');
+        console.log('[AnalyzePage] Data URL length:', imageUrl.length, 'characters');
+        console.log('[AnalyzePage] Estimated size:', Math.round(imageUrl.length / 1024), 'KB');
+
         setAnalysisStage('uploading');
         setIsUploading(true);
+
+        // Client-side validation before sending to server
+        if (imageUrl.length < 100) {
+          console.error('[AnalyzePage] Data URL too short - likely corrupted');
+          setAnalysisError('Image data corrupted');
+          toast.error('Image data is corrupted. Please take the photo again.');
+          setIsAnalyzing(false);
+          setIsUploading(false);
+          return;
+        }
+
+        // Check if data URL is extremely large (might timeout)
+        const maxDataUrlSize = 15 * 1024 * 1024; // 15MB in base64
+        if (imageUrl.length > maxDataUrlSize) {
+          console.error('[AnalyzePage] Data URL too large:', imageUrl.length);
+          setAnalysisError('Image too large');
+          toast.error('Image is too large. Please reduce quality and try again.');
+          setIsAnalyzing(false);
+          setIsUploading(false);
+          return;
+        }
 
         try {
           // Simulate minimum time for better UX (users can see the progress)
           await new Promise(resolve => setTimeout(resolve, 500));
 
-          console.log('[AnalyzePage] Uploading from data URL');
-          console.log('[AnalyzePage] Data URL length:', imageUrl.length);
+          console.log('[AnalyzePage] Calling uploadChartImageFromDataUrl...');
+          console.log('[AnalyzePage] Timestamp:', new Date().toISOString());
 
           const uploadResult = await uploadChartImageFromDataUrl(imageUrl);
-          console.log('[AnalyzePage] Data URL upload result:', uploadResult);
+
+          console.log('[AnalyzePage] Upload function returned');
+          console.log('[AnalyzePage] Result:', uploadResult ? JSON.stringify(uploadResult, null, 2) : 'null');
 
           setIsUploading(false);
 
           if (!uploadResult) {
-            console.error('[AnalyzePage] No upload result');
+            console.error('[AnalyzePage] ✗ No upload result returned');
             setAnalysisError('Upload failed: No result');
             toast.error('Upload failed. Please try again.');
             Analytics.analysisFailed('No upload result');
@@ -148,7 +175,7 @@ export default function AnalyzePage() {
           }
 
           if (uploadResult.error) {
-            console.error('[AnalyzePage] Upload failed:', uploadResult.error);
+            console.error('[AnalyzePage] ✗ Upload failed with error:', uploadResult.error);
             setAnalysisError(uploadResult.error);
             toast.error(uploadResult.error);
             Analytics.analysisFailed(uploadResult.error);
@@ -157,7 +184,7 @@ export default function AnalyzePage() {
           }
 
           if (!uploadResult.url) {
-            console.error('[AnalyzePage] Upload succeeded but no URL returned');
+            console.error('[AnalyzePage] ✗ Upload succeeded but no URL returned');
             setAnalysisError('Upload failed: No URL returned');
             toast.error('Upload failed. Please try again.');
             Analytics.analysisFailed('No URL returned from upload');
@@ -166,11 +193,20 @@ export default function AnalyzePage() {
           }
 
           finalImageUrl = uploadResult.url;
-          console.log('[AnalyzePage] Upload successful, URL:', finalImageUrl.substring(0, 100) + '...');
+          console.log('[AnalyzePage] ✓ Upload successful!');
+          console.log('[AnalyzePage] Public URL:', finalImageUrl);
         } catch (uploadError) {
-          console.error('[AnalyzePage] Exception during data URL upload:', uploadError);
+          console.error('[AnalyzePage] ❌ Exception during data URL upload:', uploadError);
+
+          // Log detailed error information
+          if (uploadError instanceof Error) {
+            console.error('[AnalyzePage] Error name:', uploadError.name);
+            console.error('[AnalyzePage] Error message:', uploadError.message);
+            console.error('[AnalyzePage] Error stack:', uploadError.stack);
+          }
+
           setAnalysisError('Upload failed with exception');
-          toast.error('Upload failed. Please try again.');
+          toast.error('Upload failed. Please check your connection and try again.');
           Analytics.analysisFailed('Upload exception');
           setIsAnalyzing(false);
           setIsUploading(false);
