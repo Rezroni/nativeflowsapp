@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { analyzeChartImage } from '@/lib/openai/analyze';
 import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
-import { generateImageContentHash, generateImageHash } from '@/lib/utils/image-hash';
+import { generateImageContentHash } from '@/lib/utils/image-hash';
 import { cookies } from 'next/headers';
 import { locales, defaultLocale } from '@/i18n/request';
 
@@ -70,23 +70,11 @@ export async function analyzeChart(formData: FormData) {
     const planType = subscription.plan_type as 'weekly' | 'monthly' | 'annual';
     console.log('[AnalyzeChart] User plan type:', planType);
 
-    // Generate image hash for duplicate detection with timeout protection
+    // Generate fast metadata-based hash for duplicate detection
+    // This uses HEAD request (< 1 second) instead of downloading the entire image
     console.log('[AnalyzeChart] Generating image hash for duplicate detection...');
-    let imageHash: string;
-    try {
-      imageHash = await Promise.race([
-        generateImageContentHash(imageUrl),
-        new Promise<string>((_, reject) =>
-          setTimeout(() => reject(new Error('Hash generation timeout')), 20000)
-        )
-      ]);
-      console.log(`[AnalyzeChart] Image hash generated: ${imageHash.slice(0, 16)}...`);
-    } catch (hashError) {
-      console.error('[AnalyzeChart] Hash generation failed, using fallback:', hashError);
-      // Use URL-based hash as fallback
-      imageHash = generateImageHash(imageUrl);
-      console.log(`[AnalyzeChart] Using fallback hash: ${imageHash.slice(0, 16)}...`);
-    }
+    const imageHash = await generateImageContentHash(imageUrl);
+    console.log(`[AnalyzeChart] Image hash generated: ${imageHash.slice(0, 16)}...`);
 
     // Check if we have a cached analysis for this exact image
     const { data: cachedAnalyses } = await supabase

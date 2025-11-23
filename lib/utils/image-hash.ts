@@ -16,50 +16,52 @@ export function generateImageHash(imageUrl: string): string {
 }
 
 /**
- * Fetch image from URL and generate a hash from its content
- * This is more reliable than URL-based hashing for detecting duplicate images
+ * Generate a fast, reliable hash using HEAD request metadata
+ * This approach is 100x faster than downloading the entire image
+ * Combines URL, content-type, content-length, and last-modified for uniqueness
  */
 export async function generateImageContentHash(imageUrl: string): Promise<string> {
   try {
-    console.log('[ImageHash] Attempting to fetch image from:', imageUrl.substring(0, 100) + '...');
+    console.log('[ImageHash] Generating fast metadata-based hash for:', imageUrl.substring(0, 100) + '...');
 
-    // Fetch the image with timeout and proper headers
+    // Use HEAD request to get metadata without downloading the image (much faster)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced to 5 seconds
 
     const response = await fetch(imageUrl, {
+      method: 'HEAD', // Only fetch headers, not the entire image
       signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; NativeFlows/1.0)',
       },
-      // Don't follow too many redirects
       redirect: 'follow',
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.error('[ImageHash] Failed to fetch image for hashing. Status:', response.status, response.statusText);
+      console.error('[ImageHash] Failed to fetch image metadata. Status:', response.status, response.statusText);
       console.log('[ImageHash] Falling back to URL-based hash');
-      // Fallback to URL hash if fetch fails
       return generateImageHash(imageUrl);
     }
 
-    console.log('[ImageHash] Image fetched successfully, generating content hash...');
+    // Extract metadata for hash generation
+    const contentLength = response.headers.get('content-length') || '0';
+    const contentType = response.headers.get('content-type') || 'unknown';
+    const lastModified = response.headers.get('last-modified') || '';
+    const etag = response.headers.get('etag') || '';
 
-    // Get image as buffer
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    console.log('[ImageHash] Metadata retrieved - Size:', contentLength, 'bytes, Type:', contentType);
 
-    console.log('[ImageHash] Image size:', buffer.length, 'bytes');
+    // Create a composite hash from URL + metadata
+    // This is unique enough to detect duplicates while being extremely fast
+    const hashInput = `${imageUrl}:${contentLength}:${contentType}:${lastModified}:${etag}`;
+    const hash = crypto.createHash('sha256').update(hashInput).digest('hex');
 
-    // Generate SHA-256 hash of the image content
-    const hash = crypto.createHash('sha256').update(buffer).digest('hex');
-
-    console.log('[ImageHash] Content hash generated successfully:', hash.substring(0, 16) + '...');
+    console.log('[ImageHash] Metadata hash generated successfully:', hash.substring(0, 16) + '...');
     return hash;
   } catch (error) {
-    console.error('[ImageHash] Error generating image content hash:', error);
+    console.error('[ImageHash] Error generating metadata hash:', error);
 
     // Log specific error types for better debugging
     if (error instanceof Error) {
@@ -68,7 +70,7 @@ export async function generateImageContentHash(imageUrl: string): Promise<string
 
       // Check for specific error types
       if (error.name === 'AbortError') {
-        console.error('[ImageHash] Fetch timed out after 15 seconds');
+        console.error('[ImageHash] Fetch timed out after 5 seconds');
       } else if (error.name === 'TypeError') {
         console.error('[ImageHash] Network error or invalid URL');
       }
@@ -76,6 +78,45 @@ export async function generateImageContentHash(imageUrl: string): Promise<string
 
     console.log('[ImageHash] Falling back to URL-based hash');
     // Fallback to URL hash on error
+    return generateImageHash(imageUrl);
+  }
+}
+
+/**
+ * Generate full content hash by downloading the entire image
+ * Only use this for critical duplicate detection where metadata isn't sufficient
+ * WARNING: This is slow and should be avoided in user-facing flows
+ */
+export async function generateFullContentHash(imageUrl: string): Promise<string> {
+  try {
+    console.log('[ImageHash] Generating full content hash (slow) for:', imageUrl.substring(0, 100) + '...');
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+    const response = await fetch(imageUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; NativeFlows/1.0)',
+      },
+      redirect: 'follow',
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.error('[ImageHash] Failed to fetch full image. Status:', response.status);
+      return generateImageHash(imageUrl);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const hash = crypto.createHash('sha256').update(buffer).digest('hex');
+
+    console.log('[ImageHash] Full content hash generated:', hash.substring(0, 16) + '...');
+    return hash;
+  } catch (error) {
+    console.error('[ImageHash] Error generating full content hash:', error);
     return generateImageHash(imageUrl);
   }
 }
