@@ -6,7 +6,8 @@ import { analyzeChartImageWithOpenRouter } from '@/lib/openrouter/analyze';
 import { generateImageContentHash } from '@/lib/utils/image-hash';
 import { cookies } from 'next/headers';
 import { locales, defaultLocale } from '@/i18n/request';
-import { updateCache, CacheTags } from '@/lib/cache/revalidate';
+import { updateCache } from '@/lib/cache/revalidate';
+import { CacheTags } from '@/lib/cache/tags';
 import {
   logError,
   logDatabaseError,

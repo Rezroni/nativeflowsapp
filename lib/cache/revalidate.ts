@@ -8,6 +8,7 @@
 
 import { revalidateTag as nextRevalidateTag } from 'next/cache';
 import type { CacheTag } from './tags';
+import { CacheTags } from './tags';
 
 /**
  * Revalidate cache tags with stale-while-revalidate semantics
@@ -164,6 +165,3 @@ export async function batchRevalidate(config: {
 
   await revalidateCache(tags);
 }
-
-// Re-export CacheTags for convenience
-export { CacheTags } from './tags';
