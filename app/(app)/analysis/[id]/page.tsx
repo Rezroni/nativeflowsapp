@@ -121,7 +121,27 @@ export default async function AnalysisDetailPage({
 
   console.log('[AnalysisPage] Extracted values:', { entry, stopLoss, takeProfit1 });
 
-  const riskReward = tradeSetup.riskReward || tradeSetup.risk_reward;
+  // Calculate risk/reward ratio
+  let riskReward = tradeSetup.riskReward || tradeSetup.risk_reward;
+
+  // If riskReward is not provided or invalid, calculate it
+  if (!riskReward || isNaN(Number(riskReward))) {
+    const entryNum = parseFloat(entry);
+    const stopLossNum = parseFloat(stopLoss);
+    const takeProfitNum = parseFloat(takeProfit1);
+
+    if (!isNaN(entryNum) && !isNaN(stopLossNum) && !isNaN(takeProfitNum)) {
+      const risk = Math.abs(entryNum - stopLossNum);
+      const reward = Math.abs(takeProfitNum - entryNum);
+
+      if (risk > 0) {
+        riskReward = reward / risk;
+        console.log('[AnalysisPage] Calculated R:R:', riskReward, '(Risk:', risk, 'Reward:', reward, ')');
+      }
+    }
+  }
+
+  console.log('[AnalysisPage] Final riskReward:', riskReward);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
