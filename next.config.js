@@ -5,6 +5,11 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // CRITICAL: Increase Server Actions payload limit for camera uploads
+  // Camera photos as base64 can be 5-10MB+, default limit is only 1MB
+  serverActions: {
+    bodySizeLimit: '15mb', // Allow up to 15MB for base64 image uploads
+  },
   images: {
     remotePatterns: [
       {

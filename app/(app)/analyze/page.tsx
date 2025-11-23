@@ -49,10 +49,12 @@ export default function AnalyzePage() {
       return;
     }
 
-    console.log('[AnalyzePage] File selected:', {
+    console.log('[AnalyzePage] ========== FILE SELECTED ==========');
+    console.log('[AnalyzePage] File:', {
       name: file.name,
       type: file.type,
       size: file.size,
+      sizeKB: Math.round(file.size / 1024),
       lastModified: file.lastModified,
     });
 
@@ -63,7 +65,7 @@ export default function AnalyzePage() {
       return;
     }
 
-    // Validate file size (10MB limit)
+    // Validate file size (10MB limit for original)
     if (file.size > 10 * 1024 * 1024) {
       console.error('[AnalyzePage] File too large:', file.size);
       toast.error('Image size must be less than 10MB');
@@ -78,23 +80,35 @@ export default function AnalyzePage() {
     }
 
     try {
-      console.log('[AnalyzePage] Creating preview URL...');
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const url = e.target?.result as string;
-        console.log('[AnalyzePage] Preview URL created, length:', url.length);
-        setImageUrl(url);
-        setImageFile(file);
-        Analytics.chartUploaded('file');
-      };
-      reader.onerror = (error) => {
-        console.error('[AnalyzePage] FileReader error:', error);
-        toast.error('Failed to read file. Please try again.');
-      };
-      reader.readAsDataURL(file);
+      console.log('[AnalyzePage] Processing image...');
+
+      // Import compression utility dynamically
+      const { compressImageToDataURL } = await import('@/lib/utils/image-compression');
+
+      // Compress image before creating data URL
+      // This dramatically reduces size for camera photos (typically 70-90% reduction)
+      console.log('[AnalyzePage] Compressing image...');
+      const compressedDataUrl = await compressImageToDataURL(file, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.85, // 85% quality maintains chart readability
+        mimeType: 'image/jpeg',
+      });
+
+      console.log('[AnalyzePage] ✓ Compression complete');
+      console.log('[AnalyzePage] Compressed data URL length:', compressedDataUrl.length);
+      console.log('[AnalyzePage] Estimated compressed size:', Math.round(compressedDataUrl.length / 1024), 'KB');
+
+      setImageUrl(compressedDataUrl);
+      setImageFile(file); // Keep original file reference
+      Analytics.chartUploaded('file');
+
+      toast.success('Image loaded successfully');
     } catch (error) {
-      console.error('[AnalyzePage] Error processing file:', error);
+      console.error('[AnalyzePage] ❌ Error processing file:', error);
+      if (error instanceof Error) {
+        console.error('[AnalyzePage] Error message:', error.message);
+      }
       toast.error('Failed to process image. Please try again.');
     }
   };
