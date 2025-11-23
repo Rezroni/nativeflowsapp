@@ -45,7 +45,7 @@ export const CacheTags = {
 /**
  * Helper type for cache tag values
  */
-export type CacheTag = string | ReturnType<typeof CacheTags[keyof typeof CacheTags]>;
+export type CacheTag = string;
 
 /**
  * Helper to create multiple tags for a resource
