@@ -194,7 +194,7 @@ export function PricingButton({
       disabled={isLoading || isCurrentPlan}
     >
       {isCurrentPlan ? (
-        'Current Plan'
+        'Your Current Plan'
       ) : isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

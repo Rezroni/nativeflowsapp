@@ -108,17 +108,49 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} data-scroll-behavior="smooth">
       <head>
+        {/* Performance: DNS prefetch and preconnect for external resources */}
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Performance: Preload critical resources */}
+        <link rel="preload" as="style" href="/globals.css" />
+
+        {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
+
+        {/* Theme colors for native feel */}
         <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+        {/* Optimized viewport settings */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+        {/* Apple PWA Settings */}
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Nativeflows" />
+
+        {/* Mobile web app settings */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#0a0a0a" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
+
+        {/* Performance: Reduce layout shifts */}
+        <style dangerouslySetInnerHTML={{__html: `
+          /* Critical CSS for FCP optimization */
+          body { margin: 0; background: hsl(265 85% 5%); color: hsl(265 15% 95%); }
+          .glass-card-elevated {
+            background: rgba(26, 20, 37, 0.6);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+          }
+          /* Reserve space for bottom nav to prevent CLS */
+          @media (max-width: 768px) {
+            main { padding-bottom: 5rem; }
+          }
+        `}} />
       </head>
       <body className={inter.className}>
         <NextIntlClientProvider messages={messages} locale={locale}>

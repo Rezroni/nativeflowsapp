@@ -650,4 +650,66 @@
     @apply active:scale-95 active:opacity-80;
     @apply transition-all duration-100;
   }
+
+  /* Mobile Bottom Navigation Styles - Optimized for Performance */
+  .h-safe-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+
+  /* Enhanced Glass Effect for Bottom Nav - Optimized */
+  @supports (backdrop-filter: blur(40px)) or (-webkit-backdrop-filter: blur(40px)) {
+    .mobile-nav-glass {
+      background: rgba(26, 20, 37, 0.85);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+    }
+  }
+
+  /* Native App Feel - Prevent bounce on mobile */
+  @media (display-mode: standalone) {
+    main {
+      overscroll-behavior-y: contain;
+    }
+  }
+
+  /* GPU Acceleration for transforms */
+  .gpu-accelerated {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Optimized animations with reduced complexity */
+  @keyframes float-up {
+    0%, 100% {
+      transform: translateY(0) translateZ(0);
+    }
+    50% {
+      transform: translateY(-3px) translateZ(0);
+    }
+  }
+
+  .nav-active-float {
+    animation: float-up 2s ease-in-out infinite;
+  }
+
+  /* Optimize paint performance for mobile nav */
+  @media (max-width: 768px) {
+    nav[class*="bottom"] {
+      contain: layout style paint;
+      content-visibility: auto;
+    }
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }

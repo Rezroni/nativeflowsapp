@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { AppNav } from '@/components/layout/app-nav'
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav'
 import { PushPermissionPrompt } from '@/components/notifications/push-permission-prompt'
 
 export default async function AppLayout({
@@ -21,7 +22,8 @@ export default async function AppLayout({
   return (
     <>
       <AppNav />
-      <main>{children}</main>
+      <main className="pb-20 md:pb-0">{children}</main>
+      <MobileBottomNav />
       <PushPermissionPrompt />
     </>
   )

@@ -10,6 +10,20 @@ const nextConfig = {
   serverActions: {
     bodySizeLimit: '15mb', // Allow up to 15MB for base64 image uploads
   },
+
+  // Performance Optimizations for PWA
+  compress: true, // Enable gzip compression
+  poweredByHeader: false, // Remove X-Powered-By header
+
+  // Optimize production builds
+  productionBrowserSourceMaps: false, // Disable source maps in production for faster loads
+
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizeCss: true, // Enable CSS optimization
+  },
+
   images: {
     remotePatterns: [
       {
@@ -17,8 +31,11 @@ const nextConfig = {
         hostname: '**.supabase.co',
       },
     ],
-    formats: ['image/avif', 'image/webp'],
+    formats: ['image/avif', 'image/webp'], // Modern formats for better compression
+    deviceSizes: [640, 750, 828, 1080, 1200], // Optimized for mobile
+    imageSizes: [16, 32, 48, 64, 96, 128, 256], // Common icon sizes
   },
+
   eslint: {
     dirs: ['app', 'components', 'lib'],
     ignoreDuringBuilds: false,
@@ -33,6 +50,10 @@ const nextConfig = {
       {
         source: '/(.*)',
         headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on',
+          },
           {
             key: 'X-Frame-Options',
             value: 'DENY',
@@ -69,6 +90,25 @@ const nextConfig = {
           },
         ],
       },
+      // Static assets caching for better performance
+      {
+        source: '/icons/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
       // Service Worker
       {
         source: '/service-worker.js',
@@ -90,16 +130,6 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=3600, immutable',
-          },
-        ],
-      },
-      // PWA Icons
-      {
-        source: '/icons/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
