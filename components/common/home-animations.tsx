@@ -1,21 +1,25 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-// Register ScrollTrigger plugin
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
+import { useEffect, useRef, useState } from 'react'
 
 export function HomeAnimations({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [gsapLoaded, setGsapLoaded] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current) return
 
-    const ctx = gsap.context(() => {
+    // Dynamically import GSAP only when component mounts
+    // This removes GSAP from the initial bundle
+    const loadGSAP = async () => {
+      try {
+        const { gsap } = await import('gsap')
+        const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+
+        gsap.registerPlugin(ScrollTrigger)
+        setGsapLoaded(true)
+
+        const ctx = gsap.context(() => {
       // Hero section animations
       gsap.from('.hero-badge', {
         opacity: 0,
@@ -173,9 +177,20 @@ export function HomeAnimations({ children }: { children: React.ReactNode }) {
         ease: 'power3.out'
       })
 
-    }, containerRef)
+        }, containerRef)
 
-    return () => ctx.revert()
+        return () => ctx.revert()
+      } catch (error) {
+        console.error('Failed to load GSAP:', error)
+      }
+    }
+
+    // Load GSAP after a short delay to prioritize initial render
+    const timer = setTimeout(() => {
+      loadGSAP()
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 
   return <div ref={containerRef}>{children}</div>

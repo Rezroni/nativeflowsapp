@@ -6,6 +6,7 @@ import { Disclaimer } from '@/components/common/disclaimer'
 import { SocialProof } from '@/components/common/social-proof'
 import { HomeAnimations } from '@/components/common/home-animations'
 import { PWARouter } from '@/components/pwa/pwa-router'
+import { LazySection } from '@/components/common/lazy-section'
 import { createClient } from '@/lib/supabase/server'
 import {
   TrendingUp,
@@ -99,7 +100,8 @@ export default async function HomePage() {
       {/* Disclaimer Banner */}
       <Disclaimer variant="banner" />
 
-      {/* Features Section */}
+      {/* Features Section - Lazy loaded */}
+      <LazySection>
       <section id="features" className="py-20 md:py-32 scroll-mt-20">
         <div className="container">
           <div className="section-heading mx-auto max-w-3xl text-center mb-20">
@@ -158,8 +160,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* How It Works Section */}
+      {/* How It Works Section - Lazy loaded */}
+      <LazySection>
       <section id="how-it-works" className="py-20 md:py-32 scroll-mt-20 relative">
         <div className="absolute inset-0 bg-secondary/20" />
         <div className="container relative z-10">
@@ -197,8 +201,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* Pricing Section */}
+      {/* Pricing Section - Lazy loaded */}
+      <LazySection>
       <section id="pricing" className="py-20 md:py-32 scroll-mt-20">
         <div className="container">
           <div className="section-heading mx-auto max-w-3xl text-center mb-20">
@@ -268,8 +274,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section - Lazy loaded */}
+      <LazySection>
       <section className="py-20 md:py-32 relative">
         <div className="absolute inset-0 bg-secondary/20" />
         <div className="container relative z-10">
@@ -310,8 +318,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
-      {/* CTA Section */}
+      {/* CTA Section - Lazy loaded */}
+      <LazySection>
       <section className="py-20 md:py-32">
         <div className="container">
           <div className="cta-card mx-auto max-w-4xl text-center rounded-3xl glass-card p-16 hover-glow">
@@ -330,6 +340,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
       </HomeAnimations>
       <Footer />

@@ -13,7 +13,12 @@ import { getMessages, getLocale } from 'next-intl/server'
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({
+  subsets: ["latin"],
+  display: 'swap', // Use font-display: swap for better FCP
+  preload: true,
+  fallback: ['system-ui', 'arial']
+})
 
 // Force dynamic rendering for all routes to avoid prerender issues
 export const dynamic = 'force-dynamic'
