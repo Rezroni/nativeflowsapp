@@ -8,11 +8,11 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import dynamic from 'next/dynamic'
+import NextDynamic from 'next/dynamic'
 
 // Lazy load non-critical components for better FCP/LCP
-const InstallPrompt = dynamic(() => import('@/components/pwa/install-prompt').then(m => ({ default: m.InstallPrompt })), { ssr: false })
-const NotificationPrompt = dynamic(() => import('@/components/pwa/notification-prompt').then(m => ({ default: m.NotificationPrompt })), { ssr: false })
+const InstallPrompt = NextDynamic(() => import('@/components/pwa/install-prompt').then(m => ({ default: m.InstallPrompt })), { ssr: false })
+const NotificationPrompt = NextDynamic(() => import('@/components/pwa/notification-prompt').then(m => ({ default: m.NotificationPrompt })), { ssr: false })
 
 const inter = Inter({
   subsets: ["latin"],
