@@ -26,53 +26,76 @@ const NavItem = memo(function NavItem({
         href={href}
         className="flex flex-col items-center justify-center relative"
         prefetch={true}
-        style={{ width: '80px' }}
+        style={{ width: '88px', marginTop: '-8px' }}
       >
-        {/* Elevated circular button - Pixel perfect */}
-        <div
-          className={cn(
-            'flex items-center justify-center rounded-full transition-all duration-300 ease-out',
-            'shadow-2xl relative',
-            isActive
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-gradient-to-br from-primary/95 to-primary/85 text-primary-foreground'
-          )}
-          style={{
-            width: '64px',
-            height: '64px',
-            marginTop: '-32px',
-            boxShadow: isActive
-              ? '0 8px 32px rgba(234, 75, 113, 0.4), 0 4px 16px rgba(234, 75, 113, 0.3)'
-              : '0 8px 24px rgba(234, 75, 113, 0.3), 0 4px 12px rgba(234, 75, 113, 0.2)',
-          }}
-        >
-          <Icon
-            className="w-7 h-7"
-            strokeWidth={2.5}
-            aria-hidden="true"
+        {/* Professional elevated button with notch cutout */}
+        <div className="relative">
+          {/* Background cutout shape */}
+          <div
+            className="absolute -top-1 left-1/2 -translate-x-1/2"
+            style={{
+              width: '88px',
+              height: '44px',
+              background: 'rgba(10, 10, 26, 0.92)',
+              borderRadius: '24px 24px 0 0',
+            }}
           />
 
-          {/* Inner glow for active state */}
-          {isActive && (
+          {/* Main elevated button */}
+          <div
+            className={cn(
+              'relative flex items-center justify-center rounded-2xl transition-all duration-300 ease-out',
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-primary/90 text-primary-foreground hover:bg-primary'
+            )}
+            style={{
+              width: '72px',
+              height: '72px',
+              marginTop: '-36px',
+              boxShadow: isActive
+                ? '0 12px 40px rgba(234, 75, 113, 0.35), 0 6px 20px rgba(234, 75, 113, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                : '0 8px 32px rgba(234, 75, 113, 0.3), 0 4px 16px rgba(234, 75, 113, 0.2)',
+              border: '2px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            <Icon
+              className="w-8 h-8"
+              strokeWidth={2.5}
+              aria-hidden="true"
+            />
+
+            {/* Subtle gradient overlay */}
             <div
-              className="absolute inset-0 rounded-full animate-pulse pointer-events-none"
+              className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
-                background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%)',
               }}
             />
-          )}
+
+            {/* Inner glow for active state */}
+            {isActive && (
+              <div
+                className="absolute inset-0 rounded-2xl animate-pulse pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 60%)',
+                }}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Label with better typography */}
+        {/* Label with perfect spacing */}
         <span
           className={cn(
-            'text-xs font-medium transition-colors duration-200 mt-2',
-            isActive ? 'text-primary' : 'text-muted-foreground'
+            'font-semibold transition-colors duration-200',
+            isActive ? 'text-primary' : 'text-foreground/80'
           )}
           style={{
             fontSize: '11px',
             lineHeight: '16px',
-            letterSpacing: '0.01em',
+            marginTop: '8px',
+            letterSpacing: '0.02em',
           }}
         >
           {label}
@@ -86,24 +109,24 @@ const NavItem = memo(function NavItem({
       href={href}
       className="flex flex-col items-center justify-center relative transition-all duration-200"
       prefetch={true}
-      style={{ width: '80px', padding: '12px 0' }}
+      style={{ width: '80px', padding: '16px 0 12px' }}
     >
       {/* Icon container with perfect alignment */}
-      <div className="relative flex items-center justify-center" style={{ height: '28px' }}>
+      <div className="relative flex items-center justify-center" style={{ height: '32px' }}>
         <Icon
           className={cn('transition-all duration-200')}
           style={{
-            width: isActive ? '26px' : '24px',
-            height: isActive ? '26px' : '24px',
+            width: isActive ? '28px' : '26px',
+            height: isActive ? '28px' : '26px',
           }}
           strokeWidth={isActive ? 2.5 : 2}
           aria-hidden="true"
         />
 
-        {/* Active indicator - refined */}
+        {/* Active indicator - refined dot above icon */}
         {isActive && (
           <div
-            className="absolute -top-2 left-1/2 -translate-x-1/2"
+            className="absolute -top-1 left-1/2 -translate-x-1/2"
             style={{
               width: '4px',
               height: '4px',
@@ -118,12 +141,12 @@ const NavItem = memo(function NavItem({
       <span
         className={cn(
           'font-medium transition-colors duration-200',
-          isActive ? 'text-primary' : 'text-muted-foreground'
+          isActive ? 'text-primary' : 'text-foreground/60'
         )}
         style={{
           fontSize: '11px',
           lineHeight: '16px',
-          marginTop: '6px',
+          marginTop: '4px',
           letterSpacing: '0.01em',
         }}
       >
@@ -169,20 +192,22 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {/* Main navigation container - Pixel perfect */}
-      <div
-        className="relative backdrop-blur-xl border-t"
-        style={{
-          backgroundColor: 'rgba(10, 10, 26, 0.92)',
-          borderTopColor: 'rgba(255, 255, 255, 0.08)',
-          borderTopWidth: '1px',
-        }}
-      >
-        {/* Glass effect overlay */}
+      {/* Main navigation container - Professional design */}
+      <div className="relative">
+        {/* Backdrop with proper blur */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 backdrop-blur-xl"
           style={{
-            background: 'linear-gradient(to bottom, rgba(255,255,255,0.03), transparent)',
+            backgroundColor: 'rgba(10, 10, 26, 0.92)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        />
+
+        {/* Subtle top border glow */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px"
+          style={{
+            background: 'linear-gradient(90deg, transparent, rgba(234, 75, 113, 0.15) 50%, transparent)',
           }}
         />
 
@@ -190,7 +215,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
         <div
           className="relative flex items-end justify-around"
           style={{
-            height: '72px',
+            height: '76px',
             maxWidth: '480px',
             margin: '0 auto',
             padding: '0 16px',
