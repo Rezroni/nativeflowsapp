@@ -11,8 +11,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import NextDynamic from 'next/dynamic'
 
 // Lazy load non-critical components for better FCP/LCP
-const InstallPrompt = NextDynamic(() => import('@/components/pwa/install-prompt').then(m => ({ default: m.InstallPrompt })), { ssr: false })
-const NotificationPrompt = NextDynamic(() => import('@/components/pwa/notification-prompt').then(m => ({ default: m.NotificationPrompt })), { ssr: false })
+const InstallPrompt = NextDynamic(() => import('@/components/pwa/install-prompt').then(m => ({ default: m.InstallPrompt })))
+const NotificationPrompt = NextDynamic(() => import('@/components/pwa/notification-prompt').then(m => ({ default: m.NotificationPrompt })))
 
 const inter = Inter({
   subsets: ["latin"],
