@@ -22,7 +22,7 @@ export default async function AppLayout({
   return (
     <>
       <AppNav />
-      <main className="pb-20 md:pb-0">{children}</main>
+      <main className="pb-24 md:pb-0">{children}</main>
       <MobileBottomNav />
       <PushPermissionPrompt />
     </>

@@ -712,4 +712,51 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* ========================================
+     PIXEL-PERFECT MOBILE NAVIGATION
+     Optimized for top mobile screen sizes
+     ======================================== */
+
+  /* Small devices (iPhone SE, small Android) - 320-375px */
+  @media (max-width: 375px) {
+    nav[role="navigation"][aria-label="Mobile navigation"] {
+      font-size: 10px;
+    }
+  }
+
+  /* Medium devices (iPhone 15, most Android) - 376-430px */
+  @media (min-width: 376px) and (max-width: 430px) {
+    nav[role="navigation"][aria-label="Mobile navigation"] {
+      font-size: 11px;
+    }
+  }
+
+  /* Large devices (Pro Max, Android Plus) - 431px+ */
+  @media (min-width: 431px) {
+    nav[role="navigation"][aria-label="Mobile navigation"] {
+      font-size: 11px;
+    }
+  }
+
+  /* Ensure tap targets are at least 44x44px (Apple HIG) */
+  @media (max-width: 768px) {
+    nav[role="navigation"] a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Smooth transitions for nav interactions */
+  nav[role="navigation"] * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  /* Anti-aliasing for crisp icons on mobile */
+  nav[role="navigation"] svg {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    shape-rendering: geometricPrecision;
+  }
 }

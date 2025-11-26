@@ -148,7 +148,7 @@ export default async function RootLayout({
           }
           /* Reserve space for bottom nav to prevent CLS */
           @media (max-width: 768px) {
-            main { padding-bottom: 5rem; }
+            main { padding-bottom: 6rem; }
           }
         `}} />
       </head>
