@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +21,17 @@ import {
   LogOut,
   CreditCard,
 } from 'lucide-react';
-import { NotificationCenter } from '@/components/notifications/notification-center';
-import { LanguageSwitcher } from '@/components/i18n/language-switcher';
 import { signOut } from '@/actions/auth';
+
+// Lazy load heavy components for better initial load
+const NotificationCenter = dynamic(
+  () => import('@/components/notifications/notification-center').then(m => ({ default: m.NotificationCenter })),
+  { ssr: false }
+);
+const LanguageSwitcher = dynamic(
+  () => import('@/components/i18n/language-switcher').then(m => ({ default: m.LanguageSwitcher })),
+  { ssr: false }
+);
 
 export function AppNav() {
   const pathname = usePathname();

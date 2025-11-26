@@ -1,22 +1,24 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "sonner"
 import { AnalyticsProvider } from "@/components/common/analytics-provider"
 import { PWAProvider } from "@/components/pwa/pwa-provider"
-import { InstallPrompt } from "@/components/pwa/install-prompt"
-import { NotificationPrompt } from "@/components/pwa/notification-prompt"
-import { PageTransition } from "@/components/animations/page-transition"
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import dynamic from 'next/dynamic'
+
+// Lazy load non-critical components for better FCP/LCP
+const InstallPrompt = dynamic(() => import('@/components/pwa/install-prompt').then(m => ({ default: m.InstallPrompt })), { ssr: false })
+const NotificationPrompt = dynamic(() => import('@/components/pwa/notification-prompt').then(m => ({ default: m.NotificationPrompt })), { ssr: false })
 
 const inter = Inter({
   subsets: ["latin"],
-  display: 'swap', // Use font-display: swap for better FCP
+  display: 'swap',
   preload: true,
+  weight: ['400', '500', '600', '700'], // Only load needed weights
   fallback: ['system-ui', 'arial']
 })
 
@@ -156,10 +158,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages} locale={locale}>
           <PWAProvider>
             <AnalyticsProvider>
-              <PageTransition type="fade">
-                {children}
-              </PageTransition>
-              <Toaster />
+              {children}
               <Sonner />
               <InstallPrompt />
               <NotificationPrompt />
