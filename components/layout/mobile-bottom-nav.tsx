@@ -24,27 +24,31 @@ const NavItem = memo(function NavItem({
     return (
       <Link
         href={href}
-        className="flex flex-col items-center justify-center relative"
+        className="flex flex-col items-center justify-center relative z-10"
         prefetch={true}
         style={{ width: '88px', marginTop: '-8px' }}
       >
-        {/* Professional elevated button with notch cutout */}
+        {/* Professional elevated button with seamless notch cutout */}
         <div className="relative">
-          {/* Background cutout shape */}
+          {/* Extended background cutout shape - Seamless integration */}
           <div
-            className="absolute -top-1 left-1/2 -translate-x-1/2"
+            className="absolute left-1/2 -translate-x-1/2 backdrop-blur-xl"
             style={{
-              width: '88px',
-              height: '44px',
-              background: 'rgba(10, 10, 26, 0.92)',
-              borderRadius: '24px 24px 0 0',
+              width: '96px',
+              height: '52px',
+              top: '-40px',
+              backgroundColor: 'rgba(10, 10, 26, 0.92)',
+              borderTopLeftRadius: '28px',
+              borderTopRightRadius: '28px',
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
             }}
           />
 
           {/* Main elevated button */}
           <div
             className={cn(
-              'relative flex items-center justify-center rounded-2xl transition-all duration-300 ease-out',
+              'relative flex items-center justify-center rounded-2xl transition-all duration-300 ease-out z-[2]',
               isActive
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-primary/90 text-primary-foreground hover:bg-primary'
@@ -56,7 +60,9 @@ const NavItem = memo(function NavItem({
               boxShadow: isActive
                 ? '0 12px 40px rgba(234, 75, 113, 0.35), 0 6px 20px rgba(234, 75, 113, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                 : '0 8px 32px rgba(234, 75, 113, 0.3), 0 4px 16px rgba(234, 75, 113, 0.2)',
-              border: '2px solid rgba(255, 255, 255, 0.1)',
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
             }}
           >
             <Icon
@@ -190,16 +196,21 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
       aria-label="Mobile navigation"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingTop: '40px', // Critical: Space for elevated button
       }}
     >
-      {/* Main navigation container - Professional design */}
-      <div className="relative">
-        {/* Backdrop with proper blur */}
+      {/* Main navigation container - Professional design with overflow support */}
+      <div className="relative" style={{ overflow: 'visible' }}>
+        {/* Backdrop with proper blur - Extended height to cover elevated button */}
         <div
-          className="absolute inset-0 backdrop-blur-xl"
+          className="absolute backdrop-blur-xl"
           style={{
             backgroundColor: 'rgba(10, 10, 26, 0.92)',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
           }}
         />
 
@@ -211,7 +222,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
           }}
         />
 
-        {/* Navigation items container */}
+        {/* Navigation items container with overflow visible */}
         <div
           className="relative flex items-end justify-around"
           style={{
@@ -219,6 +230,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
             maxWidth: '480px',
             margin: '0 auto',
             padding: '0 16px',
+            overflow: 'visible', // Allow elevated button to extend beyond bounds
           }}
         >
           {navItems.map((item) => (
