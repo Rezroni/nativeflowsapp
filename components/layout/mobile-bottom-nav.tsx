@@ -26,7 +26,7 @@ const NavItem = memo(function NavItem({
         href={href}
         className="flex flex-col items-center justify-center relative z-10"
         prefetch={true}
-        style={{ width: '88px', marginTop: '-8px' }}
+        style={{ width: '88px', marginTop: '-4px' }}
       >
         {/* Professional elevated button with seamless notch cutout */}
         <div className="relative">
@@ -34,12 +34,12 @@ const NavItem = memo(function NavItem({
           <div
             className="absolute left-1/2 -translate-x-1/2 backdrop-blur-xl"
             style={{
-              width: '96px',
-              height: '52px',
-              top: '-40px',
+              width: '88px',
+              height: '44px',
+              top: '-32px',
               backgroundColor: 'rgba(10, 10, 26, 0.92)',
-              borderTopLeftRadius: '28px',
-              borderTopRightRadius: '28px',
+              borderTopLeftRadius: '24px',
+              borderTopRightRadius: '24px',
               borderBottomLeftRadius: 0,
               borderBottomRightRadius: 0,
             }}
@@ -54,19 +54,19 @@ const NavItem = memo(function NavItem({
                 : 'bg-primary/90 text-primary-foreground hover:bg-primary'
             )}
             style={{
-              width: '72px',
-              height: '72px',
-              marginTop: '-36px',
+              width: '64px',
+              height: '64px',
+              marginTop: '-28px',
               boxShadow: isActive
-                ? '0 12px 40px rgba(234, 75, 113, 0.35), 0 6px 20px rgba(234, 75, 113, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                : '0 8px 32px rgba(234, 75, 113, 0.3), 0 4px 16px rgba(234, 75, 113, 0.2)',
+                ? '0 10px 36px rgba(234, 75, 113, 0.35), 0 5px 18px rgba(234, 75, 113, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                : '0 8px 28px rgba(234, 75, 113, 0.3), 0 4px 14px rgba(234, 75, 113, 0.2)',
               borderWidth: '2px',
               borderStyle: 'solid',
               borderColor: 'rgba(255, 255, 255, 0.1)',
             }}
           >
             <Icon
-              className="w-8 h-8"
+              className="w-7 h-7"
               strokeWidth={2.5}
               aria-hidden="true"
             />
@@ -100,7 +100,7 @@ const NavItem = memo(function NavItem({
           style={{
             fontSize: '11px',
             lineHeight: '16px',
-            marginTop: '8px',
+            marginTop: '6px',
             letterSpacing: '0.02em',
           }}
         >
@@ -195,7 +195,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
       role="navigation"
       aria-label="Mobile navigation"
       style={{
-        paddingTop: '40px', // Critical: Space for elevated button
+        paddingTop: '32px', // Critical: Space for elevated button
       }}
     >
       {/* Main navigation container - Professional design with overflow support */}
