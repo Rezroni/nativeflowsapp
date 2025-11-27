@@ -195,13 +195,12 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
       role="navigation"
       aria-label="Mobile navigation"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
         paddingTop: '40px', // Critical: Space for elevated button
       }}
     >
       {/* Main navigation container - Professional design with overflow support */}
       <div className="relative" style={{ overflow: 'visible' }}>
-        {/* Backdrop with proper blur - Extended height to cover elevated button */}
+        {/* Backdrop with proper blur - Extended to include safe area */}
         <div
           className="absolute backdrop-blur-xl"
           style={{
@@ -210,7 +209,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
             top: '0',
             left: '0',
             right: '0',
-            bottom: '0',
+            bottom: 'calc(-1 * env(safe-area-inset-bottom))',
           }}
         />
 
@@ -230,6 +229,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
             maxWidth: '480px',
             margin: '0 auto',
             padding: '0 16px',
+            paddingBottom: 'env(safe-area-inset-bottom)',
             overflow: 'visible', // Allow elevated button to extend beyond bounds
           }}
         >
@@ -245,14 +245,6 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
           ))}
         </div>
       </div>
-
-      {/* iOS Home Indicator - Proper spacing */}
-      <div
-        style={{
-          height: 'env(safe-area-inset-bottom)',
-          backgroundColor: 'rgba(10, 10, 26, 0.95)',
-        }}
-      />
     </nav>
   );
 });
