@@ -18,12 +18,15 @@ const inter = Inter({
   subsets: ["latin"],
   display: 'swap',
   preload: true,
-  weight: ['400', '500', '600', '700'], // Only load needed weights
-  fallback: ['system-ui', 'arial']
+  weight: ['400', '600', '700'], // Reduced to only essential weights (removed 500)
+  fallback: ['system-ui', 'arial'],
+  adjustFontFallback: true, // Reduce CLS with font fallback adjustments
+  variable: '--font-inter'
 })
 
-// Force dynamic rendering for all routes to avoid prerender issues
-export const dynamic = 'force-dynamic'
+// OPTIMIZATION: Remove force-dynamic to allow static generation where possible
+// This significantly improves FCP by generating static HTML at build time
+// Dynamic routes (dashboard, settings) will still use SSR
 export const dynamicParams = true
 
 export const viewport: Viewport = {
@@ -110,10 +113,12 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} data-scroll-behavior="smooth">
       <head>
-        {/* Performance: DNS prefetch and preconnect for external resources */}
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        {/* Performance: Preconnect to critical origins (not DNS prefetch - faster!) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Preconnect to Supabase for faster API calls */}
+        <link rel="dns-prefetch" href="https://xyffmwqfplvtpxcttcyg.supabase.co" />
 
         {/* Performance: Preload critical resources */}
         <link rel="preload" as="style" href="/globals.css" />

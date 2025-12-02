@@ -19,14 +19,15 @@ export function LazySection({
   const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const currentRef = sectionRef.current
+    if (!currentRef) return
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true)
           // Once visible, stop observing
-          if (sectionRef.current) {
-            observer.unobserve(sectionRef.current)
-          }
+          observer.unobserve(entry.target)
         }
       },
       {
@@ -35,14 +36,10 @@ export function LazySection({
       }
     )
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
+    observer.observe(currentRef)
 
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
+      observer.unobserve(currentRef)
     }
   }, [threshold, rootMargin])
 

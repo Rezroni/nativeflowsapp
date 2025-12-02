@@ -1,25 +1,30 @@
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
-import { Disclaimer } from '@/components/common/disclaimer'
-import { SocialProof } from '@/components/common/social-proof'
-import { HomeAnimations } from '@/components/common/home-animations'
-import { PWARouter } from '@/components/pwa/pwa-router'
-import { LazySection } from '@/components/common/lazy-section'
 import { createClient } from '@/lib/supabase/server'
 import {
-  TrendingUp,
-  Brain,
-  Zap,
-  Shield,
-  LineChart,
-  Award,
   CheckCircle2,
-  Star,
   Sparkles,
   ArrowRight
 } from 'lucide-react'
+
+// Defer heavy components to improve FCP - load after initial render
+const Footer = dynamic(() => import('@/components/layout/footer').then(m => ({ default: m.Footer })))
+const Disclaimer = dynamic(() => import('@/components/common/disclaimer').then(m => ({ default: m.Disclaimer })))
+const SocialProof = dynamic(() => import('@/components/common/social-proof').then(m => ({ default: m.SocialProof })))
+const HomeAnimations = dynamic(() => import('@/components/common/home-animations').then(m => ({ default: m.HomeAnimations })))
+const PWARouter = dynamic(() => import('@/components/pwa/pwa-router').then(m => ({ default: m.PWARouter })))
+const LazySection = dynamic(() => import('@/components/common/lazy-section').then(m => ({ default: m.LazySection })))
+
+// Lazy load icons used in below-the-fold content
+const TrendingUp = dynamic(() => import('lucide-react').then(m => ({ default: m.TrendingUp })))
+const Brain = dynamic(() => import('lucide-react').then(m => ({ default: m.Brain })))
+const Zap = dynamic(() => import('lucide-react').then(m => ({ default: m.Zap })))
+const Shield = dynamic(() => import('lucide-react').then(m => ({ default: m.Shield })))
+const LineChart = dynamic(() => import('lucide-react').then(m => ({ default: m.LineChart })))
+const Award = dynamic(() => import('lucide-react').then(m => ({ default: m.Award })))
+const Star = dynamic(() => import('lucide-react').then(m => ({ default: m.Star })))
 
 export default async function HomePage() {
   const supabase = await createClient()
