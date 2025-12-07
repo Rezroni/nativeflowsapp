@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendPushNotificationBulk } from '@/lib/push/server';
+import { rateLimit, createRateLimitHeaders } from '@/lib/rate-limit';
 
 // Check if user is admin
 async function isAdmin(userId: string): Promise<boolean> {
@@ -18,6 +19,18 @@ async function isAdmin(userId: string): Promise<boolean> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 3 requests per minute for bulk notifications (strict to prevent spam)
+    const rateLimitResult = await rateLimit(request, { limit: 3, window: 60 });
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
     const supabase = await createClient();
 
     // Check authentication
@@ -38,13 +51,47 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { tip, title } = body;
+    let { tip, title } = body;
 
-    if (!tip) {
+    // Input validation
+    if (!tip || typeof tip !== 'string') {
       return NextResponse.json(
-        { error: 'Tip content is required' },
+        { error: 'Tip content is required and must be a string' },
         { status: 400 }
       );
+    }
+
+    if (title && typeof title !== 'string') {
+      return NextResponse.json(
+        { error: 'Title must be a string' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize and validate length
+    tip = tip.trim();
+    if (title) {
+      title = title.trim();
+    }
+
+    if (tip.length === 0 || tip.length > 500) {
+      return NextResponse.json(
+        { error: 'Tip content must be between 1 and 500 characters' },
+        { status: 400 }
+      );
+    }
+
+    if (title && title.length > 100) {
+      return NextResponse.json(
+        { error: 'Title must be 100 characters or less' },
+        { status: 400 }
+      );
+    }
+
+    // Basic XSS prevention - strip HTML tags
+    tip = tip.replace(/<[^>]*>/g, '');
+    if (title) {
+      title = title.replace(/<[^>]*>/g, '');
     }
 
     console.log('[Admin] Sending trading tip to all users...');

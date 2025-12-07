@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateTradingTip, TradingTip } from '@/lib/openrouter/generate-tip';
+import { rateLimit, createRateLimitHeaders } from '@/lib/rate-limit';
 
 // Check if user is admin
 async function isAdmin(userId: string): Promise<boolean> {
@@ -18,6 +19,18 @@ async function isAdmin(userId: string): Promise<boolean> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 10 requests per minute for AI generation
+    const rateLimitResult = await rateLimit(request, { limit: 10, window: 60 });
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimitResult)
+        }
+      );
+    }
+
     const supabase = await createClient();
 
     // Check authentication
@@ -39,6 +52,22 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json();
     const { category, difficulty, count } = body;
+
+    // Input validation
+    const validCategories = ['risk_management', 'technical_analysis', 'psychology', 'strategy', 'market_structure'];
+    const validDifficulties = ['beginner', 'intermediate', 'advanced'];
+
+    if (category && !validCategories.includes(category)) {
+      return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+    }
+
+    if (difficulty && !validDifficulties.includes(difficulty)) {
+      return NextResponse.json({ error: 'Invalid difficulty' }, { status: 400 });
+    }
+
+    if (count && (typeof count !== 'number' || count < 1 || count > 5)) {
+      return NextResponse.json({ error: 'Count must be between 1 and 5' }, { status: 400 });
+    }
 
     console.log('[Admin] Generating tips:', { category, difficulty, count });
 
