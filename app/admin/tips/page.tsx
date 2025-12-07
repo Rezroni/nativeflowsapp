@@ -31,8 +31,8 @@ export default function AdminTipsPage() {
   const [tip, setTip] = useState<TradingTip | null>(null);
   const [customTitle, setCustomTitle] = useState('');
   const [customContent, setCustomContent] = useState('');
-  const [category, setCategory] = useState<string>('');
-  const [difficulty, setDifficulty] = useState<string>('');
+  const [category, setCategory] = useState<string>('all');
+  const [difficulty, setDifficulty] = useState<string>('all');
   const [sendResult, setSendResult] = useState<any>(null);
 
   const handleGenerate = async () => {
@@ -46,8 +46,8 @@ export default function AdminTipsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          category: category || undefined,
-          difficulty: difficulty || undefined,
+          category: category === 'all' ? undefined : category,
+          difficulty: difficulty === 'all' ? undefined : difficulty,
         }),
       });
 
@@ -146,7 +146,7 @@ export default function AdminTipsPage() {
                     <SelectValue placeholder="Any category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any category</SelectItem>
+                    <SelectItem value="all">Any category</SelectItem>
                     <SelectItem value="risk_management">Risk Management</SelectItem>
                     <SelectItem value="technical_analysis">Technical Analysis</SelectItem>
                     <SelectItem value="psychology">Trading Psychology</SelectItem>
@@ -163,7 +163,7 @@ export default function AdminTipsPage() {
                     <SelectValue placeholder="Any level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any level</SelectItem>
+                    <SelectItem value="all">Any level</SelectItem>
                     <SelectItem value="beginner">Beginner</SelectItem>
                     <SelectItem value="intermediate">Intermediate</SelectItem>
                     <SelectItem value="advanced">Advanced</SelectItem>
