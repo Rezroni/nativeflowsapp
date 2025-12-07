@@ -10,7 +10,8 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
-  PenTool
+  PenTool,
+  Lightbulb
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -29,6 +30,12 @@ const navigation = [
     href: '/admin/users',
     icon: Users,
     allowedRoles: ['super_admin', 'admin']
+  },
+  {
+    name: 'Trading Tips',
+    href: '/admin/tips',
+    icon: Lightbulb,
+    allowedRoles: ['super_admin', 'admin', 'editor']
   },
   {
     name: 'Blog Posts',
