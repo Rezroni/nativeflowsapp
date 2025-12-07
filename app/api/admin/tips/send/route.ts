@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, notification_preferences, email')
-      .not('notification_preferences->>push_enabled', 'is', 'false')
-      .eq('notification_preferences->>daily_tip', 'true');
+      .not('notification_preferences->>push_enabled', 'is', false)
+      .eq('notification_preferences->>daily_tip', true);
 
     if (profilesError) {
       console.error('[Admin] Error fetching profiles:', profilesError);
