@@ -100,17 +100,28 @@ export async function analyzeChartImageWithOpenRouter(
   for (let i = 0; i < modelsToTry.length; i++) {
     const model = modelsToTry[i];
     try {
-      console.log(`Attempting analysis with OpenRouter model: ${model}...`);
+      console.log(`[OpenRouter] Attempting analysis with model ${i + 1}/${modelsToTry.length}: ${model}...`);
       const result = await tryModelAnalysis(model, imageUrl, prompt);
-      console.log(`✓ Analysis successful with model: ${model}`);
+      console.log(`[OpenRouter] ✓ Analysis successful with model: ${model}`);
       return result;
     } catch (error: any) {
-      console.error(`✗ Model ${model} failed:`, error.message);
+      console.error(`[OpenRouter] ✗ Model ${model} failed:`, error.message);
+      console.error(`[OpenRouter] Error details:`, {
+        status: error.status,
+        code: error.code,
+        message: error.message,
+      });
       lastError = error;
 
       // If it's a 429 error (rate limit), try next model
       if (error.status === 429 || error.code === 429 || error.message?.includes('429')) {
-        console.log(`Model ${model} is rate limited, trying next model...`);
+        console.log(`[OpenRouter] Model ${model} is rate limited, trying next model...`);
+        continue;
+      }
+
+      // If it's a 404 error (model not found), skip to next model
+      if (error.status === 404 || error.code === 404 || error.message?.includes('404')) {
+        console.log(`[OpenRouter] Model ${model} not found, trying next model...`);
         continue;
       }
 
@@ -120,7 +131,7 @@ export async function analyzeChartImageWithOpenRouter(
       }
 
       // For other errors, try next model
-      console.log(`Trying fallback model...`);
+      console.log(`[OpenRouter] Trying fallback model...`);
     }
   }
 

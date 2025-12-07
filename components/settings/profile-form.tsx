@@ -25,6 +25,19 @@ export function ProfileForm({ email, fullName, username }: ProfileFormProps) {
     setIsLoading(true);
 
     try {
+      // Client-side validation
+      if (!formData.fullName.trim()) {
+        toast.error('Full name is required');
+        setIsLoading(false);
+        return;
+      }
+
+      if (formData.username.trim() && !/^[a-zA-Z0-9_-]+$/.test(formData.username.trim())) {
+        toast.error('Username can only contain letters, numbers, dashes, and underscores');
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/profile/update', {
         method: 'POST',
         headers: {
@@ -39,6 +52,7 @@ export function ProfileForm({ email, fullName, username }: ProfileFormProps) {
       const data = await response.json();
 
       if (!response.ok || data.error) {
+        console.error('Profile update error:', data);
         toast.error(data.error || 'Failed to update profile');
       } else {
         toast.success('Profile updated successfully');
@@ -49,7 +63,7 @@ export function ProfileForm({ email, fullName, username }: ProfileFormProps) {
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }

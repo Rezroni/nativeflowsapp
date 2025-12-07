@@ -18,6 +18,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { fullName, username } = body;
 
+    console.log('Profile update request:', { fullName, username, userId: user.id });
+
     // Validate inputs
     if (!fullName || fullName.trim() === '') {
       return NextResponse.json(
@@ -56,6 +58,9 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Error updating profile:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Error details:', error.details);
 
       // Check if it's a unique constraint violation (username already taken)
       if (error.code === '23505' && error.message?.includes('username')) {
@@ -65,9 +70,13 @@ export async function POST(request: Request) {
         );
       }
 
-      // Generic error message to avoid information leakage
+      // Return more specific error message in development
+      const errorMessage = process.env.NODE_ENV === 'development'
+        ? `Failed to update profile: ${error.message}`
+        : 'Failed to update profile';
+
       return NextResponse.json(
-        { error: 'Failed to update profile' },
+        { error: errorMessage },
         { status: 500 }
       );
     }
