@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs';
+import type { Instrumentation } from 'next';
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
@@ -16,18 +17,6 @@ export async function register() {
 }
 
 // Capture errors from nested React Server Components
-export function onRequestError(
-  error: Error,
-  request: {
-    method?: string;
-    url?: string;
-    headers?: { get(key: string): string | null };
-  },
-  context: {
-    routerKind?: 'Pages Router' | 'App Router';
-    routePath?: string;
-    routeType?: 'render' | 'route' | 'action' | 'middleware';
-  }
-) {
-  Sentry.captureRequestError(error, request, context);
-}
+export const onRequestError: Instrumentation.onRequestError = (...args) => {
+  Sentry.captureRequestError(...args);
+};
