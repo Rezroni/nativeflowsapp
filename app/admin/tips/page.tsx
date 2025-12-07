@@ -152,8 +152,8 @@ export default function AdminTipsPage() {
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-4 mb-4">
               <p className="text-sm text-blue-600 dark:text-blue-400">
-                <strong>Note:</strong> OpenRouter free tier has a daily limit. When the limit is reached,
-                pre-written trading tips will be used instead. Tips are still high-quality and based on SMC principles.
+                <strong>AI Priority:</strong> Uses Google Gemini API first, then falls back to OpenRouter, and finally uses pre-written tips.
+                All tips are high-quality and based on SMC principles.
               </p>
             </div>
 

@@ -1,4 +1,5 @@
 import { openrouter, OPENROUTER_MODEL, isOpenRouterAvailable } from './client';
+import { callGeminiAPI, isGeminiAvailable } from '@/lib/gemini/client';
 
 export interface TradingTip {
   title: string;
@@ -148,19 +149,13 @@ function getFallbackTip(
 }
 
 /**
- * Generate a trading tip using OpenRouter AI
- * Uses Gemini 2.0 Flash for fast, free tip generation
- * Falls back to pre-written tips if API fails or rate limit is reached
+ * Generate a trading tip using AI
+ * Priority: 1. Google Gemini API, 2. OpenRouter, 3. Pre-written fallback tips
  */
 export async function generateTradingTip(
   category?: TradingTip['category'],
   difficulty?: TradingTip['difficulty']
 ): Promise<TradingTip> {
-  if (!isOpenRouterAvailable || !openrouter) {
-    console.log('[GenerateTip] OpenRouter not configured, using fallback tip');
-    return getFallbackTip(category, difficulty);
-  }
-
   const categoryPrompt = category ? `focusing on ${category.replace('_', ' ')}` : '';
   const difficultyPrompt = difficulty ? `for ${difficulty} traders` : '';
 
@@ -190,87 +185,127 @@ Return ONLY a JSON object with this structure:
   "actionable": true or false
 }`;
 
-  try {
-    console.log('[GenerateTip] Generating trading tip with OpenRouter...');
-    console.log('[GenerateTip] Category:', category || 'any');
-    console.log('[GenerateTip] Difficulty:', difficulty || 'any');
+  // Try Google Gemini API first
+  if (isGeminiAvailable) {
+    try {
+      console.log('[GenerateTip] Trying Google Gemini API...');
+      console.log('[GenerateTip] Category:', category || 'any');
+      console.log('[GenerateTip] Difficulty:', difficulty || 'any');
 
-    const response = await openrouter.chat.completions.create({
-      model: OPENROUTER_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a professional trading educator. Always respond with valid JSON only.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      max_tokens: 500,
-      temperature: 0.9, // Higher temperature for more creative tips
-    });
+      const content = await callGeminiAPI(prompt);
+      console.log('[GenerateTip] Raw Gemini response:', content);
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response from OpenRouter');
+      // Parse JSON response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Invalid JSON response from Gemini');
+      }
+
+      const tip: TradingTip = JSON.parse(jsonMatch[0]);
+
+      // Validate the tip
+      if (!tip.title || !tip.content || !tip.category || !tip.difficulty) {
+        throw new Error('Incomplete tip data from Gemini');
+      }
+
+      console.log('[GenerateTip] ✓ Tip generated successfully with Gemini');
+      console.log('[GenerateTip] Title:', tip.title);
+
+      return tip;
+    } catch (error: any) {
+      console.error('[GenerateTip] Gemini API failed:', error.message);
+      console.log('[GenerateTip] Falling back to OpenRouter...');
     }
+  }
 
-    console.log('[GenerateTip] Raw response:', content);
+  // Try OpenRouter as fallback
+  if (isOpenRouterAvailable && openrouter) {
+    try {
+      console.log('[GenerateTip] Generating trading tip with OpenRouter...');
+      console.log('[GenerateTip] Category:', category || 'any');
+      console.log('[GenerateTip] Difficulty:', difficulty || 'any');
 
-    // Parse JSON response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Invalid JSON response from OpenRouter');
-    }
+      const response = await openrouter.chat.completions.create({
+        model: OPENROUTER_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional trading educator. Always respond with valid JSON only.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens: 500,
+        temperature: 0.9, // Higher temperature for more creative tips
+      });
 
-    const tip: TradingTip = JSON.parse(jsonMatch[0]);
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from OpenRouter');
+      }
 
-    // Validate the tip
-    if (!tip.title || !tip.content || !tip.category || !tip.difficulty) {
-      throw new Error('Incomplete tip data from AI');
-    }
+      console.log('[GenerateTip] Raw response:', content);
 
-    console.log('[GenerateTip] ✓ Tip generated successfully');
-    console.log('[GenerateTip] Title:', tip.title);
+      // Parse JSON response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Invalid JSON response from OpenRouter');
+      }
 
-    return tip;
-  } catch (error: any) {
-    console.error('[GenerateTip] Error:', error);
+      const tip: TradingTip = JSON.parse(jsonMatch[0]);
 
-    // Check if it's a rate limit error (429)
-    const isRateLimitError =
-      error?.status === 429 ||
-      error?.code === 429 ||
-      error?.message?.toLowerCase().includes('rate limit') ||
-      error?.message?.toLowerCase().includes('429');
+      // Validate the tip
+      if (!tip.title || !tip.content || !tip.category || !tip.difficulty) {
+        throw new Error('Incomplete tip data from AI');
+      }
 
-    if (isRateLimitError) {
-      console.log('[GenerateTip] Rate limit reached, using fallback tip');
+      console.log('[GenerateTip] ✓ Tip generated successfully with OpenRouter');
+      console.log('[GenerateTip] Title:', tip.title);
+
+      return tip;
+    } catch (error: any) {
+      console.error('[GenerateTip] OpenRouter error:', error);
+
+      // Check if it's a rate limit error (429)
+      const isRateLimitError =
+        error?.status === 429 ||
+        error?.code === 429 ||
+        error?.message?.toLowerCase().includes('rate limit') ||
+        error?.message?.toLowerCase().includes('429');
+
+      if (isRateLimitError) {
+        console.log('[GenerateTip] Rate limit reached, using fallback tip');
+        const fallbackTip = getFallbackTip(category, difficulty);
+
+        // Throw a specific error to inform the user about rate limits
+        const rateLimitError = new Error(
+          'OpenRouter free tier rate limit reached. Using pre-written tip instead. To generate unlimited AI tips, add credits to your OpenRouter account at https://openrouter.ai/credits'
+        );
+        (rateLimitError as any).isRateLimit = true;
+        (rateLimitError as any).fallbackTip = fallbackTip;
+
+        throw rateLimitError;
+      }
+
+      // For other errors, also provide fallback but with different message
+      console.log('[GenerateTip] OpenRouter API error, using fallback tip');
       const fallbackTip = getFallbackTip(category, difficulty);
 
-      // Throw a specific error to inform the user about rate limits
-      const rateLimitError = new Error(
-        'OpenRouter free tier rate limit reached. Using pre-written tip instead. To generate unlimited AI tips, add credits to your OpenRouter account at https://openrouter.ai/credits'
+      const apiError = new Error(
+        `OpenRouter API error: ${error?.message || 'Unknown error'}. Using pre-written tip instead.`
       );
-      (rateLimitError as any).isRateLimit = true;
-      (rateLimitError as any).fallbackTip = fallbackTip;
+      (apiError as any).isApiError = true;
+      (apiError as any).fallbackTip = fallbackTip;
 
-      throw rateLimitError;
+      throw apiError;
     }
-
-    // For other errors, also provide fallback but with different message
-    console.log('[GenerateTip] API error, using fallback tip');
-    const fallbackTip = getFallbackTip(category, difficulty);
-
-    const apiError = new Error(
-      `OpenRouter API error: ${error?.message || 'Unknown error'}. Using pre-written tip instead.`
-    );
-    (apiError as any).isApiError = true;
-    (apiError as any).fallbackTip = fallbackTip;
-
-    throw apiError;
   }
+
+  // If both APIs failed, use fallback
+  console.log('[GenerateTip] All APIs unavailable, using fallback tip');
+  return getFallbackTip(category, difficulty);
 }
 
 /**
