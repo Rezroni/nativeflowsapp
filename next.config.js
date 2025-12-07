@@ -5,12 +5,6 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // CRITICAL: Increase Server Actions payload limit for camera uploads
-  // Camera photos as base64 can be 5-10MB+, default limit is only 1MB
-  serverActions: {
-    bodySizeLimit: '15mb', // Allow up to 15MB for base64 image uploads
-  },
-
   // Performance Optimizations for PWA
   compress: true, // Enable gzip compression
   poweredByHeader: false, // Remove X-Powered-By header
@@ -21,6 +15,11 @@ const nextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // CRITICAL: Increase Server Actions payload limit for camera uploads
+    // Camera photos as base64 can be 5-10MB+, default limit is only 1MB
+    serverActions: {
+      bodySizeLimit: '15mb', // Allow up to 15MB for base64 image uploads
+    },
   },
 
   images: {
