@@ -98,11 +98,12 @@ export async function POST(request: NextRequest) {
     console.log('[Admin] Tip:', tip.substring(0, 100));
 
     // Get all users with daily tips enabled
+    // Note: JSONB boolean fields need to be compared as text in PostgreSQL queries
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('id, notification_preferences, email')
-      .not('notification_preferences->>push_enabled', 'is', false)
-      .eq('notification_preferences->>daily_tip', true);
+      .neq('notification_preferences->>push_enabled', 'false')
+      .eq('notification_preferences->>daily_tip', 'true');
 
     if (profilesError) {
       console.error('[Admin] Error fetching profiles:', profilesError);
