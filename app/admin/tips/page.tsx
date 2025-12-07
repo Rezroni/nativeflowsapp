@@ -60,7 +60,19 @@ export default function AdminTipsPage() {
       setTip(data.tip);
       setCustomTitle(data.tip.title);
       setCustomContent(data.tip.content);
-      toast.success('Trading tip generated successfully!');
+
+      // Show different messages based on whether we used fallback or AI
+      if (data.usingFallback) {
+        toast.warning(
+          data.warning || 'Using pre-written tip',
+          {
+            description: 'Rate limit reached. Add OpenRouter credits for AI-generated tips.',
+            duration: 6000,
+          }
+        );
+      } else {
+        toast.success('Trading tip generated successfully!');
+      }
     } catch (error: any) {
       console.error('Error generating tip:', error);
       toast.error(error.message || 'Failed to generate tip');
@@ -138,6 +150,13 @@ export default function AdminTipsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-4 mb-4">
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                <strong>Note:</strong> OpenRouter free tier has a daily limit. When the limit is reached,
+                pre-written trading tips will be used instead. Tips are still high-quality and based on SMC principles.
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="category">Category (Optional)</Label>

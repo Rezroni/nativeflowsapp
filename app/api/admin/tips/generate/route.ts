@@ -75,6 +75,9 @@ export async function POST(request: NextRequest) {
     if (count && count > 1) {
       // Generate multiple tips
       const tips: TradingTip[] = [];
+      let hasRateLimitError = false;
+      let rateLimitMessage = '';
+
       for (let i = 0; i < Math.min(count, 5); i++) {
         try {
           const tip = await generateTradingTip(category, difficulty);
@@ -84,8 +87,17 @@ export async function POST(request: NextRequest) {
           if (i < count - 1) {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to generate tip ${i + 1}:`, error);
+
+          // If it's a rate limit error, use the fallback tip
+          if (error.isRateLimit && error.fallbackTip) {
+            tips.push(error.fallbackTip);
+            hasRateLimitError = true;
+            rateLimitMessage = error.message;
+          } else if (error.isApiError && error.fallbackTip) {
+            tips.push(error.fallbackTip);
+          }
         }
       }
 
@@ -93,16 +105,45 @@ export async function POST(request: NextRequest) {
         success: true,
         tips,
         message: `Generated ${tips.length} trading tips`,
+        warning: hasRateLimitError ? rateLimitMessage : undefined,
+        usingFallback: hasRateLimitError,
       });
     } else {
       // Generate single tip
-      const tip = await generateTradingTip(category, difficulty);
+      try {
+        const tip = await generateTradingTip(category, difficulty);
 
-      return NextResponse.json({
-        success: true,
-        tip,
-        message: 'Trading tip generated successfully',
-      });
+        return NextResponse.json({
+          success: true,
+          tip,
+          message: 'Trading tip generated successfully',
+        });
+      } catch (error: any) {
+        // If it's a rate limit error, return the fallback tip with a warning
+        if (error.isRateLimit && error.fallbackTip) {
+          return NextResponse.json({
+            success: true,
+            tip: error.fallbackTip,
+            message: 'Using pre-written tip (rate limit reached)',
+            warning: error.message,
+            usingFallback: true,
+          });
+        }
+
+        // If it's an API error, return the fallback tip
+        if (error.isApiError && error.fallbackTip) {
+          return NextResponse.json({
+            success: true,
+            tip: error.fallbackTip,
+            message: 'Using pre-written tip (API error)',
+            warning: error.message,
+            usingFallback: true,
+          });
+        }
+
+        // For other errors, throw to be caught by outer catch
+        throw error;
+      }
     }
   } catch (error: any) {
     console.error('[Admin] Error generating tip:', error);
