@@ -168,15 +168,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
                         if (!tocContent) return;
 
-                        // Get all headings after this TOC
+                        // Get all headings in the entire content
                         const allHeadings = Array.from(blogContent.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-                        const tocIndex = Array.from(blogContent.children).indexOf(toc);
+
+                        // Filter headings: exclude those in TOC, respect depth
                         const relevantHeadings = allHeadings.filter(function(h) {
                           if (h.closest('.table-of-contents')) return false;
                           const level = parseInt(h.tagName.charAt(1));
-                          if (level > depth) return false;
-                          const headingIndex = Array.from(blogContent.children).indexOf(h.closest('*'));
-                          return headingIndex > tocIndex;
+                          return level <= depth;
                         });
 
                         // Check minimum headings requirement
@@ -188,31 +187,49 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                         // Build TOC HTML
                         let tocHTML = '';
                         if (hierarchical) {
+                          // Hierarchical TOC with proper nesting
                           tocHTML = '<ol class="toc-list">';
-                          let currentLevel = 0;
-                          relevantHeadings.forEach(function(heading, index) {
+                          let stack = []; // Track open lists
+                          let lastLevel = 0;
+
+                          relevantHeadings.forEach(function(heading) {
                             const level = parseInt(heading.tagName.charAt(1));
                             const text = heading.textContent;
                             const id = heading.id;
 
-                            if (level > currentLevel) {
-                              for (let i = currentLevel; i < level - 1; i++) {
-                                tocHTML += '<ol class="toc-sublist">';
-                              }
-                            } else if (level < currentLevel) {
-                              for (let i = level; i < currentLevel; i++) {
-                                tocHTML += '</ol>';
-                              }
+                            // Close lists if going to a higher level (less depth)
+                            while (lastLevel > level) {
+                              tocHTML += '</ol></li>';
+                              lastLevel--;
                             }
 
-                            tocHTML += '<li><a href="#' + id + '" class="toc-link">' + text + '</a></li>';
-                            currentLevel = level;
+                            // Open lists if going to a lower level (more depth)
+                            while (lastLevel < level) {
+                              if (lastLevel > 0) {
+                                tocHTML += '<ol class="toc-sublist">';
+                              }
+                              lastLevel++;
+                            }
+
+                            // Add the list item
+                            tocHTML += '<li><a href="#' + id + '" class="toc-link">' + text + '</a>';
+
+                            // Don't close <li> yet - might have nested lists
+                            const nextHeading = relevantHeadings[relevantHeadings.indexOf(heading) + 1];
+                            if (!nextHeading || parseInt(nextHeading.tagName.charAt(1)) <= level) {
+                              tocHTML += '</li>';
+                            }
                           });
-                          for (let i = 1; i < currentLevel; i++) {
-                            tocHTML += '</ol>';
+
+                          // Close remaining open lists
+                          while (lastLevel > 1) {
+                            tocHTML += '</ol></li>';
+                            lastLevel--;
                           }
+
                           tocHTML += '</ol>';
                         } else {
+                          // Flat TOC with numbering
                           tocHTML = '<ol class="toc-list">';
                           relevantHeadings.forEach(function(heading, index) {
                             const text = heading.textContent;
