@@ -96,6 +96,47 @@
   padding-left: 0;
 }
 
+.blog-content .toc-placeholder {
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.blog-content .toc-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.blog-content .toc-list li {
+  margin: 0.5rem 0;
+}
+
+.blog-content .toc-sublist {
+  list-style: none;
+  padding-left: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.blog-content .toc-link {
+  color: hsl(var(--foreground));
+  text-decoration: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 0.25rem 0;
+}
+
+.blog-content .toc-link:hover {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
 /* Images */
 .blog-content img {
   max-width: 100%;

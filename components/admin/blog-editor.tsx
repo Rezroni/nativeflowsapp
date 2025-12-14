@@ -166,13 +166,16 @@ export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) 
 
   const insertTableOfContents = () => {
     const tocHTML = `
-      <div class="table-of-contents" data-toc-config='${JSON.stringify(tocConfig)}'>
+      <div class="table-of-contents"
+           data-toc-min-headings="${tocConfig.minHeadings}"
+           data-toc-depth="${tocConfig.depth}"
+           data-toc-hierarchical="${tocConfig.hierarchical}">
         <div class="toc-header">
           <h3>${tocConfig.title}</h3>
           ${tocConfig.toggleShowHide ? '<button class="toc-toggle">Toggle</button>' : ''}
         </div>
         <div class="toc-content">
-          <!-- Table of contents will be generated from headings -->
+          <p class="toc-placeholder">Table of contents will be generated automatically when the post is published.</p>
         </div>
       </div>
     `

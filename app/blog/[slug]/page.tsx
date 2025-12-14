@@ -133,17 +133,118 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             dangerouslySetInnerHTML={{ __html: post.content.html }}
           />
 
-          {/* Client-side script for TOC toggle functionality */}
+          {/* Client-side script for TOC functionality */}
           <script
             dangerouslySetInnerHTML={{
               __html: `
                 if (typeof window !== 'undefined') {
                   document.addEventListener('DOMContentLoaded', function() {
+                    // Function to generate slug from text
+                    function generateSlug(text) {
+                      return text
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                    }
+
+                    // Add IDs to all headings in blog content
+                    const blogContent = document.querySelector('.blog-content');
+                    if (blogContent) {
+                      const headings = blogContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                      headings.forEach(function(heading) {
+                        if (!heading.id && !heading.closest('.table-of-contents')) {
+                          const slug = generateSlug(heading.textContent);
+                          heading.id = slug;
+                        }
+                      });
+
+                      // Generate TOC for each table-of-contents div
+                      const tocs = blogContent.querySelectorAll('.table-of-contents');
+                      tocs.forEach(function(toc) {
+                        const minHeadings = parseInt(toc.dataset.tocMinHeadings) || 2;
+                        const depth = parseInt(toc.dataset.tocDepth) || 6;
+                        const hierarchical = toc.dataset.tocHierarchical === 'true';
+                        const tocContent = toc.querySelector('.toc-content');
+
+                        if (!tocContent) return;
+
+                        // Get all headings after this TOC
+                        const allHeadings = Array.from(blogContent.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+                        const tocIndex = Array.from(blogContent.children).indexOf(toc);
+                        const relevantHeadings = allHeadings.filter(function(h) {
+                          if (h.closest('.table-of-contents')) return false;
+                          const level = parseInt(h.tagName.charAt(1));
+                          if (level > depth) return false;
+                          const headingIndex = Array.from(blogContent.children).indexOf(h.closest('*'));
+                          return headingIndex > tocIndex;
+                        });
+
+                        // Check minimum headings requirement
+                        if (relevantHeadings.length < minHeadings) {
+                          toc.style.display = 'none';
+                          return;
+                        }
+
+                        // Build TOC HTML
+                        let tocHTML = '';
+                        if (hierarchical) {
+                          tocHTML = '<ol class="toc-list">';
+                          let currentLevel = 0;
+                          relevantHeadings.forEach(function(heading, index) {
+                            const level = parseInt(heading.tagName.charAt(1));
+                            const text = heading.textContent;
+                            const id = heading.id;
+
+                            if (level > currentLevel) {
+                              for (let i = currentLevel; i < level - 1; i++) {
+                                tocHTML += '<ol class="toc-sublist">';
+                              }
+                            } else if (level < currentLevel) {
+                              for (let i = level; i < currentLevel; i++) {
+                                tocHTML += '</ol>';
+                              }
+                            }
+
+                            tocHTML += '<li><a href="#' + id + '" class="toc-link">' + text + '</a></li>';
+                            currentLevel = level;
+                          });
+                          for (let i = 1; i < currentLevel; i++) {
+                            tocHTML += '</ol>';
+                          }
+                          tocHTML += '</ol>';
+                        } else {
+                          tocHTML = '<ol class="toc-list">';
+                          relevantHeadings.forEach(function(heading, index) {
+                            const text = heading.textContent;
+                            const id = heading.id;
+                            tocHTML += '<li><a href="#' + id + '" class="toc-link">' + (index + 1) + '. ' + text + '</a></li>';
+                          });
+                          tocHTML += '</ol>';
+                        }
+
+                        tocContent.innerHTML = tocHTML;
+                      });
+                    }
+
+                    // TOC toggle functionality
                     document.addEventListener('click', function(e) {
                       if (e.target && e.target.classList.contains('toc-toggle')) {
                         const toc = e.target.closest('.table-of-contents');
                         if (toc) {
                           toc.classList.toggle('collapsed');
+                        }
+                      }
+                    });
+
+                    // Smooth scroll for TOC links
+                    document.addEventListener('click', function(e) {
+                      if (e.target && e.target.classList.contains('toc-link')) {
+                        e.preventDefault();
+                        const targetId = e.target.getAttribute('href').substring(1);
+                        const targetElement = document.getElementById(targetId);
+                        if (targetElement) {
+                          targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          window.history.pushState(null, '', '#' + targetId);
                         }
                       }
                     });
