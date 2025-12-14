@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useRef } from 'react'
 
 interface BlogEditorProps {
   content: string
@@ -30,6 +31,8 @@ interface BlogEditorProps {
 }
 
 export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const editor = useEditor({
     immediatelyRender: false,
     content,
@@ -64,11 +67,41 @@ export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) 
     return null
   }
 
-  const addImage = () => {
-    const url = window.prompt('Enter image URL:')
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
     }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      alert('Image size should be less than 5MB')
+      return
+    }
+
+    // Convert image to base64
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string
+      if (base64) {
+        editor.chain().focus().setImage({ src: base64 }).run()
+      }
+    }
+    reader.readAsDataURL(file)
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const addImage = () => {
+    fileInputRef.current?.click()
   }
 
   const setLink = () => {
@@ -89,6 +122,15 @@ export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) 
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+
       {/* Toolbar */}
       <div className="bg-muted/30 border-b border-border p-2 flex flex-wrap items-center gap-1">
         <Button
