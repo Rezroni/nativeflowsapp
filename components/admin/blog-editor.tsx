@@ -169,7 +169,7 @@ export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) 
       <div class="table-of-contents" data-toc-config='${JSON.stringify(tocConfig)}'>
         <div class="toc-header">
           <h3>${tocConfig.title}</h3>
-          ${tocConfig.toggleShowHide ? '<button class="toc-toggle" onclick="this.closest(\'.table-of-contents\\').classList.toggle(\'collapsed\')">Toggle</button>' : ''}
+          ${tocConfig.toggleShowHide ? '<button class="toc-toggle">Toggle</button>' : ''}
         </div>
         <div class="toc-content">
           <!-- Table of contents will be generated from headings -->
@@ -520,6 +520,24 @@ export function BlogEditor({ content, onChange, placeholder }: BlogEditorProps) 
           pointer-events: none;
         }
       `}</style>
+
+      {/* Client-side script for TOC toggle functionality */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            if (typeof window !== 'undefined') {
+              document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('toc-toggle')) {
+                  const toc = e.target.closest('.table-of-contents');
+                  if (toc) {
+                    toc.classList.toggle('collapsed');
+                  }
+                }
+              });
+            }
+          `,
+        }}
+      />
     </div>
   )
 }
