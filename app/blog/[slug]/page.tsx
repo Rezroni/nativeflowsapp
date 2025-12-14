@@ -7,6 +7,7 @@ import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { formatDistanceToNow, format } from 'date-fns'
 import { Clock, Eye, ArrowLeft, Tag } from 'lucide-react'
+import './blog-content.css'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -128,8 +129,28 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
 
           <div
-            className="prose prose-lg prose-invert max-w-none prose-headings:gradient-text prose-a:text-primary prose-img:rounded-lg"
+            className="blog-content prose prose-lg prose-invert max-w-none prose-headings:gradient-text prose-a:text-primary prose-img:rounded-lg"
             dangerouslySetInnerHTML={{ __html: post.content.html }}
+          />
+
+          {/* Client-side script for TOC toggle functionality */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if (typeof window !== 'undefined') {
+                  document.addEventListener('DOMContentLoaded', function() {
+                    document.addEventListener('click', function(e) {
+                      if (e.target && e.target.classList.contains('toc-toggle')) {
+                        const toc = e.target.closest('.table-of-contents');
+                        if (toc) {
+                          toc.classList.toggle('collapsed');
+                        }
+                      }
+                    });
+                  });
+                }
+              `,
+            }}
           />
 
           {post.tags && post.tags.length > 0 && (

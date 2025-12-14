@@ -1,0 +1,171 @@
+/* Blog Post Content Styling */
+
+/* Heading Styles - Match editor preview */
+.blog-content h1 {
+  font-size: 2.25em;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+}
+
+.blog-content h2 {
+  font-size: 1.875em;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+}
+
+.blog-content h3 {
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.blog-content h4 {
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+}
+
+.blog-content h5 {
+  font-size: 1.125em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+}
+
+.blog-content h6 {
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+}
+
+/* Table of Contents Styles */
+.blog-content .table-of-contents {
+  border: 2px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  background: hsl(var(--muted) / 0.3);
+}
+
+.blog-content .table-of-contents.collapsed .toc-content {
+  display: none;
+}
+
+.blog-content .toc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.blog-content .toc-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.blog-content .toc-toggle {
+  padding: 0.25rem 0.75rem;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: opacity 0.2s;
+}
+
+.blog-content .toc-toggle:hover {
+  opacity: 0.9;
+}
+
+.blog-content .toc-content {
+  padding-left: 0;
+}
+
+/* Images */
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+/* Links */
+.blog-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.blog-content a:hover {
+  opacity: 0.8;
+}
+
+/* Code blocks */
+.blog-content code {
+  background: hsl(var(--muted));
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.blog-content pre {
+  background: hsl(var(--muted));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.blog-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Lists */
+.blog-content ul,
+.blog-content ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.blog-content li {
+  margin: 0.5em 0;
+}
+
+/* Blockquotes */
+.blog-content blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin: 1.5em 0;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Paragraphs */
+.blog-content p {
+  margin: 1em 0;
+  line-height: 1.7;
+}
+
+/* Strong and emphasis */
+.blog-content strong {
+  font-weight: 600;
+}
+
+.blog-content em {
+  font-style: italic;
+}
