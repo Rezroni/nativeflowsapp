@@ -31,14 +31,15 @@ export function SitemapManager() {
 
   const handleGenerate = async () => {
     setIsGenerating(true)
-    const result = await generateSitemap()
 
-    if (result.success) {
-      toast.success(result.message || 'Sitemap generated successfully')
+    try {
+      // Just open the sitemap in a new tab to trigger regeneration
+      window.open('/sitemap.xml', '_blank')
+      toast.success('Sitemap regenerated! The sitemap is now up to date with all your latest content.')
       setLastGenerated(new Date().toLocaleString())
       await loadStats()
-    } else {
-      toast.error(result.error || 'Failed to generate sitemap')
+    } catch (error) {
+      toast.error('Failed to regenerate sitemap')
     }
 
     setIsGenerating(false)
@@ -96,17 +97,17 @@ export function SitemapManager() {
       {/* Generation Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Generate Sitemap</CardTitle>
+          <CardTitle>Dynamic Sitemap</CardTitle>
           <CardDescription>
-            Automatically generate sitemap.xml with all your pages, blog posts, and firms.
-            This helps search engines discover and index your content.
+            Your sitemap is automatically generated with all pages, blog posts, and firms.
+            It updates dynamically whenever accessed. Click below to view the current sitemap.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {lastGenerated && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckCircle2 className="h-4 w-4 text-green-500" />
-              Last generated: {lastGenerated}
+              Last viewed: {lastGenerated}
             </div>
           )}
 
@@ -114,29 +115,10 @@ export function SitemapManager() {
             <Button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="flex-1 sm:flex-initial"
+              className="flex-1"
             >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Generate Sitemap
-                </>
-              )}
-            </Button>
-
-            <Button
-              variant="outline"
-              asChild
-            >
-              <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer">
-                <FileText className="mr-2 h-4 w-4" />
-                View Current Sitemap
-              </a>
+              <FileText className="mr-2 h-4 w-4" />
+              View Sitemap
             </Button>
           </div>
 
@@ -144,12 +126,12 @@ export function SitemapManager() {
             <div className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
               <div className="text-sm space-y-1">
-                <p className="font-medium">What gets included:</p>
+                <p className="font-medium">Automatic Updates:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>All static pages (Home, About, Contact, etc.)</li>
-                  <li>All published blog posts with their last update date</li>
-                  <li>All published firms with their last update date</li>
-                  <li>Proper priority and change frequency for SEO</li>
+                  <li>Sitemap updates automatically when accessed</li>
+                  <li>All published blog posts and firms are included</li>
+                  <li>No manual regeneration needed</li>
+                  <li>Cached for 1 hour for performance</li>
                 </ul>
               </div>
             </div>
@@ -170,19 +152,19 @@ export function SitemapManager() {
             <div className="flex gap-2">
               <Badge variant="secondary" className="flex-shrink-0">Tip</Badge>
               <p className="text-muted-foreground">
-                Regenerate your sitemap whenever you publish new content (blog posts or firms)
+                Your sitemap updates automatically - no need to regenerate after publishing
               </p>
             </div>
             <div className="flex gap-2">
               <Badge variant="secondary" className="flex-shrink-0">Tip</Badge>
               <p className="text-muted-foreground">
-                Submit your sitemap to Google Search Console and Bing Webmaster Tools
+                Submit https://www.nativeflows.com/sitemap.xml to Google Search Console
               </p>
             </div>
             <div className="flex gap-2">
               <Badge variant="secondary" className="flex-shrink-0">Tip</Badge>
               <p className="text-muted-foreground">
-                The sitemap is publicly accessible at: https://www.nativeflows.com/sitemap.xml
+                The sitemap is cached for 1 hour and updates with fresh content automatically
               </p>
             </div>
           </div>
