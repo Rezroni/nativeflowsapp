@@ -173,31 +173,49 @@ export function FirmsList({ firms }: FirmsListProps) {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu modal={false}>
+                <TableCell className="text-right relative">
+                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="z-[10000]">
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-[200px]"
+                      sideOffset={5}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem
-                        onClick={() => router.push(`/firms/${firm.slug}`)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/firms/${firm.slug}`)
+                        }}
                       >
                         <Eye className="mr-2 h-4 w-4" />
                         View Public Page
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => router.push(`/admin/firms/edit/${firm.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/admin/firms/edit/${firm.id}`)
+                        }}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleDuplicate(firm.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDuplicate(firm.id)
+                        }}
                         disabled={isDuplicating === firm.id}
                       >
                         <Copy className="mr-2 h-4 w-4" />
@@ -205,7 +223,8 @@ export function FirmsList({ firms }: FirmsListProps) {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setFirmToDelete(firm.id)
                           setDeleteDialogOpen(true)
                         }}
