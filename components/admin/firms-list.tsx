@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FirmWithParsedData } from '@/types/firms'
-import { deleteFirm, duplicateFirm } from '@/actions/firms'
+import { deleteFirm } from '@/actions/firms'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -18,8 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -32,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Pencil, Trash2, Copy, Eye, Star } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
@@ -45,7 +43,6 @@ export function FirmsList({ firms }: FirmsListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [firmToDelete, setFirmToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isDuplicating, setIsDuplicating] = useState<string | null>(null)
 
   const handleDelete = async () => {
     if (!firmToDelete) return
@@ -63,20 +60,6 @@ export function FirmsList({ firms }: FirmsListProps) {
     }
 
     setIsDeleting(false)
-  }
-
-  const handleDuplicate = async (id: string) => {
-    setIsDuplicating(id)
-    const result = await duplicateFirm(id)
-
-    if (result.success) {
-      toast.success('Firm duplicated successfully')
-      router.refresh()
-    } else {
-      toast.error(result.error || 'Failed to duplicate firm')
-    }
-
-    setIsDuplicating(null)
   }
 
   const getStatusBadgeVariant = (status: string) => {
@@ -186,43 +169,17 @@ export function FirmsList({ firms }: FirmsListProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="w-[200px]"
+                      className="w-[160px]"
                       sideOffset={5}
                     >
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/firms/${firm.slug}`)
-                        }}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Public Page
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/admin/firms/edit/${firm.id}`)
-                        }}
+                        onClick={() => router.push(`/admin/firms/edit/${firm.id}`)}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDuplicate(firm.id)
-                        }}
-                        disabled={isDuplicating === firm.id}
-                      >
-                        <Copy className="mr-2 h-4 w-4" />
-                        {isDuplicating === firm.id ? 'Duplicating...' : 'Duplicate'}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
+                        onClick={() => {
                           setFirmToDelete(firm.id)
                           setDeleteDialogOpen(true)
                         }}
