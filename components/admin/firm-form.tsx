@@ -53,6 +53,12 @@ export function FirmForm({ firm, isEditing = false }: FirmFormProps) {
   const [maximumLeverage, setMaximumLeverage] = useState(firm?.maximum_leverage || '')
   const [spreadsFrom, setSpreadsFrom] = useState(firm?.spreads_from?.toString() || '')
 
+  // Company Information
+  const [country, setCountry] = useState(firm?.country || '')
+  const [yearsInOperation, setYearsInOperation] = useState(firm?.years_in_operation?.toString() || '')
+  const [maxAllocations, setMaxAllocations] = useState(firm?.max_allocations || '')
+  const [promo, setPromo] = useState(firm?.promo || '')
+
   // Features
   const [features, setFeatures] = useState<FirmFeature[]>(firm?.features || [])
   const [newFeatureName, setNewFeatureName] = useState('')
@@ -179,6 +185,10 @@ export function FirmForm({ firm, isEditing = false }: FirmFormProps) {
       minimum_deposit_currency: minimumDepositCurrency,
       maximum_leverage: maximumLeverage.trim() || undefined,
       spreads_from: spreadsFrom ? parseFloat(spreadsFrom) : undefined,
+      country: country.trim() || undefined,
+      years_in_operation: yearsInOperation ? parseInt(yearsInOperation) : undefined,
+      max_allocations: maxAllocations.trim() || undefined,
+      promo: promo.trim() || undefined,
       features: features.length > 0 ? features : undefined,
       trading_platforms: tradingPlatforms.length > 0 ? tradingPlatforms : undefined,
       markets: markets.length > 0 ? markets : undefined,
@@ -405,6 +415,59 @@ export function FirmForm({ firm, isEditing = false }: FirmFormProps) {
                 value={spreadsFrom}
                 onChange={(e) => setSpreadsFrom(e.target.value)}
                 placeholder="0.0"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Company Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Company Information</CardTitle>
+          <CardDescription>Additional company details</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="e.g., United States"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="years-in-operation">Years in Operation</Label>
+              <Input
+                id="years-in-operation"
+                type="number"
+                min="0"
+                value={yearsInOperation}
+                onChange={(e) => setYearsInOperation(e.target.value)}
+                placeholder="e.g., 5"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="max-allocations">Max Allocations</Label>
+              <Input
+                id="max-allocations"
+                value={maxAllocations}
+                onChange={(e) => setMaxAllocations(e.target.value)}
+                placeholder="e.g., $200K"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="promo">Promo</Label>
+              <Input
+                id="promo"
+                value={promo}
+                onChange={(e) => setPromo(e.target.value)}
+                placeholder="e.g., 20% OFF"
               />
             </div>
           </div>

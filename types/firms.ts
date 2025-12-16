@@ -23,6 +23,10 @@ export type Firm = {
   badges: any | null // JSONB
   is_featured: boolean
   is_top_rated: boolean
+  country: string | null
+  years_in_operation: number | null
+  max_allocations: string | null
+  promo: string | null
   pros: any | null // JSONB
   cons: any | null // JSONB
   review_count: number
@@ -80,6 +84,12 @@ export interface FirmFormData {
   minimum_deposit_currency?: string
   maximum_leverage?: string
   spreads_from?: number
+
+  // Company Information
+  country?: string
+  years_in_operation?: number
+  max_allocations?: string
+  promo?: string
 
   // Features
   features?: FirmFeature[]
