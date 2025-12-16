@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { SectionToggle } from '@/components/common/section-toggle'
 import {
   Star,
   TrendingUp,
@@ -226,6 +227,11 @@ export default async function FirmsPage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-primary/10 to-background py-12 md:py-20">
         <div className="container max-w-7xl">
+          {/* Section Toggle */}
+          <div className="mb-8 flex justify-center">
+            <SectionToggle defaultSection="firms" className="shadow-xl" />
+          </div>
+
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Compare the Best Prop Firms of 2025

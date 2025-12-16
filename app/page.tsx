@@ -8,6 +8,7 @@ import {
   Sparkles,
   ArrowRight
 } from 'lucide-react'
+import { SectionToggle } from '@/components/common/section-toggle'
 
 // Defer heavy components to improve FCP - load after initial render
 const Footer = dynamic(() => import('@/components/layout/footer').then(m => ({ default: m.Footer })))
@@ -51,6 +52,11 @@ export default async function HomePage() {
             <div className="hero-badge mb-8 inline-flex items-center gap-2 rounded-full glass px-6 py-3 text-sm">
               <Sparkles className="h-4 w-4 text-primary animate-pulse" />
               <span className="gradient-text font-semibold">AI-Powered Trading Analysis</span>
+            </div>
+
+            {/* Section Toggle */}
+            <div className="mb-12 flex justify-center">
+              <SectionToggle defaultSection="analysis" className="shadow-xl" />
             </div>
 
             <h1 className="hero-title mb-8 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl">
