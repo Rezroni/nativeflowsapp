@@ -91,7 +91,7 @@ export function FirmForm({ firm, isEditing = false }: FirmFormProps) {
   const [userCount, setUserCount] = useState(firm?.user_count || '')
 
   // Status
-  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>(firm?.status || 'draft')
+  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>(firm?.status || 'published')
   const [displayOrder, setDisplayOrder] = useState(firm?.display_order?.toString() || '0')
 
   // Auto-generate slug from name

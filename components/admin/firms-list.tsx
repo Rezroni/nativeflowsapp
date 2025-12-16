@@ -179,7 +179,6 @@ export function FirmsList({ firms }: FirmsListProps) {
                       <Button
                         variant="ghost"
                         className="h-8 w-8 p-0"
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
@@ -189,7 +188,6 @@ export function FirmsList({ firms }: FirmsListProps) {
                       align="end"
                       className="w-[200px]"
                       sideOffset={5}
-                      onClick={(e) => e.stopPropagation()}
                     >
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem
