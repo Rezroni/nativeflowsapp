@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getFirmBySlug, getAllFirms } from '@/actions/firms'
+import { getFirmBySlug } from '@/actions/firms'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,17 +19,13 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 
+// Make this page dynamic instead of statically generated
+export const dynamic = 'force-dynamic'
+
 interface FirmPageProps {
   params: Promise<{
     slug: string
   }>
-}
-
-export async function generateStaticParams() {
-  const { firms } = await getAllFirms({ status: 'published', limit: 100 })
-  return firms.map((firm) => ({
-    slug: firm.slug,
-  }))
 }
 
 export async function generateMetadata({ params }: FirmPageProps) {

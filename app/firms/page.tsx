@@ -17,6 +17,9 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 
+// Make this page dynamic to avoid build-time data fetching issues
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Compare the Best Prop Firms of 2025 | Nativeflows',
   description:
