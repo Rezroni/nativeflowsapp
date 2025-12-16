@@ -7,19 +7,21 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import {
   Star,
-  TrendingUp,
-  DollarSign,
-  BarChart3,
-  Check,
-  X,
+  Heart,
   ExternalLink,
-  ChevronRight,
   Search,
-  SlidersHorizontal,
   ArrowUpDown,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,12 +33,11 @@ interface FirmsComparisonTableProps {
   firms: FirmWithParsedData[]
 }
 
-type SortOption = 'rating' | 'name' | 'min_deposit' | 'leverage'
+type SortOption = 'rating' | 'name' | 'reviews' | 'country'
 
 export function FirmsComparisonTable({ firms }: FirmsComparisonTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('rating')
-  const [showFilters, setShowFilters] = useState(false)
 
   const filteredAndSortedFirms = useMemo(() => {
     let filtered = firms.filter((firm) =>
@@ -50,12 +51,8 @@ export function FirmsComparisonTable({ firms }: FirmsComparisonTableProps) {
           return (b.overall_rating || 0) - (a.overall_rating || 0)
         case 'name':
           return a.name.localeCompare(b.name)
-        case 'min_deposit':
-          return (a.minimum_deposit || 0) - (b.minimum_deposit || 0)
-        case 'leverage':
-          const aLev = parseInt(a.maximum_leverage?.replace(/\D/g, '') || '0')
-          const bLev = parseInt(b.maximum_leverage?.replace(/\D/g, '') || '0')
-          return bLev - aLev
+        case 'reviews':
+          return (b.review_count || 0) - (a.review_count || 0)
         default:
           return 0
       }
@@ -66,8 +63,8 @@ export function FirmsComparisonTable({ firms }: FirmsComparisonTableProps) {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-lg border">
+      {/* Search and Sort Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -84,239 +81,221 @@ export function FirmsComparisonTable({ firms }: FirmsComparisonTableProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex-1 sm:flex-none">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
-                Sort: {sortBy === 'rating' ? 'Rating' : sortBy === 'name' ? 'Name' : sortBy === 'min_deposit' ? 'Deposit' : 'Leverage'}
+                Sort by
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
+            <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setSortBy('rating')}>
                 Highest Rating
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('reviews')}>
+                Most Reviews
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('name')}>
                 Name (A-Z)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('min_deposit')}>
-                Lowest Deposit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('leverage')}>
-                Highest Leverage
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex-1 sm:flex-none"
-          >
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Filters
-          </Button>
         </div>
-      </div>
-
-      {/* Results count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {filteredAndSortedFirms.length} of {firms.length} prop firms
       </div>
 
       {/* Comparison Table */}
-      <div className="space-y-4">
-        {filteredAndSortedFirms.map((firm, index) => (
-          <div
-            key={firm.id}
-            className="bg-card border rounded-lg p-4 sm:p-6 hover:border-primary/50 transition-colors"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-              {/* Left: Logo, Name, Rating */}
-              <div className="lg:col-span-3 flex items-start gap-4">
-                <div className="relative h-16 w-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                  {firm.logo_url ? (
-                    <Image
-                      src={firm.logo_url}
-                      alt={firm.name}
-                      fill
-                      className="object-contain p-2"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-lg font-bold">
-                      {firm.name.substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-bold text-lg">{firm.name}</h3>
-                    {firm.badges.length > 0 && (
-                      <Badge variant="secondary" className="ml-2">
-                        {firm.badges[0].text}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < Math.floor(firm.overall_rating || 0)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-muted'
-                          }`}
+      <div className="rounded-lg border bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="font-semibold">FIRM</TableHead>
+              <TableHead className="text-center font-semibold">RANK</TableHead>
+              <TableHead className="text-center font-semibold">REVIEWS</TableHead>
+              <TableHead className="text-center font-semibold">COUNTRY</TableHead>
+              <TableHead className="text-center font-semibold">YEARS IN OPERATION</TableHead>
+              <TableHead className="text-center font-semibold">ASSETS</TableHead>
+              <TableHead className="text-center font-semibold">PLATFORMS</TableHead>
+              <TableHead className="text-center font-semibold">MAX ALLOCATIONS</TableHead>
+              <TableHead className="text-center font-semibold">PROMO</TableHead>
+              <TableHead className="text-right font-semibold">ACTIONS</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedFirms.map((firm, index) => (
+              <TableRow key={firm.id} className="hover:bg-muted/30 transition-colors">
+                {/* Favorite */}
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-pink-500"
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+
+                {/* Firm Name with Logo and Rating */}
+                <TableCell>
+                  <div className="flex items-center gap-3 min-w-[250px]">
+                    <div className="relative h-12 w-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      {firm.logo_url ? (
+                        <Image
+                          src={firm.logo_url}
+                          alt={firm.name}
+                          fill
+                          className="object-contain p-1"
                         />
-                      ))}
-                    </div>
-                    <span className="font-bold text-lg">
-                      {firm.overall_rating?.toFixed(1) || 'N/A'}
-                    </span>
-                  </div>
-                  {firm.review_count > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {firm.review_count.toLocaleString()} reviews
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Middle: Stats Grid */}
-              <div className="lg:col-span-5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {/* Min Deposit */}
-                  {firm.minimum_deposit !== null && (
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <div className="flex items-center gap-1 mb-1">
-                        <DollarSign className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">Min Deposit</p>
-                      </div>
-                      <p className="font-bold text-sm">
-                        {firm.minimum_deposit_currency}
-                        {firm.minimum_deposit}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Max Leverage */}
-                  {firm.maximum_leverage && (
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <div className="flex items-center gap-1 mb-1">
-                        <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">Leverage</p>
-                      </div>
-                      <p className="font-bold text-sm">{firm.maximum_leverage}</p>
-                    </div>
-                  )}
-
-                  {/* Spreads */}
-                  {firm.spreads_from !== null && (
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <div className="flex items-center gap-1 mb-1">
-                        <BarChart3 className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">Spreads</p>
-                      </div>
-                      <p className="font-bold text-sm">{firm.spreads_from} pips</p>
-                    </div>
-                  )}
-
-                  {/* Platforms */}
-                  {firm.trading_platforms && firm.trading_platforms.length > 0 && (
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Platforms</p>
-                      <p className="font-bold text-sm">{firm.trading_platforms[0]}</p>
-                      {firm.trading_platforms.length > 1 && (
-                        <p className="text-xs text-muted-foreground">
-                          +{firm.trading_platforms.length - 1} more
-                        </p>
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-xs font-bold">
+                          {firm.name.substring(0, 2).toUpperCase()}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-
-                {/* Features */}
-                {firm.features.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {firm.features.slice(0, 4).map((feature, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-1 text-xs bg-background rounded-full px-2 py-1"
+                    <div>
+                      <Link
+                        href={`/firms/${firm.slug}`}
+                        className="font-semibold hover:text-primary transition-colors"
                       >
-                        {feature.available ? (
-                          <Check className="h-3 w-3 text-green-500" />
-                        ) : (
-                          <X className="h-3 w-3 text-red-500" />
-                        )}
-                        <span className={!feature.available ? 'line-through text-muted-foreground' : ''}>
-                          {feature.name}
+                        {firm.name}
+                      </Link>
+                      <div className="flex items-center gap-1 mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${
+                              i < Math.floor(firm.overall_rating || 0)
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'fill-muted text-muted'
+                            }`}
+                          />
+                        ))}
+                        <span className="text-sm font-semibold ml-1">
+                          {firm.overall_rating?.toFixed(1) || 'N/A'}
                         </span>
                       </div>
-                    ))}
-                    {firm.features.length > 4 && (
-                      <span className="text-xs text-muted-foreground px-2 py-1">
-                        +{firm.features.length - 4} more
-                      </span>
-                    )}
+                    </div>
                   </div>
-                )}
-              </div>
+                </TableCell>
 
-              {/* Right: Actions */}
-              <div className="lg:col-span-4 flex flex-col gap-2 justify-center">
-                <div className="grid grid-cols-2 gap-3 mb-2">
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Platform</p>
-                    <p className="font-semibold text-sm">
-                      {firm.platform_rating?.toFixed(1) || 'N/A'}
-                    </p>
+                {/* Rank */}
+                <TableCell className="text-center">
+                  <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                    {index + 1}
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Support</p>
-                    <p className="font-semibold text-sm">
-                      {firm.support_rating?.toFixed(1) || 'N/A'}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Execution</p>
-                    <p className="font-semibold text-sm">
-                      {firm.execution_rating?.toFixed(1) || 'N/A'}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1">Fees</p>
-                    <p className="font-semibold text-sm">
-                      {firm.fees_rating?.toFixed(1) || 'N/A'}
-                    </p>
-                  </div>
-                </div>
+                </TableCell>
 
-                <div className="flex gap-2">
-                  <Button asChild className="flex-1" size="sm">
-                    <Link href={firm.website_url || '#'} target="_blank" rel="noopener noreferrer">
-                      Visit Site
-                      <ExternalLink className="ml-2 h-3 w-3" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/firms/${firm.slug}`}>
-                      Details
-                      <ChevronRight className="ml-2 h-3 w-3" />
-                    </Link>
-                  </Button>
-                </div>
+                {/* Reviews */}
+                <TableCell className="text-center">
+                  {firm.review_count > 0 && (
+                    <div>
+                      <Heart className="h-4 w-4 inline text-pink-500 mr-1" />
+                      <span className="font-semibold">{firm.review_count.toLocaleString()}</span>
+                    </div>
+                  )}
+                </TableCell>
 
-                {firm.user_count && (
-                  <p className="text-center text-xs text-muted-foreground mt-1">
-                    {firm.user_count} traders
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+                {/* Country */}
+                <TableCell className="text-center">
+                  {firm.regulation && firm.regulation.length > 0 ? (
+                    <span className="text-sm">{firm.regulation[0]}</span>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
+                </TableCell>
+
+                {/* Years in Operation */}
+                <TableCell className="text-center">
+                  <span className="text-muted-foreground text-sm">-</span>
+                </TableCell>
+
+                {/* Assets */}
+                <TableCell className="text-center">
+                  {firm.markets && firm.markets.length > 0 ? (
+                    <div className="flex gap-1 justify-center flex-wrap max-w-[150px]">
+                      {firm.markets.slice(0, 4).map((market, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs px-2 py-0">
+                          {market}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
+                </TableCell>
+
+                {/* Platforms */}
+                <TableCell className="text-center">
+                  {firm.trading_platforms && firm.trading_platforms.length > 0 ? (
+                    <div className="flex gap-1 justify-center items-center">
+                      {firm.trading_platforms.slice(0, 3).map((platform, idx) => (
+                        <div key={idx} className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+                          <span className="text-[10px] font-medium">
+                            {platform.substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
+                </TableCell>
+
+                {/* Max Allocations */}
+                <TableCell className="text-center">
+                  {firm.maximum_leverage ? (
+                    <div className="font-semibold text-sm">{firm.maximum_leverage}</div>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">-</span>
+                  )}
+                </TableCell>
+
+                {/* Promo */}
+                <TableCell className="text-center">
+                  {firm.badges && firm.badges.length > 0 ? (
+                    <Badge variant="secondary" className="bg-pink-500/10 text-pink-600 hover:bg-pink-500/20">
+                      {firm.badges[0].text}
+                    </Badge>
+                  ) : null}
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell className="text-right">
+                  <div className="flex gap-2 justify-end">
+                    <Button
+                      asChild
+                      className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                      size="sm"
+                    >
+                      <Link href={firm.website_url || '#'} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-3 w-3" />
+                        Match
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="border-2"
+                    >
+                      <Link href={`/firms/${firm.slug}`}>
+                        Firm
+                      </Link>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {filteredAndSortedFirms.length === 0 && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-muted/30 rounded-lg">
           <p className="text-muted-foreground">No firms found matching your criteria</p>
         </div>
       )}
+
+      {/* Results count */}
+      <div className="text-sm text-muted-foreground text-center">
+        Showing {filteredAndSortedFirms.length} of {firms.length} prop firms
+      </div>
     </div>
   )
 }
