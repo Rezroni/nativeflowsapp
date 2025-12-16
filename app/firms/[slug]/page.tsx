@@ -339,22 +339,22 @@ export default async function FirmPage({ params }: FirmPageProps) {
                           {firm.features.map((feature, index) => (
                             <div
                               key={index}
-                              className={`flex items-center gap-3 p-4 rounded-lg border ${
+                              className={`flex items-center gap-3 p-4 rounded-lg ${
                                 feature.available
-                                  ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900'
-                                  : 'bg-muted border-border'
+                                  ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm'
+                                  : 'bg-gray-900 dark:bg-gray-950 border border-gray-800 dark:border-gray-900'
                               }`}
                             >
                               {feature.available ? (
                                 <Check className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                               ) : (
-                                <X className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                                <X className="h-5 w-5 text-gray-500 dark:text-gray-600 flex-shrink-0" />
                               )}
                               <span
                                 className={
                                   feature.available
-                                    ? 'font-medium'
-                                    : 'text-muted-foreground line-through'
+                                    ? 'font-medium text-gray-900 dark:text-gray-100'
+                                    : 'text-gray-500 dark:text-gray-600 line-through'
                                 }
                               >
                                 {feature.name}
