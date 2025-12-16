@@ -173,13 +173,17 @@ export function FirmsList({ firms }: FirmsListProps) {
                       sideOffset={5}
                     >
                       <DropdownMenuItem
-                        onClick={() => router.push(`/admin/firms/edit/${firm.id}`)}
+                        onSelect={(e) => {
+                          e.preventDefault()
+                          router.push(`/admin/firms/edit/${firm.id}`)
+                        }}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => {
+                        onSelect={(e) => {
+                          e.preventDefault()
                           setFirmToDelete(firm.id)
                           setDeleteDialogOpen(true)
                         }}
