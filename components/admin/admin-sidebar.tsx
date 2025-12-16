@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   PenTool,
   Lightbulb,
-  Building2
+  Building2,
+  Map
 } from 'lucide-react'
 
 interface AdminSidebarProps {
@@ -60,6 +61,12 @@ const navigation = [
     name: 'Subscriptions',
     href: '/admin/subscriptions',
     icon: FileText,
+    allowedRoles: ['super_admin', 'admin']
+  },
+  {
+    name: 'Sitemap',
+    href: '/admin/sitemap',
+    icon: Map,
     allowedRoles: ['super_admin', 'admin']
   },
   {

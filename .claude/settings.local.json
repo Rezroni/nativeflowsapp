@@ -35,7 +35,8 @@
       "Bash(powershell \"Stop-Process -Id 22016 -Force\")",
       "Bash(del publictest-pwa.html 2)",
       "Bash(npm audit:*)",
-      "Bash(.gitignore)"
+      "Bash(.gitignore)",
+      "Bash(node scripts/generate-initial-sitemap.js:*)"
     ],
     "deny": [],
     "ask": []
