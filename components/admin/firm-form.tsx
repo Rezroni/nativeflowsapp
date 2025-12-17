@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { X, Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { ImageUpload } from '@/components/admin/image-upload'
 
 interface FirmFormProps {
   firm?: FirmWithParsedData
@@ -254,16 +255,12 @@ export function FirmForm({ firm, isEditing = false }: FirmFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="logo-url">Logo URL</Label>
-            <Input
-              id="logo-url"
-              type="url"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              placeholder="https://example.com/logo.png"
-            />
-          </div>
+          <ImageUpload
+            value={logoUrl}
+            onChange={setLogoUrl}
+            label="Logo"
+            description="Upload an image or enter a URL"
+          />
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
