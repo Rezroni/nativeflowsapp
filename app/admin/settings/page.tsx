@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Settings, Mail, Bell, Shield, Database } from 'lucide-react'
+import { DatabaseManagement } from '@/components/admin/database-management'
 
 export const metadata = {
   title: 'Settings | Admin',
@@ -191,27 +192,8 @@ export default function SettingsPage() {
           </div>
           <CardDescription>Database maintenance and backups</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="p-4 rounded-lg bg-muted">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">Database Size</span>
-              <span className="text-muted-foreground">~12.5 MB</span>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">Total Records</span>
-              <span className="text-muted-foreground">1,247</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Last Backup</span>
-              <span className="text-muted-foreground">Never</span>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline">Create Backup</Button>
-            <Button variant="outline">Restore Backup</Button>
-            <Button variant="outline" className="text-red-600">Clear Cache</Button>
-          </div>
+        <CardContent>
+          <DatabaseManagement />
         </CardContent>
       </Card>
     </div>
