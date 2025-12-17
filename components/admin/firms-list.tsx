@@ -15,12 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Pencil, Trash2, Star } from 'lucide-react'
+import { Pencil, Trash2, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
@@ -43,6 +37,15 @@ export function FirmsList({ firms }: FirmsListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [firmToDelete, setFirmToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleEdit = (firmId: string) => {
+    router.push(`/admin/firms/edit/${firmId}`)
+  }
+
+  const handleDeleteClick = (firmId: string) => {
+    setFirmToDelete(firmId)
+    setDeleteDialogOpen(true)
+  }
 
   const handleDelete = async () => {
     if (!firmToDelete) return
@@ -156,44 +159,26 @@ export function FirmsList({ firms }: FirmsListProps) {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-right relative">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-8 w-8 p-0"
-                      >
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-[160px]"
-                      sideOffset={5}
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(firm.id)}
                     >
-                      <DropdownMenuItem
-                        onSelect={(e) => {
-                          e.preventDefault()
-                          router.push(`/admin/firms/edit/${firm.id}`)
-                        }}
-                      >
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={(e) => {
-                          e.preventDefault()
-                          setFirmToDelete(firm.id)
-                          setDeleteDialogOpen(true)
-                        }}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteClick(firm.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
