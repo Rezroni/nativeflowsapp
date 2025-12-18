@@ -24,9 +24,18 @@ export function ImageUpload({ value, onChange, label, description }: ImageUpload
     const file = e.target.files?.[0]
     if (!file) return
 
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml'
+    ]
+
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please select a valid image file (JPG, PNG, GIF, WebP, or SVG)')
       return
     }
 
