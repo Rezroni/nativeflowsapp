@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 // This file replaces sentry.client.config.ts for Turbopack compatibility
 
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || 'https://7172fc2b5a737b5502b52088b2ae5ca7@o4510268078489600.ingest.de.sentry.io/4510268082421840',
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN || 'https://@o4510268078489600.ingest.de.sentry.io/4510268082421840',
 
   // Performance Monitoring
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
